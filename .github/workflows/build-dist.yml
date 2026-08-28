@@ -1,8 +1,8 @@
 name: Build action distribution
 concurrency:
-  # This workflow commits generated dist files to main. It must share the
-  # branch-write lock with cache manifest and cleanup workflows.
-  group: cache-the-planet-main-writes
+  # Serialize only distribution builds. Manifest updates are protected by
+  # compare-and-swap retries in the action and must not block this workflow.
+  group: build-action-distribution-${{ github.ref_name }}
   cancel-in-progress: false
 on:
   push:

@@ -6,7 +6,9 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: cache-the-planet-manifest-writes
+  # Keep duplicate integration suites from running in parallel without
+  # blocking cleanup, release, or distribution workflows.
+  group: cache-integration-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:

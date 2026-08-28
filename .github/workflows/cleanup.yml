@@ -1,6 +1,6 @@
 name: Garbage collection
 concurrency:
-  group: cache-the-planet-manifest-writes
+  group: cache-garbage-collection
   cancel-in-progress: false
 on:
   workflow_dispatch:
