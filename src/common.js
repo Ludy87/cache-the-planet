@@ -441,23 +441,36 @@ async function refs(repository) {
   }
 }
 
-async function setRef(repository, key, hash) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+async function updateManifest(repository, message, update) {
+  const maxAttempts = 12;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const current = await refs(repository);
-    current.json.references[key] = { object: hash, updated_at: new Date().toISOString() };
+    if (!update(current.json)) return current.json;
     try {
       await gh(`/repos/${repository}/contents/manifests/references-v1.json`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `cache: update ${key}`,
+          message,
           content: Buffer.from(`${JSON.stringify(current.json, null, 2)}\n`).toString('base64'),
           ...(current.sha ? { sha: current.sha } : {}), branch: 'main',
         }),
       });
-      return;
-    } catch (error) { if (error.status !== 409) throw error; }
+      return current.json;
+    } catch (error) {
+      if (error.status !== 409 || attempt === maxAttempts - 1) throw error;
+      const delay = Math.min(1000 * 2 ** attempt, 10000) + Math.floor(Math.random() * 250);
+      log(`manifest update conflicted; retrying in ${delay}ms (attempt ${attempt + 2}/${maxAttempts})`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
-  throw new Error('reference update conflicted after retries');
+  throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
+}
+
+async function setRef(repository, key, hash) {
+  return updateManifest(repository, `cache: update ${key}`, (manifest) => {
+    manifest.references[key] = { object: hash, updated_at: new Date().toISOString() };
+    return true;
+  });
 }
 
 async function download(repository, hash) {
@@ -507,6 +520,6 @@ module.exports = {
   upload, entries, refName,
   securityScan, makeArchive, inspectTar, digest, assetName, hashFromAssetName,
   encryptFile, decryptFile,
-  release, assets, object, refs, setRef,
+  release, assets, object, refs, updateManifest, setRef,
   download, extract,
 };

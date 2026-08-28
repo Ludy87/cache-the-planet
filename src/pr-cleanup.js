@@ -9,20 +9,17 @@ const c = require('./common');
       throw new Error('CACHE_REPOSITORY, PR_REPOSITORY and PR_NUMBER are required');
     }
     const prefix = `untrusted/${sourceRepository}/pr-${number}/`;
-    const current = await c.refs(repository);
-    const removed = Object.entries(current.json.references).filter(([key]) => key.startsWith(prefix));
-    for (const [key] of removed) delete current.json.references[key];
-    if (removed.length) {
-      await c.gh(`/repos/${repository}/contents/manifests/references-v1.json`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `cache: remove closed PR ${sourceRepository}#${number}`,
-          content: Buffer.from(`${JSON.stringify(current.json, null, 2)}\n`).toString('base64'),
-          ...(current.sha ? { sha: current.sha } : {}), branch: 'main',
-        }),
-      });
-    }
-    const live = new Set(Object.values(current.json.references).map((reference) => reference.object));
+    let removed = [];
+    const updatedManifest = await c.updateManifest(
+      repository,
+      `cache: remove closed PR ${sourceRepository}#${number}`,
+      (manifest) => {
+        removed = Object.entries(manifest.references).filter(([key]) => key.startsWith(prefix));
+        for (const [key] of removed) delete manifest.references[key];
+        return removed.length > 0;
+      },
+    );
+    const live = new Set(Object.values(updatedManifest.references).map((reference) => reference.object));
     const assets = (await c.assets(repository)).assets;
     for (const asset of assets.filter((item) => item.name.endsWith('.tar.zst'))) {
       const hash = c.hashFromAssetName(asset.name);
