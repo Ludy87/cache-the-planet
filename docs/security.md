@@ -31,14 +31,26 @@ encryption-key: ${{ secrets.CACHE_ENCRYPTION_KEY }}
 
 Empfohlen wird ein zufälliger 64-stelliger Hex-Schlüssel. Eine Passphrase ist ebenfalls möglich. Ohne Schlüssel oder mit einem falschen Schlüssel schlägt Restore kontrolliert fehl. Der Schlüssel darf nicht an Fork-Pull-Requests weitergegeben werden.
 
-Cache data is untrusted input. Before an archive is created, the action rejects:
+Cache-Daten gelten als nicht vertrauenswürdige Eingaben. Bevor ein Archiv
+erstellt wird, lehnt die Action Folgendes ab:
 
-- external symlinks; relative symlinks whose targets remain inside the cache path are allowed and dereferenced into the archive;
-- hardlinks are flattened into separate regular files while creating an archive; symlinks, hardlinks and special files in an input archive are rejected during validation and restore;
-- paths outside `GITHUB_WORKSPACE`;
-- sensitive-looking names or directories such as `.env*` (but not normal source files like `env.py` or `tokens.py`), `.npmrc`, `.netrc`, `.ssh`, `.aws`, `.docker`, `.kube`, `credentials*`, `*secret*`, `*token*`, `*password*`, SSH private keys and `*.key`/`*.p12`/`*.pfx`. VCS metadata is excluded from the tar archive with `--exclude-vcs`. Public CA certificates such as `cacert.pem` are allowed; PEM private keys are rejected by their content.
-- private-key patterns in all text files up to 1 MiB; known-token patterns and generic credential assignments are checked only in non-source/non-package-metadata text files. Token patterns require a realistic token length to avoid matching ordinary package text. Entire Python package metadata directories such as `*.dist-info` and `*.egg-info` are allowed because dependency names, hashes and descriptions can contain credential-related words. Known binary/archive formats such as JAR, ZIP, WAR and AAR are not decoded as text, preventing false positives from binary package data. Normal package source code is not rejected merely because it contains variables such as `password`, `secret` or `api_key`.
+- externe symbolische Links; relative symbolische Links, deren Ziele innerhalb des Cache-Pfads liegen, sind erlaubt und werden beim Erstellen des Archivs aufgelöst;
+- Hardlinks werden beim Erstellen des Archivs in separate reguläre Dateien umgewandelt; symbolische Links, Hardlinks und spezielle Dateien in einem Eingabearchiv werden bei der Validierung und beim Restore abgelehnt;
+- Pfade außerhalb von `GITHUB_WORKSPACE`;
+- verdächtig wirkende Datei- und Verzeichnisnamen wie `.env*` (normale Quelldateien wie `env.py` oder `tokens.py` sind davon nicht betroffen), `.npmrc`, `.netrc`, `.ssh`, `.aws`, `.docker`, `.kube`, `credentials*`, `*secret*`, `*token*`, `*password*`, SSH-Private-Keys sowie `*.key`/`*.p12`/`*.pfx`. VCS-Metadaten werden mit `--exclude-vcs` aus dem tar-Archiv ausgeschlossen. Öffentliche CA-Zertifikate wie `cacert.pem` sind erlaubt; PEM-Private-Keys werden anhand ihres Inhalts abgelehnt;
+- Muster für Private-Keys in allen Textdateien bis 1 MiB; bekannte Token-Muster und allgemeine Zugangsdaten-Zuweisungen werden nur in Textdateien geprüft, die weder Quellcode noch Paketmetadaten sind. Token-Muster erfordern eine realistische Token-Länge, damit gewöhnlicher Pakettext nicht fälschlich erkannt wird. Vollständige Python-Paketmetadaten-Verzeichnisse wie `*.dist-info` und `*.egg-info` sind erlaubt, da Abhängigkeitsnamen, Hashes und Beschreibungen sicherheitsbezogene Begriffe enthalten können. Bekannte Binär- und Archivformate wie JAR, ZIP, WAR und AAR werden nicht als Text dekodiert. Dadurch werden Fehlalarme durch Binärdaten von Paketen vermieden. Normaler Quellcode wird nicht allein deshalb abgelehnt, weil er Variablen wie `password`, `secret` oder `api_key` enthält.
 
-This is a defense-in-depth check, not a secret scanner. Keep cache paths narrow, use `exclude`, and never put a workspace containing production credentials into a cache path. Downloads are verified by SHA-256 and archives reject traversal paths.
+Diese Prüfung ist eine zusätzliche Schutzmaßnahme und kein vollständiger
+Secret-Scanner. Halte Cache-Pfade möglichst eng, verwende `exclude` und lege
+niemals einen Workspace mit Produktionszugangsdaten in einen Cache-Pfad.
+Downloads werden per SHA-256 geprüft und Archive mit Pfadüberquerungen werden
+abgelehnt.
 
-Trusted references can only be written from `main` or a tag. Pull-request references must use `untrusted/<repository>/pr-<number>/...`; they are removed when the PR closes. Fork pull requests cannot save unless the workflow explicitly and safely provides the required permission/token. A cache hit is not proof of provenance; builds must not execute arbitrary cached binaries without their own trust controls.
+Vertrauenswürdige Referenzen dürfen nur aus `main` oder einem Tag geschrieben
+werden. Pull-Request-Referenzen müssen
+`untrusted/<repository>/pr-<number>/...` verwenden und werden beim Schließen des
+Pull Requests entfernt. Pull Requests aus Forks können nicht speichern, außer
+der Workflow stellt ausdrücklich und sicher die erforderliche Berechtigung bzw.
+das erforderliche Token bereit. Ein Cache-Treffer ist kein Herkunftsnachweis;
+Builds dürfen keine beliebigen zwischengespeicherten Binärdateien ohne eigene
+Vertrauensprüfung ausführen.
