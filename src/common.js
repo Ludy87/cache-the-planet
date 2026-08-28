@@ -468,6 +468,7 @@ async function updateManifest(repository, message, update) {
 
 async function setRef(repository, key, hash) {
   return updateManifest(repository, `cache: update ${key}`, (manifest) => {
+    if (manifest.references[key]?.object === hash) return false;
     manifest.references[key] = { object: hash, updated_at: new Date().toISOString() };
     return true;
   });

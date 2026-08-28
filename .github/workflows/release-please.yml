@@ -9,7 +9,9 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: release-please-main
+  # Release Please creates/updates release metadata and must not race with
+  # generated-dist or manifest commits on the default branch.
+  group: cache-the-planet-main-writes
   cancel-in-progress: false
 
 jobs:

@@ -9,6 +9,11 @@ on:
       - Docker cache integration
       - Cache integration suite
     types: [completed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref_name || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit:
     name: Unit tests

@@ -1,6 +1,8 @@
 name: Build action distribution
 concurrency:
-  group: build-action-distribution
+  # This workflow commits generated dist files to main. It must share the
+  # branch-write lock with cache manifest and cleanup workflows.
+  group: cache-the-planet-main-writes
   cancel-in-progress: false
 on:
   push:

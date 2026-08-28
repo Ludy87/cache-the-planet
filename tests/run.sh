@@ -50,9 +50,18 @@ try {
   );
   securityScan(root);
   fs.writeFileSync(path.join(root, 'target.txt'), 'internal target\n');
-  fs.symlinkSync('target.txt', path.join(root, 'internal-link'));
-  securityScan(root);
-  fs.rmSync(path.join(root, 'internal-link'));
+  let symlinkSupported = true;
+  try {
+    fs.symlinkSync('target.txt', path.join(root, 'internal-link'));
+  } catch (error) {
+    if (error.code !== 'EPERM' && error.code !== 'EACCES') throw error;
+    symlinkSupported = false;
+    console.log('symlink test skipped: insufficient permissions on this platform');
+  }
+  if (symlinkSupported) {
+    securityScan(root);
+    fs.rmSync(path.join(root, 'internal-link'));
+  }
   fs.writeFileSync(path.join(root, 'dependency.jar'), Buffer.from('password = "binary-package-data"\0'));
   securityScan(root);
   fs.writeFileSync(path.join(root, 'cacert.pem'), '-----BEGIN CERTIFICATE-----\npublic-ca-certificate\n');
@@ -116,6 +125,9 @@ try {
   if (scopedRestorePrefix('npm/Linux-X64/') !== 'trusted/example/project/main/npm/Linux-X64/') {
     throw new Error('automatic restore prefix was not generated correctly');
   }
+  if (scopedRestorePrefix('npm/Linux-X64') !== 'trusted/example/project/main/npm/Linux-X64') {
+    throw new Error('automatic restore prefix without trailing slash was not generated correctly');
+  }
   process.env.GITHUB_EVENT_NAME = 'pull_request';
   fs.writeFileSync(eventFile, JSON.stringify({ pull_request: { number: 7 } }));
   let trustedRestoreRejected = false;
@@ -128,20 +140,30 @@ try {
   if (!rejected) throw new Error('virtual environment archive entry was not rejected');
   fs.rmSync(path.join(limitDir, '.venv'), { recursive: true, force: true });
   fs.writeFileSync(path.join(limitDir, 'target.txt'), 'target');
-  fs.symlinkSync('target.txt', path.join(limitDir, 'link.txt'));
-  const unsafeTar = path.join(root, 'unsafe.tar');
-  cp.execFileSync('tar', ['-cf', unsafeTar, '-C', limitDir, 'target.txt', 'link.txt']);
-  rejected = false;
-  try { inspectTar(unsafeTar); } catch { rejected = true; }
-  if (!rejected) throw new Error('archive symlink was not rejected');
-  fs.rmSync(path.join(limitDir, 'link.txt'), { force: true });
+  const unsafeTar = path.join(limitDir, 'unsafe.tar');
+  let archiveSymlinkSupported = true;
+  try {
+    fs.symlinkSync('target.txt', path.join(limitDir, 'link.txt'));
+  } catch (error) {
+    if (error.code !== 'EPERM' && error.code !== 'EACCES') throw error;
+    archiveSymlinkSupported = false;
+  }
+  if (archiveSymlinkSupported) {
+    cp.execFileSync('tar', ['-cf', unsafeTar, '-C', limitDir, 'target.txt', 'link.txt']);
+    rejected = false;
+    try { inspectTar(unsafeTar); } catch { rejected = true; }
+    if (!rejected) throw new Error('archive symlink was not rejected');
+    fs.rmSync(path.join(limitDir, 'link.txt'), { force: true });
+  } else {
+    console.log('archive symlink test skipped: insufficient permissions on this platform');
+  }
   fs.linkSync(path.join(limitDir, 'target.txt'), path.join(limitDir, 'hardlink.txt'));
-  cp.execFileSync('tar', ['-cf', unsafeTar, '-C', limitDir, 'target.txt', 'hardlink.txt']);
+  cp.execFileSync('tar', ['-cf', path.basename(unsafeTar), 'target.txt', 'hardlink.txt'], { cwd: limitDir });
   rejected = false;
   try { inspectTar(unsafeTar); } catch { rejected = true; }
   if (!rejected) throw new Error('archive hardlink was not rejected');
-  const flattenedTar = path.join(root, 'flattened.tar');
-  cp.execFileSync('tar', ['--hard-dereference', '-cf', flattenedTar, '-C', limitDir, 'target.txt', 'hardlink.txt']);
+  const flattenedTar = path.join(limitDir, 'flattened.tar');
+  cp.execFileSync('tar', ['--hard-dereference', '-cf', path.basename(flattenedTar), 'target.txt', 'hardlink.txt'], { cwd: limitDir });
   inspectTar(flattenedTar);
   const namedAsset = assetName(
     'untrusted/Ludy87/spdf-cache/pr-6/buildx/Linux-X64/unoserver/v1',
