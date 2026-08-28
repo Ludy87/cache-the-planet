@@ -442,7 +442,8 @@ async function refs(repository) {
 }
 
 async function setRef(repository, key, hash) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  const maxAttempts = 12;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const current = await refs(repository);
     current.json.references[key] = { object: hash, updated_at: new Date().toISOString() };
     try {
@@ -455,9 +456,14 @@ async function setRef(repository, key, hash) {
         }),
       });
       return;
-    } catch (error) { if (error.status !== 409) throw error; }
+    } catch (error) {
+      if (error.status !== 409 || attempt === maxAttempts - 1) throw error;
+      const delay = Math.min(1000 * 2 ** attempt, 10000) + Math.floor(Math.random() * 250);
+      log(`manifest update conflicted for ${key}; retrying in ${delay}ms (attempt ${attempt + 2}/${maxAttempts})`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
-  throw new Error('reference update conflicted after retries');
+  throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
 }
 
 async function download(repository, hash) {
