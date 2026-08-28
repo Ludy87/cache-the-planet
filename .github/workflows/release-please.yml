@@ -30,3 +30,30 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Update floating release tags
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          version="${RELEASE_TAG#v}"
+          IFS=. read -r major minor _patch <<< "$version"
+          target_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha')"
+
+          upsert_tag() {
+            local tag="$1"
+            if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" --silent >/dev/null 2>&1; then
+              gh api "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" \
+                --method PATCH --field sha="$target_sha" --field force=true >/dev/null
+            else
+              gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+                --method POST --field ref="refs/tags/${tag}" --field sha="$target_sha" >/dev/null
+            fi
+            echo "Updated tag v${tag} -> ${RELEASE_TAG} (${target_sha})"
+          }
+
+          upsert_tag "${major}.${minor}"
+          upsert_tag "${major}"
