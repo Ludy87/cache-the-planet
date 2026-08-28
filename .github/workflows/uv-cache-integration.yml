@@ -1,8 +1,4 @@
 name: uv cache asset integration
-concurrency:
-  group: cache-the-planet-main-writes
-  cancel-in-progress: false
-
 on:
   workflow_call:
 
