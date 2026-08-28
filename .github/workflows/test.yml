@@ -7,12 +7,7 @@ on:
     workflows:
       - Build action distribution
       - Docker cache integration
-      - Node cache asset integration
-      - uv cache asset integration
-      - uv Python cache asset integration
-      - Task cache asset integration
-      - Java cache asset integration
-      - Gradle cache asset integration
+      - Cache integration suite
     types: [completed]
 jobs:
   unit:
