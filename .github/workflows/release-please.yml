@@ -31,29 +31,24 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      - name: Update floating release tags
+      - name: Check out release commit
         if: steps.release.outputs.release_created == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+
+      - name: Update floating major and minor tags
+        if: steps.release.outputs.release_created == 'true'
         run: |
           set -euo pipefail
 
-          version="${RELEASE_TAG#v}"
-          IFS=. read -r major minor _patch <<< "$version"
-          target_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha')"
-
-          upsert_tag() {
-            local tag="$1"
-            if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" --silent >/dev/null 2>&1; then
-              gh api "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" \
-                --method PATCH --field sha="$target_sha" --field force=true >/dev/null
-            else
-              gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
-                --method POST --field ref="refs/tags/${tag}" --field sha="$target_sha" >/dev/null
-            fi
-            echo "Updated tag v${tag} -> ${RELEASE_TAG} (${target_sha})"
-          }
-
-          upsert_tag "${major}.${minor}"
-          upsert_tag "${major}"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git tag -d v${{ steps.release.outputs.major }} || true
+          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          git push origin :v${{ steps.release.outputs.major }} || true
+          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
+          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
+          git push origin v${{ steps.release.outputs.major }}
+          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
