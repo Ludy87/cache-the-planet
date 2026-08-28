@@ -1,7 +1,7 @@
 {
   "name": "github-actions-content-cache",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Content-addressed GitHub Actions cache",
   "engines": {
     "node": ">=18"
@@ -15,5 +15,7 @@
     "build:check": "npm run build && git diff --exit-code -- dist",
     "test": "node --check src/common.js && node --check src/restore.js && node --check src/save.js && node --check src/gc.js && node --check src/pr-cleanup.js"
   },
-  "devDependencies": {"esbuild": "^0.28.2"}
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
 }
