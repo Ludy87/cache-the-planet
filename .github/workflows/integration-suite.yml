@@ -1,0 +1,59 @@
+name: Cache integration suite
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cache-the-planet-manifest-writes
+  cancel-in-progress: false
+
+jobs:
+  node:
+    uses: ./.github/workflows/node-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit
+
+  uv:
+    needs: node
+    uses: ./.github/workflows/uv-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit
+
+  uv-python:
+    needs: uv
+    uses: ./.github/workflows/uv-python-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit
+
+  task:
+    needs: uv-python
+    uses: ./.github/workflows/task-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit
+
+  java:
+    needs: task
+    uses: ./.github/workflows/java-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit
+
+  gradle:
+    needs: java
+    uses: ./.github/workflows/gradle-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit
+
+  docker:
+    needs: gradle
+    uses: ./.github/workflows/docker-cache-integration.yml
+    permissions:
+      contents: write
+    secrets: inherit

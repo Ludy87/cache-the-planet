@@ -1,18 +1,17 @@
 name: Delete closed pull request cache
 concurrency:
-  group: cache-the-planet-main-writes
+  group: cache-the-planet-manifest-writes
   cancel-in-progress: false
 
 on:
   pull_request:
     types: [closed]
 
-permissions:
-  contents: write
-
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
