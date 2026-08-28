@@ -9,6 +9,7 @@ jobs:
   save-cache:
     name: Run task and save asset cache
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
@@ -44,6 +45,7 @@ jobs:
     name: Restore task cache asset in a fresh job
     needs: save-cache
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:

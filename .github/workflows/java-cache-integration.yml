@@ -9,6 +9,7 @@ jobs:
   save-cache:
     name: Build and save Maven cache asset
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
@@ -46,6 +47,7 @@ jobs:
     name: Restore Maven cache asset in a fresh job
     needs: save-cache
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:

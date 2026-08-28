@@ -9,6 +9,7 @@ jobs:
   save-cache:
     name: Build and save cache
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
@@ -59,6 +60,7 @@ jobs:
     name: Restore cache in a fresh job
     needs: save-cache
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:

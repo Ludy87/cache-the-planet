@@ -17,6 +17,7 @@ jobs:
     name: Create release PR or GitHub release
     if: github.event_name == 'workflow_dispatch' # || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
       issues: write
