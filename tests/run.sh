@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 command -v node >/dev/null
-if [[ ! -f dist/common.js || ! -f dist/restore.js || ! -f dist/save.js || ! -f dist/gc.js ]]; then
+if [[ ! -f dist/common.js || ! -f dist/restore.js || ! -f dist/save.js || ! -f dist/gc.js || ! -f dist/pr-cleanup.js ]]; then
   npm run build
 fi
 node --check dist/common.js
 node --check dist/restore.js
 node --check dist/save.js
 node --check dist/gc.js
+node --check dist/pr-cleanup.js
 node <<'NODE'
 const fs = require('fs');
 const os = require('os');
