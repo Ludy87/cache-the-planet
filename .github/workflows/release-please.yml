@@ -12,16 +12,15 @@ concurrency:
   group: release-please-main
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-
 jobs:
   release-please:
     name: Create release PR or GitHub release
     if: github.event_name == 'workflow_dispatch' # || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: Release Please
         id: release

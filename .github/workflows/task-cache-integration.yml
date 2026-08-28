@@ -6,9 +6,6 @@ concurrency:
 on:
   workflow_call:
 
-permissions:
-  contents: write
-
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
 
@@ -16,6 +13,8 @@ jobs:
   save-cache:
     name: Run task and save asset cache
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
@@ -49,6 +48,8 @@ jobs:
     name: Restore task cache asset in a fresh job
     needs: save-cache
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
