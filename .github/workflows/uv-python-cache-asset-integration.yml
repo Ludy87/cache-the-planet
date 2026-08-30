@@ -12,7 +12,7 @@ on:
         default: false
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
   UV_PYTHON_CACHE_DIR: ${{ github.workspace }}/.cache/uv/python
   UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python

@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
 
 permissions:
   contents: read

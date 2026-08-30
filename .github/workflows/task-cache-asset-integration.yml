@@ -12,7 +12,7 @@ on:
         default: false
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
   TASK_TEMP_DIR: ${{ github.workspace }}/examples/task-cache/.cache/task-state
   FILES_TO_HASH: |
     examples/task-cache/Taskfile.yml
