@@ -32,6 +32,8 @@ jobs:
       files_hash: ${{ steps.hash.outputs.files_hash }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Hash Task files
         id: hash
         run: |
@@ -78,7 +80,7 @@ jobs:
           repositories: cache-the-planet
 
       - name: Save task build cache asset
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        if: success()
         uses: ./save
         with:
           repository: ${{ env.CACHE_REPOSITORY }}

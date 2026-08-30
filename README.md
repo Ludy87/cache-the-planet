@@ -292,7 +292,7 @@ token: ${{ secrets.CACHE_APP_TOKEN }}
 
 Der PAT selbst muss Zugriff auf `Ludy87/cache-the-planet` haben. Ein `github.token` aus `spdf-cache` reicht für ein separates Cache-Repository normalerweise nicht aus. Verwende in einem separaten Cache-Repository den PAT oder App-Token ausdrücklich als Secret.
 
-Fork-Pull-Requests erhalten aus Sicherheitsgründen normalerweise keine Repository-Secrets. Der Save-Schritt muss dort deaktiviert bleiben. Ein PAT darf niemals in YAML-Dateien, Logs, Cache-Dateien oder den Quellcode geschrieben werden.
+Fork-Pull-Requests erhalten aus Sicherheitsgründen normalerweise keine Repository-Secrets. Wenn PR-Caches trotzdem geschrieben werden sollen, muss der Workflow als `pull_request_target` laufen, den PR-Stand ausschließlich für ungefährliche Hash-Berechnungen auschecken und alle privilegierten Action-Schritte aus dem Basis-Branch ausführen. Ein PAT oder App-Token darf niemals in YAML-Dateien, Logs, Cache-Dateien oder den Quellcode geschrieben werden.
 
 ## GitHub-App einrichten
 
