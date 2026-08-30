@@ -9,7 +9,6 @@ on:
 permissions:
   actions: read
   contents: write
-  pull-requests: read
 
 jobs:
   publish:
@@ -40,21 +39,13 @@ jobs:
           path: pr-cache-artifacts
           merge-multiple: false
 
-      - name: Resolve pull request number
+      - name: Resolve pull request number from artifact names
         id: pr
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
-          PR_NUMBER="$(gh api \
-            --method GET \
-            -H 'Accept: application/vnd.github+json' \
-            "/repos/${GITHUB_REPOSITORY}/pulls" \
-            -f state=all \
-            -f head="${HEAD_REPOSITORY}:${HEAD_BRANCH}" \
-            --jq '.[0].number')"
+          PR_NUMBER="$(find pr-cache-artifacts -mindepth 1 -maxdepth 1 -type d -name 'cache-the-planet-pr-*' \
+            -printf '%f\n' | sed -n 's/^cache-the-planet-pr-\([0-9][0-9]*\)-.*/\1/p' | sort -u)"
           test -n "$PR_NUMBER" && test "$PR_NUMBER" != "null"
+          test "$(printf '%s\n' "$PR_NUMBER" | wc -l)" = 1
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
       - name: Publish isolated PR caches
