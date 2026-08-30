@@ -53,7 +53,7 @@ jobs:
 
   node-save-cache:
     needs: [build-dist]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
@@ -63,7 +63,7 @@ jobs:
 
   node-restore-cache:
     needs: [node-save-cache]
-    if: always() && (needs.node-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: ./.github/workflows/npm-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -74,7 +74,7 @@ jobs:
   uv-save-cache:
     name: Save uv cache asset
     needs: [build-dist, node-save-cache]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/uv-cache-asset-integration.yml
     with:
       save-cache: true
@@ -85,7 +85,7 @@ jobs:
   uv-restore-cache:
     name: Restore uv cache asset
     needs: [uv-save-cache]
-    if: always() && (needs.uv-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
     uses: ./.github/workflows/uv-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -96,7 +96,7 @@ jobs:
   uv-python-save-cache:
     name: Save uv Python cache asset
     needs: [build-dist, uv-save-cache]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/uv-python-cache-asset-integration.yml
     with:
       save-cache: true
@@ -107,7 +107,7 @@ jobs:
   uv-python-restore-cache:
     name: Restore uv Python cache asset
     needs: [uv-python-save-cache]
-    if: always() && (needs.uv-python-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.uv-python-save-cache.result == 'success' }}
     uses: ./.github/workflows/uv-python-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -118,7 +118,7 @@ jobs:
   task-save-cache:
     name: Save task cache asset
     needs: [build-dist, uv-python-save-cache]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/task-cache-asset-integration.yml
     with:
       save-cache: true
@@ -129,7 +129,7 @@ jobs:
   task-restore-cache:
     name: Restore task cache asset
     needs: [task-save-cache]
-    if: always() && (needs.task-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.task-save-cache.result == 'success' }}
     uses: ./.github/workflows/task-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -140,7 +140,7 @@ jobs:
   java-save-cache:
     name: Save Maven cache asset
     needs: [build-dist, task-save-cache]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/maven-cache-asset-integration.yml
     with:
       save-cache: true
@@ -151,7 +151,7 @@ jobs:
   java-restore-cache:
     name: Restore Maven cache asset
     needs: [java-save-cache]
-    if: always() && (needs.java-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.java-save-cache.result == 'success' }}
     uses: ./.github/workflows/maven-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -162,7 +162,7 @@ jobs:
   gradle-save-cache:
     name: Save Gradle cache asset
     needs: [build-dist, java-save-cache]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/gradle-cache-asset-integration.yml
     with:
       save-cache: true
@@ -173,7 +173,7 @@ jobs:
   gradle-restore-cache:
     name: Restore Gradle cache asset
     needs: [gradle-save-cache]
-    if: always() && (needs.gradle-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
     uses: ./.github/workflows/gradle-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -184,7 +184,7 @@ jobs:
   docker-save-cache:
     name: Save Docker cache asset
     needs: [build-dist, gradle-save-cache]
-    if: always() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: ./.github/workflows/docker-cache-asset-integration.yml
     with:
       save-cache: true
@@ -195,7 +195,7 @@ jobs:
   docker-restore-cache:
     name: Restore Docker cache asset
     needs: [docker-save-cache]
-    if: always() && (needs.docker-save-cache.result == 'success')
+    if: ${{ !cancelled() && needs.docker-save-cache.result == 'success' }}
     uses: ./.github/workflows/docker-cache-asset-integration.yml
     with:
       restore-cache: true
@@ -206,7 +206,7 @@ jobs:
   # when an upstream job fails.
   all-checks-passed:
     name: All checks passed
-    if: always()
+    if: ${{ !cancelled() }}
     needs: 
       - build-dist
       - node-save-cache
