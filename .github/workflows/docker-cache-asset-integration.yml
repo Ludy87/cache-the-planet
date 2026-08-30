@@ -13,6 +13,7 @@ on:
 
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   FILES_TO_HASH: |
     examples/docker-cache/Dockerfile
     examples/docker-cache/hello.txt

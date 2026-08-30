@@ -16,6 +16,7 @@ on:
 
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
 
 permissions:
   contents: read

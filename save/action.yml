@@ -56,6 +56,10 @@ inputs:
     description: "Optional JSON configuration file; environment variables override its values"
     required: false
     default: ""
+  manifest-branch:
+    description: "Branch containing the cache manifest; defaults to main"
+    required: false
+    default: "main"
   allow-pr-cache:
     description: "Allow saving an isolated untrusted cache for a pull request"
     required: false

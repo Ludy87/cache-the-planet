@@ -19,6 +19,11 @@ Zuordnung und darf nicht als Vertrauensnachweis verwendet werden.
 Das Manifest liegt im Cache-Repository unter
 `manifests/references-v1.json`:
 
+Im Repository dieses Projekts wird die Datei im Branch `cache-data` verwaltet;
+andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH` oder dem
+Input `manifest-branch` konfigurieren. Der Branch muss vor dem ersten Save
+einmalig angelegt werden.
+
 ```json
 {
     "schema_version":1,

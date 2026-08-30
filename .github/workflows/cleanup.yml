@@ -37,6 +37,7 @@ jobs:
       - run: node dist/gc.js
         env:
           CACHE_REPOSITORY: ${{ github.repository }}
+          CACHE_MANIFEST_BRANCH: cache-data
           GITHUB_TOKEN: ${{ github.token }}
           GC_MODE: ${{ github.event_name == 'schedule' && 'expired' || inputs.mode || 'expired' }}
           GC_EXPIRE_ALL_UNTRUSTED: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'expired' && 'true' || 'false' }}

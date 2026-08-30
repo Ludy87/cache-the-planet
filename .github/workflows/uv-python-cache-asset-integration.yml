@@ -13,6 +13,7 @@ on:
 
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
   UV_PYTHON_CACHE_DIR: ${{ github.workspace }}/.cache/uv/python
   UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python

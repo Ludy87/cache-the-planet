@@ -13,6 +13,7 @@ on:
 
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   TASK_TEMP_DIR: ${{ github.workspace }}/examples/task-cache/.cache/task-state
   FILES_TO_HASH: |
     examples/task-cache/Taskfile.yml

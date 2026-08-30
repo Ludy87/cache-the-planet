@@ -13,6 +13,7 @@ on:
 
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle
   FILES_TO_HASH: |
     examples/gradle-cache/build.gradle
