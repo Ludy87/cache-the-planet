@@ -9,10 +9,11 @@ on:
 permissions:
   actions: read
   contents: write
+  pull-requests: read
 
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.pull_requests[0] }}
+    if: ${{ github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -39,10 +40,27 @@ jobs:
           path: pr-cache-artifacts
           merge-multiple: false
 
+      - name: Resolve pull request number
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          PR_NUMBER="$(gh api \
+            --method GET \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/${GITHUB_REPOSITORY}/pulls" \
+            -f state=all \
+            -f head="${HEAD_REPOSITORY}:${HEAD_BRANCH}" \
+            --jq '.[0].number')"
+          test -n "$PR_NUMBER" && test "$PR_NUMBER" != "null"
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
       - name: Publish isolated PR caches
         env:
           CACHE_REPOSITORY: Ludy87/cache-the-planet
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
-          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
           PR_CACHE_ARTIFACTS_DIR: ${{ github.workspace }}/pr-cache-artifacts
         run: node scripts/publish-pr-cache-artifacts.js
