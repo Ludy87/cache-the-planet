@@ -49,10 +49,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
       "size": 1790210
+    },
+    "shared/Ludy87/cache-the-planet/docker/linux-x64/271ddca8fdd4e4167da82bd3866d728c6f508bc582ca613e2ed7170f0297c3fe/v2": {
+      "object": "sha256:904372841186d7ab1e1e78902ff0df40371be1d74181ceb5d98aa90f33ac0aaa",
+      "updated_at": "2026-08-30T21:20:47.883Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 4033924
     }
   },
   "monitoring": {
     "window_started_at": "2026-08-30T20:23:27.081Z",
-    "writes": 14
+    "writes": 15
   }
 }
