@@ -89,6 +89,16 @@ jobs:
           rm -rf examples/docker-cache/.cache/docker-buildx
           mv examples/docker-cache/.cache/docker-buildx-new examples/docker-cache/.cache/docker-buildx
 
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - name: Save Docker cache asset
         if: success()
         uses: ./save
@@ -99,11 +109,12 @@ jobs:
           # default-branch cache on main; the action creates the shared alias
           # only from the default branch when appropriate.
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           path: examples/docker-cache/.cache/docker-buildx
           strict: false
+          allow-pr-cache: true
 
   restore-cache:
     if: ${{ inputs.restore-cache }}

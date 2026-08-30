@@ -63,6 +63,16 @@ jobs:
           uv venv --python 3.13 .venv
           uv pip install --python .venv/bin/python -r examples/uv-cache/requirements.txt
 
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - name: Save uv and Python asset cache
         if: success()
         uses: ./save
@@ -70,11 +80,12 @@ jobs:
           repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: uv-python-3-13
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 4
           path: .cache/uv
           strict: false
+          allow-pr-cache: true
 
       - name: Verify uv cache directory
         run: |

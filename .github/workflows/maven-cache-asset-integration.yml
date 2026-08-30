@@ -64,6 +64,16 @@ jobs:
       - name: Build with Maven
         run: mvn -B -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml
 
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - name: Save Maven cache asset
         if: success()
         uses: ./save
@@ -71,10 +81,11 @@ jobs:
           repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: maven-java17
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/m2
           strict: false
+          allow-pr-cache: true
 
   restore-cache:
     if: ${{ inputs.restore-cache }}
