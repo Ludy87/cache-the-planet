@@ -23,6 +23,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: cache-writer
+      deployment: false
     timeout-minutes: 5
     permissions:
       contents: write
