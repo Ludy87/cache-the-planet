@@ -51,7 +51,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
 
       - name: echo Dockerfile and context hash
         run: |
@@ -103,7 +103,7 @@ jobs:
           repositories: cache-the-planet
 
       - name: Save Docker cache asset
-        if: success()
+        if: ${{ github.event_name != 'pull_request' && success() }}
         uses: ./save
         with:
           repository: ${{ env.CACHE_REPOSITORY }}
@@ -118,6 +118,14 @@ jobs:
           path: examples/docker-cache/.cache/docker-buildx
           strict: false
           allow-pr-cache: true
+
+      - name: Upload Docker cache artifact for trusted publisher
+        if: ${{ github.event_name == 'pull_request' && success() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-docker-${{ needs.hash_pr.outputs.files_hash }}-v2
+          path: examples/docker-cache/.cache/docker-buildx
+          if-no-files-found: error
 
   restore-cache:
     if: ${{ inputs.restore-cache }}

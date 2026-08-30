@@ -39,6 +39,8 @@ Die Workflows verwenden neben den lokalen Actions `./` und `./save` die folgende
 | `docker/build-push-action` | Commit `53b7df96c91f9c12dcc8a07bcb9ccacbed38856a` (`v7.3.0`) | [GitHub](https://github.com/docker/build-push-action) |
 | `github/codeql-action` | Commit `cdf488f595d80d6e07e03d4674febd5ab45fa938` (`v4.37.9`) | [GitHub](https://github.com/github/codeql-action) |
 | `googleapis/release-please-action` | Commit `45996ed1f6d02564a971a2fa1b5860e934307cf7` (`v5.0.0`) | [GitHub](https://github.com/googleapis/release-please-action) |
+| `actions/upload-artifact` | Commit `ea165f8d65b6e75b540449e92b4886f43607fa02` (`v4.6.2`) | [GitHub](https://github.com/actions/upload-artifact) |
+| `actions/download-artifact` | Commit `d3f86a106a0bac45b974a628896c90dbdf5c8093` (`v4.3.0`) | [GitHub](https://github.com/actions/download-artifact) |
 
 Für diese Actions werden keine Lizenztexte in diesem Repository dupliziert. Bei einer Weitergabe oder Änderung der Workflow-Referenzen sollten die Notices anhand der dann verwendeten Commits erneut geprüft werden.
 

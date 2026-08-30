@@ -23,10 +23,9 @@ Kein dauerhaft gültiges Token ohne Ablaufdatum verwenden. Für ein separates
 Cache-Repository reicht der `GITHUB_TOKEN` des aufrufenden Repositories meist
 nicht aus; verwende dafür ein PAT oder ein kurzlebiges GitHub-App-Token.
 Fork-Pull-Requests dürfen keine Schreib-Secrets erhalten. Für einen isolierten
-Untrusted-PR-Cache kann stattdessen ein `pull_request_target`-Workflow einen
-App-Token verwenden, sofern der PR-Stand nur für ungefährliche Hash-Berechnungen
-ausgecheckt wird und privilegierte Action-Schritte ausschließlich aus dem
-Basis-Branch stammen.
+Untrusted-PR-Cache erzeugt der PR-Lauf deshalb nur ein Artifact. Ein separater
+`workflow_run`-Publisher aus `main` lädt dieses Artifact und schreibt es mit
+einem kurzlebigen App-Token, ohne PR-Code mit diesem Token auszuführen.
 
 Das Manifest protokolliert bei neuen Referenzen Quelle, Ersteller und
 komprimierte Archivgröße. Zusätzlich begrenzt die Action standardmäßig das

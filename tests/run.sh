@@ -148,11 +148,6 @@ try {
   if (scopedKey('Linux-X64/hash/v1') !== 'untrusted/example/project/pr-7/npm/Linux-X64/hash/v1') {
     throw new Error('shared scope was not isolated for pull requests');
   }
-  process.env.GITHUB_EVENT_NAME = 'pull_request_target';
-  if (scopedKey('Linux-X64/hash/v1') !== 'untrusted/example/project/pr-7/npm/Linux-X64/hash/v1') {
-    throw new Error('shared scope was not isolated for pull_request_target');
-  }
-  process.env.GITHUB_EVENT_NAME = 'pull_request';
   let namespaceKeyRejected = false;
   try { scopedKey(sharedKey); } catch { namespaceKeyRejected = true; }
   if (!namespaceKeyRejected) throw new Error('explicit shared key was accepted in a pull request');

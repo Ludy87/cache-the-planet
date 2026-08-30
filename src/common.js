@@ -198,9 +198,7 @@ function logicalCacheKey(value, name, includeVersion = true) {
 }
 
 function isPullRequestEvent() {
-  return eventName() === 'pull_request'
-    || eventName() === 'pull_request_target'
-    || process.env.GITHUB_REF?.includes('/pull/');
+  return eventName() === 'pull_request' || process.env.GITHUB_REF?.includes('/pull/');
 }
 
 function validateRestorePrefix(key) {
@@ -355,9 +353,7 @@ function sharedRestorePrefix(prefix) {
 }
 
 function assertTrustedRestoreAllowed(keys) {
-  const isPullRequest = eventName() === 'pull_request'
-    || eventName() === 'pull_request_target'
-    || process.env.GITHUB_REF?.includes('/pull/');
+  const isPullRequest = eventName() === 'pull_request' || process.env.GITHUB_REF?.includes('/pull/');
   if (isPullRequest && keys.some((key) => key.startsWith('trusted/'))) {
     throw new Error('pull requests may not restore trusted cache keys');
   }

@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           enable-cache: false
@@ -77,7 +77,7 @@ jobs:
           repositories: cache-the-planet
 
       - name: Save uv and Python asset cache
-        if: success()
+        if: ${{ github.event_name != 'pull_request' && success() }}
         uses: ./save
         with:
           repository: ${{ env.CACHE_REPOSITORY }}
@@ -89,6 +89,14 @@ jobs:
           path: .cache/uv
           strict: false
           allow-pr-cache: true
+
+      - name: Upload uv Python cache artifact for trusted publisher
+        if: ${{ github.event_name == 'pull_request' && success() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-uv-python-3-13-${{ needs.hash_pr.outputs.files_hash }}-v4
+          path: .cache/uv
+          if-no-files-found: error
 
       - name: Verify uv cache directory
         run: |

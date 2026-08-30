@@ -1,0 +1,48 @@
+name: Publish PR cache artifacts
+
+on:
+  workflow_run:
+    workflows: [Cache integration suite]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.pull_requests[0] }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted publisher
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
+      - name: Download PR cache artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          pattern: cache-the-planet-pr-*
+          path: pr-cache-artifacts
+          merge-multiple: false
+
+      - name: Publish isolated PR caches
+        env:
+          CACHE_REPOSITORY: Ludy87/cache-the-planet
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          PR_CACHE_ARTIFACTS_DIR: ${{ github.workspace }}/pr-cache-artifacts
+        run: node scripts/publish-pr-cache-artifacts.js
