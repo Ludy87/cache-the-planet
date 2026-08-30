@@ -43,12 +43,18 @@ jobs:
         id: pr
         run: |
           PR_NUMBER="$(find pr-cache-artifacts -mindepth 1 -maxdepth 1 -type d -name 'cache-the-planet-pr-*' \
-            -printf '%f\n' | sed -n 's/^cache-the-planet-pr-\([0-9][0-9]*\)-.*/\1/p' | sort -u)"
-          test -n "$PR_NUMBER" && test "$PR_NUMBER" != "null"
+            -printf '%f\n' 2>/dev/null | sed -n 's/^cache-the-planet-pr-\([0-9][0-9]*\)-.*/\1/p' | sort -u)"
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No PR cache artifacts found; nothing to publish."
+            echo "number=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          test "$PR_NUMBER" != "null"
           test "$(printf '%s\n' "$PR_NUMBER" | wc -l)" = 1
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
       - name: Publish isolated PR caches
+        if: ${{ steps.pr.outputs.number != '' }}
         env:
           CACHE_REPOSITORY: Ludy87/cache-the-planet
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
