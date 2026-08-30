@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: [Cache integration suite]
     types: [completed]
-    branches: [main]
+    # branches: [main]
 
 permissions:
   actions: read
