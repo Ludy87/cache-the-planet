@@ -94,7 +94,7 @@ jobs:
           repositories: cache-the-planet
 
       - name: Save uv cache asset
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: ./save
         with:
           repository: ${{ env.CACHE_REPOSITORY }}
