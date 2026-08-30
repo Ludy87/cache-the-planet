@@ -12,7 +12,8 @@ on:
         default: false
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle
   FILES_TO_HASH: |
     examples/gradle-cache/build.gradle
@@ -59,6 +60,16 @@ jobs:
         working-directory: examples/gradle-cache
         run: gradle --no-daemon test
 
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - name: Save Gradle cache asset
         if: success()
         uses: ./save
@@ -66,10 +77,11 @@ jobs:
           repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/gradle
           strict: false
+          allow-pr-cache: true
 
   restore-cache:
     if: ${{ inputs.restore-cache }}
@@ -195,7 +207,6 @@ jobs:
         run: |
           test "${{ steps.cache-untrusted.outputs.cache-hit }}" = "true"
           test "${{ steps.cache-untrusted.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
-
 
       - name: Build offline with restored Gradle cache
         working-directory: examples/gradle-cache

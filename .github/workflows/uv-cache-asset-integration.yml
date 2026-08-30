@@ -12,7 +12,8 @@ on:
         default: false
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
   FILES_TO_HASH: |
     examples/uv-cache/requirements.txt
@@ -82,6 +83,16 @@ jobs:
           test "$(uv cache dir)" = "$UV_CACHE_DIR"
           test -d "$UV_CACHE_DIR"
 
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - name: Save uv cache asset
         if: steps.cache.outputs.cache-hit != 'true'
         uses: ./save
@@ -90,10 +101,11 @@ jobs:
           cache-name: uv
           version: 2
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/uv
           strict: true
+          allow-pr-cache: true
 
   restore-cache:
     if: ${{ inputs.restore-cache }}

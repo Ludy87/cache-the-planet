@@ -12,7 +12,8 @@ on:
         default: false
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
   TASK_TEMP_DIR: ${{ github.workspace }}/examples/task-cache/.cache/task-state
   FILES_TO_HASH: |
     examples/task-cache/Taskfile.yml
@@ -66,18 +67,29 @@ jobs:
       - name: Run task build
         run: task --taskfile examples/task-cache/Taskfile.yml build
 
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - name: Save task build cache asset
         uses: ./save
         with:
           repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: task
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
           strict: false
+          allow-pr-cache: true
 
   restore-cache:
     if: ${{ inputs.restore-cache }}

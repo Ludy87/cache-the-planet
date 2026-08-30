@@ -15,7 +15,8 @@ on:
   workflow_dispatch:
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
 
 permissions:
   contents: read
@@ -28,6 +29,20 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.bot-token.outputs.token || github.token }}
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -59,7 +74,7 @@ jobs:
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm
           strict: false
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           allow-pr-cache: false
         continue-on-error: true
 
@@ -68,8 +83,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "AstraGermany-Bot[bot]"
+          git config user.email "AstraGermany-Bot[bot]@users.noreply.github.com"
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
             git fetch origin main
             git rebase origin/main

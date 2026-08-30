@@ -739,7 +739,12 @@ function hashFromAssetName(name) {
 }
 
 async function manifest(repository) {
-  const result = await gh(`/repos/${repository}/contents/manifests/references-v1.json`);
+  const branch = process.env.CACHE_MANIFEST_BRANCH || input('manifest-branch', 'main');
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/.test(branch)
+    || branch.includes('..') || branch.includes('//') || branch.endsWith('/') || branch.endsWith('.')) {
+    throw new Error('manifest branch is invalid');
+  }
+  const result = await gh(`/repos/${repository}/contents/manifests/references-v1.json?ref=${encodeURIComponent(branch)}`);
   return { json: JSON.parse(Buffer.from(result.body.content, 'base64').toString()), sha: result.body.sha };
 }
 
@@ -753,6 +758,11 @@ async function refs(repository) {
 
 async function updateManifest(repository, message, update) {
   const maxAttempts = 12;
+  const branch = process.env.CACHE_MANIFEST_BRANCH || input('manifest-branch', 'main');
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/.test(branch)
+    || branch.includes('..') || branch.includes('//') || branch.endsWith('/') || branch.endsWith('.')) {
+    throw new Error('manifest branch is invalid');
+  }
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const current = await refs(repository);
     if (!update(current.json)) return current.json;
@@ -762,7 +772,7 @@ async function updateManifest(repository, message, update) {
         body: JSON.stringify({
           message,
           content: Buffer.from(`${JSON.stringify(current.json, null, 2)}\n`).toString('base64'),
-          ...(current.sha ? { sha: current.sha } : {}), branch: 'main',
+          ...(current.sha ? { sha: current.sha } : {}), branch,
         }),
       });
       return current.json;

@@ -2,6 +2,8 @@ name: Test
 run-name: Test - ${{ github.event_name }}${{ github.event_name == 'workflow_run' && format(' ({0})', github.event.workflow_run.name) || '' }}
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - ".github/**"
       - "docs/**"
@@ -17,7 +19,8 @@ on:
     branches: [main]
 
 env:
-  CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+  CACHE_REPOSITORY: Ludy87/cache-the-planet
+  CACHE_MANIFEST_BRANCH: cache-data
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name || github.ref }}
@@ -35,6 +38,15 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Create AstraGermany-Bot token
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
@@ -67,6 +79,6 @@ jobs:
           repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: npm
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm

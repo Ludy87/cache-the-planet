@@ -28,7 +28,8 @@ jobs:
           package-manager-cache: false
       - run: node dist/pr-cleanup.js
         env:
-          CACHE_REPOSITORY: Astra-Germany/cache-the-planet
+          CACHE_REPOSITORY: Ludy87/cache-the-planet
+          CACHE_MANIFEST_BRANCH: cache-data
           PR_REPOSITORY: ${{ github.event.repository.full_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ github.token }}
