@@ -1,0 +1,26 @@
+name: A
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Nur PRs aus dem eigenen Repository
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo "Nur PRs aus dem eigenen Repository"
+
+  build-fork:
+    # Nur PRs aus einem Fork
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo "Nur PRs aus einem Fork"
