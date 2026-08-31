@@ -15,7 +15,7 @@ const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 const { securityScan: sourceSecurityScan } = require('./src/common');
-const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, hashFromAssetName, manifestWriteGuard, excludePatterns } = require('./src/common');
+const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest } = require('./src/common');
 const { inspectTar } = require('./src/common');
 const { securityScan: distSecurityScan } = require('./dist/common');
 const { encryptFile, decryptFile } = require('./src/common');
@@ -114,10 +114,46 @@ try {
   process.env.GITHUB_EVENT_NAME = 'pull_request';
   process.env.GITHUB_REF = 'refs/pull/7/merge';
   const eventFile = path.join(root, 'event.json');
-  fs.writeFileSync(eventFile, JSON.stringify({ pull_request: { number: 7 } }));
+  fs.writeFileSync(eventFile, JSON.stringify({
+    repository: { full_name: 'example/project' },
+    pull_request: {
+      number: 7,
+      head: { repo: { full_name: 'example/project' } },
+    },
+  }));
   process.env.GITHUB_EVENT_PATH = eventFile;
+  if (isForkPullRequest()) throw new Error('same-repository pull request was treated as a fork');
   if (scopedKey('npm/Linux-X64/hash/v1') !== 'untrusted/example/project/pr-7/npm/Linux-X64/hash/v1') {
     throw new Error('automatic PR cache key was not generated correctly');
+  }
+  fs.writeFileSync(eventFile, JSON.stringify({
+    repository: { full_name: 'example/project' },
+    pull_request: {
+      number: 7,
+      head: { repo: { full_name: 'contributor/project' } },
+    },
+  }));
+  if (!isForkPullRequest()) throw new Error('fork pull request was not detected');
+  const forkOutput = path.join(root, 'fork-save-output.txt');
+  const forkSave = cp.spawnSync(process.execPath, [path.join(process.cwd(), 'src', 'save.js')], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      INPUT_REPOSITORY: 'example/project',
+      INPUT_KEY: 'hash/v1',
+      'INPUT_CACHE-NAME': 'npm',
+      INPUT_SCOPE: 'auto',
+      INPUT_ALLOW_PR_CACHE: 'true',
+      GITHUB_TOKEN: '',
+      GITHUB_OUTPUT: forkOutput,
+    },
+  });
+  if (forkSave.status !== 0 || !`${forkSave.stdout}\n${forkSave.stderr}`.includes('save skipped')) {
+    throw new Error('fork save was not skipped before API access');
+  }
+  const forkOutputs = fs.readFileSync(forkOutput, 'utf8');
+  if (!forkOutputs.includes('is_fork=true\n') || !forkOutputs.includes('read_only=true\n')) {
+    throw new Error('fork save outputs were not generated correctly');
   }
   process.env.GITHUB_EVENT_NAME = 'push';
   delete process.env.GITHUB_REF;

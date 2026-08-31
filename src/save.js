@@ -4,9 +4,21 @@ const c = require('./common');
 (async () => {
   try {
     const repository = c.input('repository');
+    const isFork = c.isForkPullRequest();
+    const setOutput = (name, value) => {
+      if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
+      }
+    };
+    setOutput('is_fork', isFork ? 'true' : 'false');
+    setOutput('read_only', isFork ? 'true' : 'false');
     const key = c.scopedKey(c.input('key'));
-    const isPullRequest = process.env.GITHUB_REF?.includes('/pull/');
+    const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input('scope', 'auto').trim().toLowerCase();
+    if (isFork) {
+      c.log('fork pull request: save skipped because write-capable secrets are unavailable');
+      return;
+    }
     if (isPullRequest && String(c.input('allow-pr-cache')).toLowerCase() !== 'true') {
       c.log('untrusted pull request: save skipped');
       return;
