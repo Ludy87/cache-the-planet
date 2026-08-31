@@ -198,7 +198,9 @@ function logicalCacheKey(value, name, includeVersion = true) {
 }
 
 function isPullRequestEvent() {
-  return eventName() === 'pull_request' || process.env.GITHUB_REF?.includes('/pull/');
+  return eventName() === 'pull_request'
+    || eventName() === 'pull_request_target'
+    || process.env.GITHUB_REF?.includes('/pull/');
 }
 
 function validateRestorePrefix(key) {
@@ -232,6 +234,21 @@ function pullRequestNumber() {
   }
   const match = (process.env.GITHUB_REF || '').match(/^refs\/pull\/([1-9]\d*)\/merge$/);
   return match ? Number(match[1]) : null;
+}
+
+function pullRequestSourceRepository() {
+  const eventPath = process.env.GITHUB_EVENT_PATH;
+  if (!eventPath) return '';
+  try {
+    return JSON.parse(fs.readFileSync(eventPath, 'utf8')).pull_request?.head?.repo?.full_name || '';
+  } catch {
+    return '';
+  }
+}
+
+function isForkPullRequest() {
+  const source = pullRequestSourceRepository();
+  return isPullRequestEvent() && Boolean(source) && source !== repository();
 }
 
 function scopedKey(key) {
@@ -914,7 +931,7 @@ function extract(file) {
 }
 
 module.exports = {
-  input, hasInput, token, eventName, repository, defaultBranch, headRef, baseRef, pullRequestNumber, cacheName, cacheScope, runnerPlatform,
+  input, hasInput, token, eventName, repository, defaultBranch, headRef, baseRef, pullRequestNumber, pullRequestSourceRepository, isForkPullRequest, cacheName, cacheScope, runnerPlatform,
   scopedKey, scopeCounterpartKey, pullRequestCacheCombination, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed,
   log, fail, gh,
   upload, entries, excludePatterns, refName,
