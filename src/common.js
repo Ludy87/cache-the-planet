@@ -931,7 +931,7 @@ function extract(file) {
 }
 
 module.exports = {
-  input, hasInput, token, eventName, repository, defaultBranch, headRef, baseRef, pullRequestNumber, pullRequestSourceRepository, isForkPullRequest, cacheName, cacheScope, runnerPlatform,
+  input, hasInput, token, eventName, repository, defaultBranch, headRef, baseRef, pullRequestNumber, isPullRequestEvent, pullRequestSourceRepository, isForkPullRequest, cacheName, cacheScope, runnerPlatform,
   scopedKey, scopeCounterpartKey, pullRequestCacheCombination, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed,
   log, fail, gh,
   upload, entries, excludePatterns, refName,
