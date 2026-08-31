@@ -30,6 +30,8 @@ jobs:
       files_hash: ${{ steps.hash.outputs.files_hash }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Hash npm files
         id: hash
         run: |
@@ -46,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
@@ -69,7 +71,8 @@ jobs:
           repositories: cache-the-planet
 
       - name: Save npm cache asset
-        if: success()
+        if: ${{ success() }}
+        id: save
         uses: ./save
         with:
           repository: ${{ env.CACHE_REPOSITORY }}
@@ -80,6 +83,15 @@ jobs:
           path: .cache/npm
           strict: false
           # allow-pr-cache: true
+
+      - name: Upload npm cache artifact for trusted publisher
+        if: ${{ (steps.save.outputs.is_fork == 'true' || steps.save.outputs.read_only == 'true') && success() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-npm-${{ needs.hash_pr.outputs.files_hash }}-v1
+          path: .cache/npm
+          if-no-files-found: error
+          retention-days: 1
 
   restore-cache:
     if: ${{ inputs.restore-cache }}
