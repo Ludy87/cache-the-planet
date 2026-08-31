@@ -5,8 +5,12 @@ const c = require('./common');
   try {
     const repository = c.input('repository');
     const key = c.scopedKey(c.input('key'));
-    const isPullRequest = process.env.GITHUB_REF?.includes('/pull/');
+    const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input('scope', 'auto').trim().toLowerCase();
+    if (c.isForkPullRequest()) {
+      c.log('fork pull request: save skipped because write-capable secrets are unavailable');
+      return;
+    }
     if (isPullRequest && String(c.input('allow-pr-cache')).toLowerCase() !== 'true') {
       c.log('untrusted pull request: save skipped');
       return;
