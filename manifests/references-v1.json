@@ -126,10 +126,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 249
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-24/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v1": {
+      "object": "sha256:a06aba3acfc23af4bd17c6869bc5787ef7dc24fac81a83ab4852b65ff32be97b",
+      "updated_at": "2026-08-31T08:52:30.378Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 16484013
     }
   },
   "monitoring": {
     "window_started_at": "2026-08-31T08:40:40.269Z",
-    "writes": 12
+    "writes": 13
   }
 }
