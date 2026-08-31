@@ -98,55 +98,6 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 4033935
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/npm/linux-x64/a5c449def6e52ab2f87bb3f569202599094927cb45ea0b4c8fd8038271d77cfe/v1": {
-      "object": "sha256:100e87973e26f11599024f4d136e4f555d5eef660d8b92033459e7982bf358b3",
-      "updated_at": "2026-08-31T08:50:49.043Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 7002314
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/uv/linux-x64/d081317c6c74a900349b2970baed05346fb09f99c77c6641e439677124a982e0/v2": {
-      "object": "sha256:1e0b7888763c89f34f00766551e90ee0e38fe2731b3b59ad4db5b7ee51d0383e",
-      "updated_at": "2026-08-31T08:51:12.603Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 1262726
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/uv-python-3-13/linux-x64/d081317c6c74a900349b2970baed05346fb09f99c77c6641e439677124a982e0/v4": {
-      "object": "sha256:389f91414e174542da0e293ccf1474232d8170a34162bc480ba7a83d0b9b130c",
-      "updated_at": "2026-08-31T08:51:40.228Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 36252066
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/task/linux-x64/5fbdf10f0e27f361ec495008517476d1a80b08f27e611b750f85fdfa1dff1ed7/v1": {
-      "object": "sha256:136c47545049a6775f69796bf73947f6418307e7f971423b8f33ebd64669b596",
-      "updated_at": "2026-08-31T08:52:03.183Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 249
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v1": {
-      "object": "sha256:a06aba3acfc23af4bd17c6869bc5787ef7dc24fac81a83ab4852b65ff32be97b",
-      "updated_at": "2026-08-31T08:52:30.378Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 16484013
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/gradle-java17/linux-x64/ddfcbf966264893c5721851c7fe2b2a0221f38f0fc5e75e17745b2c632766c4e/v1": {
-      "object": "sha256:1cba3633fd6a97d48a0845e349befaacb75976ccb72260d2930a0ecba189a239",
-      "updated_at": "2026-08-31T08:53:11.960Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 1790099
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-24/docker/linux-x64/271ddca8fdd4e4167da82bd3866d728c6f508bc582ca613e2ed7170f0297c3fe/v2": {
-      "object": "sha256:64cf496c00e79535039d9f95571ccff0610b35e79ee067eb7c1b3341e1b87b18",
-      "updated_at": "2026-08-31T08:53:37.519Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 4033935
     }
   },
   "monitoring": {
