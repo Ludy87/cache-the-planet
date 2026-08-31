@@ -134,6 +134,7 @@ try {
     },
   }));
   if (!isForkPullRequest()) throw new Error('fork pull request was not detected');
+  const forkOutput = path.join(root, 'fork-save-output.txt');
   const forkSave = cp.spawnSync(process.execPath, [path.join(process.cwd(), 'src', 'save.js')], {
     encoding: 'utf8',
     env: {
@@ -144,11 +145,15 @@ try {
       INPUT_SCOPE: 'auto',
       INPUT_ALLOW_PR_CACHE: 'true',
       GITHUB_TOKEN: '',
-      GITHUB_OUTPUT: '',
+      GITHUB_OUTPUT: forkOutput,
     },
   });
   if (forkSave.status !== 0 || !`${forkSave.stdout}\n${forkSave.stderr}`.includes('save skipped')) {
     throw new Error('fork save was not skipped before API access');
+  }
+  const forkOutputs = fs.readFileSync(forkOutput, 'utf8');
+  if (!forkOutputs.includes('is_fork=true\n') || !forkOutputs.includes('read_only=true\n')) {
+    throw new Error('fork save outputs were not generated correctly');
   }
   process.env.GITHUB_EVENT_NAME = 'push';
   delete process.env.GITHUB_REF;
