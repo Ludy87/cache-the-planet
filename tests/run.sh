@@ -15,7 +15,7 @@ const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 const { securityScan: sourceSecurityScan } = require('./src/common');
-const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest } = require('./src/common');
+const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest } = require('./src/common');
 const { inspectTar } = require('./src/common');
 const { securityScan: distSecurityScan } = require('./dist/common');
 const { encryptFile, decryptFile } = require('./src/common');
@@ -194,6 +194,9 @@ try {
   }
   if (pullRequestCacheCombination(prCacheKey) !== 'untrusted/example/project/pr-7/npm/linux-x64/v1') {
     throw new Error('PR cache combination does not include the expected dimensions');
+  }
+  if (sharedEquivalentKey(prCacheKey) !== 'shared/example/project/npm/linux-x64/hash-a/v1') {
+    throw new Error('shared equivalent key was not generated correctly');
   }
   if (pullRequestCacheCombination('trusted/example/project/main/npm/linux-x64/hash-a/v1') !== null) {
     throw new Error('trusted cache was incorrectly treated as a PR cache');
