@@ -412,6 +412,13 @@ function pullRequestCacheCombination(key) {
   return `${parts.slice(0, 6).join("/")}/${parts[parts.length - 1]}`;
 }
 
+function sharedEquivalentKey(key) {
+  if (!key.startsWith("untrusted/")) return null;
+  const parts = key.split("/");
+  if (parts.length < 8 || !/^pr-[1-9]\d*$/.test(parts[3])) return null;
+  return `shared/${parts[1]}/${parts[2]}/${parts.slice(4).join("/")}`;
+}
+
 function expiredUntrustedReferences(
   references,
   now = Date.now(),
@@ -1334,6 +1341,7 @@ module.exports = {
   scopedKey,
   scopeCounterpartKey,
   pullRequestCacheCombination,
+  sharedEquivalentKey,
   expiredUntrustedReferences,
   scopedRestorePrefix,
   sharedRestorePrefix,
