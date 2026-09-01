@@ -49,6 +49,11 @@ function setOutput(name, value) {
     if (!found) {
       setOutput('cache-hit', 'false');
       setOutput('matched-key', '');
+      c.summary('Cache Restore', {
+        Status: 'MISS',
+        'Requested key': key,
+        'Matched key': '—',
+      });
       console.log(`Cache miss: no cache found for key: ${key}`);
       return;
     }
@@ -57,6 +62,12 @@ function setOutput(name, value) {
     if (!asset) {
       setOutput('cache-hit', 'false');
       setOutput('matched-key', '');
+      c.summary('Cache Restore', {
+        Status: 'MISS',
+        'Requested key': key,
+        'Matched key': found[0],
+        Asset: 'missing',
+      });
       console.log(`Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`);
       return;
     }
@@ -80,6 +91,13 @@ function setOutput(name, value) {
     setOutput('content-hash', found[1].object);
     setOutput('asset-name', asset.name);
     setOutput('cache-size', fs.statSync(archive).size);
+    c.summary('Cache Restore', {
+      Status: cacheHit ? 'HIT' : 'FALLBACK',
+      'Requested key': key,
+      'Matched key': found[0],
+      Asset: asset.name,
+      'Content hash': found[1].object,
+    });
     console.log(`Cache found:`);
     console.log(`requested-key=${key};`);
     console.log(`matched-key=${found[0]};`);
