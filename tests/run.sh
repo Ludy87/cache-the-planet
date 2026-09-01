@@ -15,7 +15,7 @@ const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 const { securityScan: sourceSecurityScan } = require('./src/common');
-const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest } = require('./src/common');
+const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest, summary } = require('./src/common');
 const { inspectTar } = require('./src/common');
 const { securityScan: distSecurityScan } = require('./dist/common');
 const { encryptFile, decryptFile } = require('./src/common');
@@ -93,6 +93,13 @@ try {
     throw new Error('encrypted cache round-trip failed');
   }
   console.log('encryption test passed');
+  const summaryFile = path.join(root, 'step-summary.md');
+  process.env.GITHUB_STEP_SUMMARY = summaryFile;
+  summary('Cache Restore', { Status: 'HIT', 'Matched key': 'shared/example/project/npm/v1' });
+  if (!fs.readFileSync(summaryFile, 'utf8').includes('| Status | HIT |')) {
+    throw new Error('cache step summary was not generated correctly');
+  }
+  delete process.env.GITHUB_STEP_SUMMARY;
   fs.mkdirSync(path.join(root, '.ssh'));
   fs.writeFileSync(path.join(root, '.ssh', 'config'), 'Host example\n');
   rejected = false;

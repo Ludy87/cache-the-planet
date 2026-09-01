@@ -16,6 +16,11 @@ const c = require('./common');
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input('scope', 'auto').trim().toLowerCase();
     if (isFork) {
+      c.summary('Cache Save', {
+        Status: 'SKIPPED',
+        Reason: 'Fork pull request is read-only',
+        'Is fork': 'true',
+      });
       c.log('fork pull request: save skipped because write-capable secrets are unavailable');
       return;
     }
