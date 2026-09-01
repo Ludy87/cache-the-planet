@@ -58,6 +58,20 @@ const c = require('./common');
     const sharedCounterpart = requestedScope === 'auto' && trustedKey
       ? c.scopeCounterpartKey(key)
       : null;
+    const sharedEquivalent = c.sharedEquivalentKey(key);
+    if (sharedEquivalent && current.json.references[sharedEquivalent]?.object) {
+      const sharedAsset = await c.object(repository, current.json.references[sharedEquivalent].object);
+      if (sharedAsset) {
+        c.log(`shared cache already exists; isolated PR cache publish skipped: key=${sharedEquivalent}`);
+        if (process.env.GITHUB_OUTPUT) {
+          fs.appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            `content-hash=${current.json.references[sharedEquivalent].object}\nasset-name=${sharedAsset.name}\n`,
+          );
+        }
+        return;
+      }
+    }
     if (existingReference?.object) {
       const existingAsset = await c.object(repository, existingReference.object);
       if (!existingAsset) {
