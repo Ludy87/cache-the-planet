@@ -547,7 +547,10 @@ function log(message) {
 
 function summary(title, fields) {
   if (!process.env.GITHUB_STEP_SUMMARY) return;
-  const escape = (value) => String(value ?? '—').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+  const escape = (value) => String(value ?? '—')
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\r?\n/g, ' ');
   const rows = Object.entries(fields)
     .map(([name, value]) => `| ${escape(name)} | ${escape(value)} |`)
     .join('\n');
