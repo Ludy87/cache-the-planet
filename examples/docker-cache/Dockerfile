@@ -1,4 +1,4 @@
-FROM docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest as builder
+FROM docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest AS builder
 
 RUN test -f /scripts/init.sh
 RUN java -version
