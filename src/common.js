@@ -541,7 +541,11 @@ function assertTrustedRestoreAllowed(keys) {
   }
 }
 
+const loggedMessages = new Set();
+
 function log(message) {
+  if (loggedMessages.has(message)) return;
+  loggedMessages.add(message);
   console.log(`::notice::${message}`);
 }
 
