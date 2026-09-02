@@ -20,11 +20,14 @@ const c = require('./common');
       },
     );
     const live = new Set(Object.values(updatedManifest.references).map((reference) => reference.object));
+    const assetPrefix = prefix.replace(/[^A-Za-z0-9._-]+/g, '-');
     const assets = (await c.assets(repository)).assets;
     for (const asset of assets.filter((item) => item.name.endsWith('.tar.zst'))) {
       const hash = c.hashFromAssetName(asset.name);
       if (!hash) continue;
-      if (!live.has(hash) && removed.some(([, reference]) => reference.object === hash)) {
+      const belongsToClosedPr = asset.name.startsWith(assetPrefix);
+      if (!live.has(hash) && (removed.some(([, reference]) => reference.object === hash)
+        || belongsToClosedPr)) {
         await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, { method: 'DELETE' });
         console.log(`deleted PR cache asset ${asset.name}`);
       }
