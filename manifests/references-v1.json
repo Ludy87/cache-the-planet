@@ -29,13 +29,6 @@
       "created_by": "Ludy87",
       "size": 36240352
     },
-    "untrusted/Ludy87/cache-the-planet/pr-22/docker/linux-x64/271ddca8fdd4e4167da82bd3866d728c6f508bc582ca613e2ed7170f0297c3fe/v2": {
-      "object": "sha256:c312449feca8e91b89914691d633848843dd3d216de8d9f266d7ffa9ceea91b5",
-      "updated_at": "2026-08-30T23:25:52.226Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 4033500
-    },
     "untrusted/Ludy87/cache-the-planet/pr-22/gradle-java17/linux-x64/ddfcbf966264893c5721851c7fe2b2a0221f38f0fc5e75e17745b2c632766c4e/v1": {
       "object": "sha256:8fb3def13525add97bc4374dfa49552ddcc8a4e26e01774ae5b8694343a9201e",
       "updated_at": "2026-08-30T23:25:55.157Z",
@@ -49,10 +42,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 16486317
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-22/docker/linux-x64/d8625ec0aded7687dfdee402d0988854c5a33794c71b1da2e9ea0674606a39c1/v2": {
+      "object": "sha256:4640aea63a2952ca78f97a6ad3b197049862eab0142acafcf2e054c4b6b03f74",
+      "updated_at": "2026-09-02T05:45:55.109Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 4033494
     }
   },
   "monitoring": {
-    "window_started_at": "2026-08-30T23:21:48.760Z",
-    "writes": 7
+    "window_started_at": "2026-09-02T05:45:55.105Z",
+    "writes": 1
   }
 }

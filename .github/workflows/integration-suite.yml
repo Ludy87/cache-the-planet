@@ -3,6 +3,10 @@ name: Cache integration suite
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/README.md'
+      - '**/docs/**'
+      - 'manifests/**'
   pull_request:
     branches: [main]
   workflow_dispatch:
