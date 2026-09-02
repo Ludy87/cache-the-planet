@@ -44,7 +44,8 @@ for (const entry of artifacts) {
   if (!cacheName) throw new Error(`unknown PR cache artifact: ${entry.name}`);
   const rest = suffix.slice(cacheName.length + 1);
   const keyMatch = rest.match(/^([0-9a-f]+)-v(\d+)$/);
-  if (!keyMatch) throw new Error(`invalid PR cache artifact name: ${entry.name}`);
+  if (!keyMatch)
+    throw new Error(`invalid PR cache artifact name: ${entry.name}`);
   const env = {
     ...process.env,
     GITHUB_EVENT_NAME: "pull_request",
