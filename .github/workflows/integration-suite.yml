@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - '**/README.md'
-      - '**/docs/**'
-      - 'manifests/**'
+      - "**/README.md"
+      - "**/docs/**"
+      - "manifests/**"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -45,12 +45,14 @@ jobs:
               - 'save/action.yml'
               - 'package.json'
               - 'package-lock.json'
+              - '.github/workflows/build-dist.yml'
+              - '.github/workflows/integration-suite.yml'
             dist_changes:
               - 'dist/**'
 
   distribution-changes:
     name: Distribution changes detected
-    if: ${{ needs.detect-changes.outputs.dist_changes == 'true' && github.event_name == 'pull_request' }}
+    if: ${{ !cancelled() && needs.detect-changes.outputs.dist_changes == 'true' && github.event_name == 'pull_request' }}
     needs: detect-changes
     runs-on: ubuntu-latest
     steps:
@@ -61,7 +63,7 @@ jobs:
 
   build-dist:
     needs: [detect-changes, distribution-changes]
-    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')  ||  needs.detect-changes.outputs.build_dist == 'true' }}
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')  || ( needs.detect-changes.outputs.build_dist == 'true' && (needs.distribution-changes.result == 'success' || needs.distribution-changes.result == 'skipped')) }}
     uses: ./.github/workflows/build-dist.yml
     with:
       dry-run: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
@@ -225,7 +227,7 @@ jobs:
   all-checks-passed:
     name: All checks passed
     if: ${{ !cancelled() }}
-    needs: 
+    needs:
       - build-dist
       - node-save-cache
       - node-restore-cache
