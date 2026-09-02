@@ -47,7 +47,9 @@ for (const entry of artifacts) {
     INPUT_KEY: keyMatch[1],
     INPUT_VERSION: String(version),
     INPUT_PATH: path.join(root, entry.name),
-    INPUT_STRICT: 'true',
+    // The trusted publisher replaces the previous cache for this PR
+    // combination when the dependency hash changed.
+    INPUT_STRICT: 'false',
   };
   cp.execFileSync(process.execPath, [path.join(process.cwd(), 'dist', 'save.js')], {
     cwd: process.cwd(),
