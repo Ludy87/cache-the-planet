@@ -26,6 +26,7 @@ jobs:
       contents: read
     outputs:
       build_dist: ${{ steps.filter.outputs.build_dist || 'false' }}
+      dist_changes: ${{ steps.filter.outputs.dist_changes || 'false' }}
     steps:
       - name: Checkout
         if: ${{ github.event_name != 'workflow_dispatch' }}
@@ -44,9 +45,22 @@ jobs:
               - 'save/action.yml'
               - 'package.json'
               - 'package-lock.json'
+            dist_changes:
+              - 'dist/**'
+
+  distribution-changes:
+    name: Distribution changes detected
+    if: ${{ needs.detect-changes.outputs.dist_changes == 'true' && github.event_name == 'pull_request' }}
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Distribution changes detected
+        run: echo "Distribution changes detected"
+      - name: Exit with code 0
+        run: exit 0
 
   build-dist:
-    needs: detect-changes
+    needs: [detect-changes, distribution-changes]
     if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')  ||  needs.detect-changes.outputs.build_dist == 'true' }}
     uses: ./.github/workflows/build-dist.yml
     with:
