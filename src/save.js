@@ -209,6 +209,16 @@ const c = require('./common');
     }
     console.log(`Cache saved: key=${key}; asset=${existing?.name || name}; content-hash=${hash}`);
   } catch (error) {
+    // Pull-request jobs may receive a valid token without write access to the
+    // central cache repository. Saving is optional there, including for
+    // scope=shared (which is isolated to the PR namespace).
+    if (c.isPullRequestEvent() && (error.status === 401 || error.status === 403)) {
+      if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, 'read_only=true\n');
+      }
+      c.log(`pull request cache save skipped: repository access denied (${error.status})`);
+      return;
+    }
     c.fail(error);
   }
 })();

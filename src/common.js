@@ -1154,7 +1154,12 @@ async function updateManifest(repository, message, update) {
       });
       return current.json;
     } catch (error) {
-      if (error.status !== 409 || attempt === maxAttempts - 1) throw error;
+      // GitHub also uses 409 for protected-branch/ruleset violations. Those
+      // requests cannot succeed by retrying; only a real optimistic-lock
+      // conflict should enter the retry loop.
+      const isManifestConflict =
+        error.status === 409 && /\bconflict\b/i.test(error.message || "");
+      if (!isManifestConflict || attempt === maxAttempts - 1) throw error;
       const delay =
         Math.min(1000 * 2 ** attempt, 10000) + Math.floor(Math.random() * 250);
       log(
