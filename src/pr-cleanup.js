@@ -1,37 +1,73 @@
-const c = require('./common');
+const fs = require("fs");
+const path = require("path");
+const cp = require("child_process");
 
-(async () => {
-  try {
-    const repository = process.env.CACHE_REPOSITORY || c.input('repository');
-    const sourceRepository = process.env.PR_REPOSITORY;
-    const number = process.env.PR_NUMBER;
-    if (!repository || !sourceRepository || !number) {
-      throw new Error('CACHE_REPOSITORY, PR_REPOSITORY and PR_NUMBER are required');
-    }
-    const prefix = `untrusted/${sourceRepository}/pr-${number}/`;
-    let removed = [];
-    const updatedManifest = await c.updateManifest(
-      repository,
-      `cache: remove closed PR ${sourceRepository}#${number}`,
-      (manifest) => {
-        removed = Object.entries(manifest.references).filter(([key]) => key.startsWith(prefix));
-        for (const [key] of removed) delete manifest.references[key];
-        return removed.length > 0;
-      },
-    );
-    const live = new Set(Object.values(updatedManifest.references).map((reference) => reference.object));
-    const assetPrefix = prefix.replace(/[^A-Za-z0-9._-]+/g, '-');
-    const assets = (await c.assets(repository)).assets;
-    for (const asset of assets.filter((item) => item.name.endsWith('.tar.zst'))) {
-      const hash = c.hashFromAssetName(asset.name);
-      if (!hash) continue;
-      const belongsToClosedPr = asset.name.startsWith(assetPrefix);
-      if (!live.has(hash) && (removed.some(([, reference]) => reference.object === hash)
-        || belongsToClosedPr)) {
-        await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, { method: 'DELETE' });
-        console.log(`deleted PR cache asset ${asset.name}`);
-      }
-    }
-    console.log(`removed ${removed.length} references for ${sourceRepository}#${number}`);
-  } catch (error) { c.fail(error); }
-})();
+const root =
+  process.env.PR_CACHE_ARTIFACTS_DIR ||
+  path.join(process.cwd(), "pr-cache-artifacts");
+const eventFile = path.join(
+  process.env.RUNNER_TEMP || root,
+  "cache-the-planet-pr-event.json",
+);
+const number = String(process.env.PR_NUMBER || "");
+const repository =
+  process.env.CACHE_REPOSITORY || process.env.GITHUB_REPOSITORY;
+
+if (!/^\d+$/.test(number) || !repository)
+  throw new Error("PR_NUMBER and CACHE_REPOSITORY are required");
+fs.writeFileSync(
+  eventFile,
+  JSON.stringify({
+    repository: { default_branch: "main" },
+    pull_request: { number: Number(number) },
+  }),
+);
+
+const patterns = [
+  "uv-python-3-13",
+  "gradle-java17",
+  "maven-java17",
+  "docker",
+  "npm",
+  "task",
+  "uv",
+];
+const artifacts = fs
+  .readdirSync(root, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory());
+const prefix = `cache-the-planet-pr-${number}-`;
+
+for (const entry of artifacts) {
+  if (!entry.name.startsWith(prefix)) continue;
+  const suffix = entry.name.slice(prefix.length);
+  const cacheName = patterns.find((name) => suffix.startsWith(`${name}-`));
+  if (!cacheName) throw new Error(`unknown PR cache artifact: ${entry.name}`);
+  const rest = suffix.slice(cacheName.length + 1);
+  const keyMatch = rest.match(/^([0-9a-f]+)-v(\d+)$/);
+  if (!keyMatch)
+    throw new Error(`invalid PR cache artifact name: ${entry.name}`);
+  const env = {
+    ...process.env,
+    GITHUB_EVENT_NAME: "pull_request",
+    GITHUB_EVENT_PATH: eventFile,
+    GITHUB_REF: `refs/pull/${number}/merge`,
+    GITHUB_REPOSITORY: repository,
+    INPUT_REPOSITORY: repository,
+    "INPUT_CACHE-NAME": cacheName,
+    INPUT_SCOPE: "untrusted",
+    "INPUT_ALLOW-PR-CACHE": "true",
+    INPUT_KEY: keyMatch[1],
+    INPUT_VERSION: keyMatch[2],
+    INPUT_PATH: path.join(root, entry.name),
+    INPUT_STRICT: "false",
+  };
+  cp.execFileSync(
+    process.execPath,
+    [path.join(process.cwd(), "dist", "save.js")],
+    {
+      cwd: process.cwd(),
+      env,
+      stdio: "inherit",
+    },
+  );
+}
