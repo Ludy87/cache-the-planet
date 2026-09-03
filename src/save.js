@@ -8,10 +8,9 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
       .map((reference) => reference?.object)
       .filter(Boolean),
   );
-  const prefix = c.assetNamePrefix(key);
   const { assets } = await c.assets(repository);
   for (const asset of assets) {
-    if (!asset.name.startsWith(prefix) || !asset.name.endsWith(".tar.zst")) continue;
+    if (!c.assetMatchesKeyCombination(asset.name, key)) continue;
     const hash = c.hashFromAssetName(asset.name);
     if (!hash || hash === keepHash || liveHashes.has(hash)) continue;
     try {
@@ -19,6 +18,43 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
       c.log(`removed duplicate cache asset: key=${key}; content-hash=${hash}`);
     } catch (error) {
       c.log(`duplicate cache asset could not be deleted: ${error.message}`);
+    }
+  }
+}
+
+async function replaceOlderSharedReferences(repository, key) {
+  if (!key.startsWith("shared/")) return { manifest: null, hashes: [] };
+  const parts = key.split("/");
+  const combination = parts.slice(0, 5).join("/");
+  const removedHashes = new Set();
+  const manifest = await c.updateManifest(repository, `cache: replace shared references for ${combination}`, (next) => {
+    removedHashes.clear();
+    let changed = false;
+    for (const referenceKey of Object.keys(next.references || {})) {
+      if (referenceKey === key || !referenceKey.startsWith(`${combination}/`)) continue;
+      const hash = next.references[referenceKey]?.object;
+      if (hash) removedHashes.add(hash);
+      delete next.references[referenceKey];
+      changed = true;
+    }
+    return changed;
+  });
+  return { manifest, hashes: [...removedHashes] };
+}
+
+async function deleteUnreferencedObjects(repository, hashes, manifest) {
+  const liveHashes = new Set(
+    Object.values(manifest.references || {})
+      .map((reference) => reference?.object)
+      .filter(Boolean),
+  );
+  for (const hash of hashes) {
+    if (liveHashes.has(hash)) continue;
+    try {
+      await c.deleteObject(repository, hash);
+      c.log(`removed replaced cache asset: content-hash=${hash}`);
+    } catch (error) {
+      c.log(`replaced cache asset could not be deleted: ${error.message}`);
     }
   }
 }
@@ -161,7 +197,13 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
             `content-hash=${existingReference.object}\nasset-name=${existingAssetName}\n`,
           );
         }
-        await cleanupDuplicateAssets(repository, key, existingReference.object, current.json);
+        let updated = current.json;
+        if (sharedKey) {
+          const replacement = await replaceOlderSharedReferences(repository, key);
+          updated = replacement.manifest;
+          await deleteUnreferencedObjects(repository, replacement.hashes, updated);
+        }
+        await cleanupDuplicateAssets(repository, key, existingReference.object, updated);
         return;
       }
     }
@@ -237,10 +279,15 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
     if (relatedReference?.object) {
       const relatedAsset = await c.object(repository, relatedReference.object);
       if (relatedAsset) {
-        const updated = await c.setRef(repository, key, relatedReference.object, {
+        let updated = await c.setRef(repository, key, relatedReference.object, {
           size: relatedReference.size,
           source: `linked-from:${relatedKey}`,
         });
+        if (sharedKey) {
+          const replacement = await replaceOlderSharedReferences(repository, key);
+          updated = replacement.manifest;
+          await deleteUnreferencedObjects(repository, replacement.hashes, updated);
+        }
         await cleanupDuplicateAssets(repository, key, relatedReference.object, updated);
         c.log(
           `linked existing cache reference: key=${key}; source=${relatedKey}`,
@@ -283,11 +330,19 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
     });
+    if (sharedKey) {
+      const replacement = await replaceOlderSharedReferences(repository, key);
+      updated = replacement.manifest;
+      await deleteUnreferencedObjects(repository, replacement.hashes, updated);
+    }
     if (sharedCounterpart) {
       updated = await c.setRef(repository, sharedCounterpart, hash, {
         size: fs.statSync(archive.file).size,
         source: `linked-from:${key}`,
       });
+      const replacement = await replaceOlderSharedReferences(repository, sharedCounterpart);
+      updated = replacement.manifest;
+      await deleteUnreferencedObjects(repository, replacement.hashes, updated);
       await cleanupDuplicateAssets(repository, sharedCounterpart, hash, updated);
       c.log(
         `linked shared cache reference: key=${sharedCounterpart}; source=${key}`,
