@@ -75,3 +75,41 @@ jobs:
       restore-cache: true
     permissions:
       contents: read
+
+  all-restore-checks-passed:
+    name: All restore checks passed
+    if: ${{ !cancelled() }}
+    needs:
+      - node-restore-cache
+      - uv-restore-cache
+      - uv-python-restore-cache
+      - task-restore-cache
+      - java-restore-cache
+      - gradle-restore-cache
+      - docker-restore-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Check all restore checks passed
+        run: echo "All restore checks passed"
+
+      - name: Verify every required job passed (or was legitimately skipped)
+        env:
+          JOB_RESULTS: >-
+            node-restore-cache=${{ needs.node-restore-cache.result }}
+            uv-restore-cache=${{ needs.uv-restore-cache.result }}
+            uv-python-restore-cache=${{ needs.uv-python-restore-cache.result }}
+            task-restore-cache=${{ needs.task-restore-cache.result }}
+            java-restore-cache=${{ needs.java-restore-cache.result }}
+            gradle-restore-cache=${{ needs.gradle-restore-cache.result }}
+            docker-restore-cache=${{ needs.docker-restore-cache.result }}
+        shell: bash
+        run: |
+          while IFS='=' read -r job result; do
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              echo "Job $job did not pass (result: $result)"
+              exit 1
+            fi
+          done <<< "$JOB_RESULTS"
