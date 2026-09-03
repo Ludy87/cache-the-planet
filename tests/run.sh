@@ -15,7 +15,7 @@ const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 const { securityScan: sourceSecurityScan } = require('./src/common');
-const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, assetNamePrefix, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest, summary } = require('./src/common');
+const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, assetNamePrefix, assetMatchesKeyCombination, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest, summary } = require('./src/common');
 const { inspectTar } = require('./src/common');
 const { securityScan: distSecurityScan } = require('./dist/common');
 const { encryptFile, decryptFile } = require('./src/common');
@@ -417,6 +417,21 @@ try {
   if (assetNamePrefix('trusted/Ludy87/cache-the-planet/main/npm/linux-x64/key/v1')
     !== 'trusted-Ludy87-cache-the-planet-main-npm-linux-x64-key-v1--') {
     throw new Error('trusted asset name prefix was not generated correctly');
+  }
+  if (!assetMatchesKeyCombination(
+    assetName('shared/Ludy87/cache-the-planet/uv/linux-x64/old-key/v2', `sha256:${'b'.repeat(64)}`),
+    'shared/Ludy87/cache-the-planet/uv/linux-x64/new-key/v2',
+  ) || !assetMatchesKeyCombination(
+    assetName('trusted/Ludy87/cache-the-planet/main/npm/linux-x64/old-key/v1', `sha256:${'c'.repeat(64)}`),
+    'trusted/Ludy87/cache-the-planet/main/npm/linux-x64/new-key/v1',
+  )) {
+    throw new Error('cache combination matching was not generated correctly');
+  }
+  if (!assetMatchesKeyCombination(
+    'shared-Ludy87-cache-the-planet-uv-python-3-13-linux-x64-d081317c6c74a900349b2970baed05346fb09f99c77c6641e439677124a982e0--' + 'd'.repeat(64) + '.tar.zst',
+    'shared/Ludy87/cache-the-planet/uv-python-3-13/linux-x64/new-key/v2',
+  )) {
+    throw new Error('legacy shared asset was not matched for cleanup');
   }
   console.log('security scan test passed');
 } finally {
