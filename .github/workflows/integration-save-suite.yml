@@ -97,3 +97,44 @@ jobs:
     permissions:
       contents: write
     secrets: inherit
+
+  all-save-checks-passed:
+    name: All save checks passed
+    if: ${{ !cancelled() }}
+    needs:
+      - build-dist
+      - node-save-cache
+      - uv-save-cache
+      - uv-python-save-cache
+      - task-save-cache
+      - java-save-cache
+      - gradle-save-cache
+      - docker-save-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Check all save checks passed
+        run: echo "All save checks passed"
+
+      - name: Verify every required job passed (or was legitimately skipped)
+        env:
+          JOB_RESULTS: >-
+            build-dist=${{ needs.build-dist.result }}
+            node-save-cache=${{ needs.node-save-cache.result }}
+            uv-save-cache=${{ needs.uv-save-cache.result }}
+            uv-python-save-cache=${{ needs.uv-python-save-cache.result }}
+            task-save-cache=${{ needs.task-save-cache.result }}
+            java-save-cache=${{ needs.java-save-cache.result }}
+            gradle-save-cache=${{ needs.gradle-save-cache.result }}
+            docker-save-cache=${{ needs.docker-save-cache.result }}
+        run: |
+          for job in $JOB_RESULTS; do
+            job_name=$(echo $job | cut -d '=' -f 1)
+            job_result=$(echo $job | cut -d '=' -f 2)
+            if [[ "$job_result" != "success" && "$job_result" != "skipped" ]]; then
+              echo "Job $job_name did not pass (result: $job_result)"
+              exit 1
+            fi
+          done
