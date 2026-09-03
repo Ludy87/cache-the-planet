@@ -2,7 +2,7 @@ name: Publish PR cache artifacts
 
 on:
   workflow_run:
-    workflows: [Cache integration suite]
+    workflows: [Cache integration save suite]
     types: [completed]
     # branches: [main]
 
