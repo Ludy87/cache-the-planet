@@ -30,7 +30,8 @@
     "test": "node --check src/common.js && node --check src/restore.js && node --check src/save.js && node --check src/gc.js && node --check src/pr-cleanup.js"
   },
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "license-checker": "^25.0.1"
   },
   "dependencies": {
     "@actions/github": "^9.1.1"
