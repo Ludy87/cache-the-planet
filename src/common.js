@@ -1093,6 +1093,22 @@ function assetName(key, hash) {
   return `${assetNamePrefix(key)}${hash.slice(7)}.tar.zst`;
 }
 
+function assetMatchesKeyCombination(name, key) {
+  const parts = key.split("/");
+  const isShared = key.startsWith("shared/");
+  const baseLength = isShared ? 5 : 6;
+  const version = parts.at(-1);
+  if (!version || (!isShared && !key.startsWith("trusted/"))) return false;
+  const prefix = parts
+    .slice(0, baseLength)
+    .join("/")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120);
+  if (!name.startsWith(`${prefix}-`) || !hashFromAssetName(name)) return false;
+  return isShared || name.includes(`-${version}--`);
+}
+
 function hashFromAssetName(name) {
   const match = name.match(/(?:^|--)([a-f0-9]{64})\.tar\.zst$/i);
   return match ? `sha256:${match[1]}` : null;
@@ -1389,6 +1405,7 @@ module.exports = {
   digest,
   assetNamePrefix,
   assetName,
+  assetMatchesKeyCombination,
   hashFromAssetName,
   encryptFile,
   decryptFile,
