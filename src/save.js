@@ -1,6 +1,28 @@
 const fs = require('fs');
 const c = require('./common');
 
+async function cleanupSharedDuplicates(repository, key, keepHash, manifest) {
+  if (!key.startsWith('shared/')) return;
+  const liveHashes = new Set(
+    Object.values(manifest.references || {})
+      .map((reference) => reference?.object)
+      .filter(Boolean),
+  );
+  const prefix = c.assetNamePrefix(key);
+  const { assets } = await c.assets(repository);
+  for (const asset of assets) {
+    if (!asset.name.startsWith(prefix) || !asset.name.endsWith('.tar.zst')) continue;
+    const hash = c.hashFromAssetName(asset.name);
+    if (!hash || hash === keepHash || liveHashes.has(hash)) continue;
+    try {
+      await c.deleteObject(repository, hash);
+      c.log(`removed duplicate shared cache asset: key=${key}; content-hash=${hash}`);
+    } catch (error) {
+      c.log(`duplicate shared cache asset could not be deleted: ${error.message}`);
+    }
+  }
+}
+
 (async () => {
   try {
     const repository = c.input('repository');
@@ -83,10 +105,16 @@ const c = require('./common');
         c.log(`orphaned cache reference detected for key=${key}; recreating asset`);
       } else {
         if (sharedCounterpart && !current.json.references[sharedCounterpart]) {
-          await c.setRef(repository, sharedCounterpart, existingReference.object, {
+          const updated = await c.setRef(repository, sharedCounterpart, existingReference.object, {
             size: existingReference.size,
             source: `linked-from:${key}`,
           });
+          await cleanupSharedDuplicates(
+            repository,
+            sharedCounterpart,
+            existingReference.object,
+            updated,
+          );
           c.log(`linked shared cache reference: key=${sharedCounterpart}; source=${key}`);
         }
         const existingAssetName = existingAsset.name;
@@ -97,6 +125,7 @@ const c = require('./common');
             `content-hash=${existingReference.object}\nasset-name=${existingAssetName}\n`,
           );
         }
+        await cleanupSharedDuplicates(repository, key, existingReference.object, current.json);
         return;
       }
     }
@@ -153,10 +182,11 @@ const c = require('./common');
     if (relatedReference?.object) {
       const relatedAsset = await c.object(repository, relatedReference.object);
       if (relatedAsset) {
-        await c.setRef(repository, key, relatedReference.object, {
+        const updated = await c.setRef(repository, key, relatedReference.object, {
           size: relatedReference.size,
           source: `linked-from:${relatedKey}`,
         });
+        await cleanupSharedDuplicates(repository, key, relatedReference.object, updated);
         c.log(`linked existing cache reference: key=${key}; source=${relatedKey}`);
         if (process.env.GITHUB_OUTPUT) {
           fs.appendFileSync(
@@ -191,16 +221,18 @@ const c = require('./common');
       c.log(`object already exists: ${hash}`);
     }
 
-    await c.setRef(repository, key, hash, {
+    let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
     });
     if (sharedCounterpart) {
-      await c.setRef(repository, sharedCounterpart, hash, {
+      updated = await c.setRef(repository, sharedCounterpart, hash, {
         size: fs.statSync(archive.file).size,
         source: `linked-from:${key}`,
       });
+      await cleanupSharedDuplicates(repository, sharedCounterpart, hash, updated);
       c.log(`linked shared cache reference: key=${sharedCounterpart}; source=${key}`);
     }
+    await cleanupSharedDuplicates(repository, key, hash, updated);
     if (process.env.GITHUB_OUTPUT) {
       fs.appendFileSync(
         process.env.GITHUB_OUTPUT,
@@ -209,16 +241,6 @@ const c = require('./common');
     }
     console.log(`Cache saved: key=${key}; asset=${existing?.name || name}; content-hash=${hash}`);
   } catch (error) {
-    // Pull-request jobs may receive a valid token without write access to the
-    // central cache repository. Saving is optional there, including for
-    // scope=shared (which is isolated to the PR namespace).
-    if (c.isPullRequestEvent() && (error.status === 401 || error.status === 403)) {
-      if (process.env.GITHUB_OUTPUT) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT, 'read_only=true\n');
-      }
-      c.log(`pull request cache save skipped: repository access denied (${error.status})`);
-      return;
-    }
     c.fail(error);
   }
 })();
