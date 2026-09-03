@@ -1,0 +1,99 @@
+name: Cache integration save suite
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/README.md'
+      - '**/docs/**'
+      - 'manifests/**'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref_name || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-dist:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.event_name != 'workflow_dispatch' }}
+    uses: ./.github/workflows/build-dist.yml
+    with:
+      dry-run: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+    permissions:
+      contents: write
+    secrets: inherit
+
+  node-save-cache:
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    uses: ./.github/workflows/npm-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
+
+  uv-save-cache:
+    needs: [node-save-cache]
+    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
+    uses: ./.github/workflows/uv-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
+
+  uv-python-save-cache:
+    needs: [uv-save-cache]
+    if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
+    uses: ./.github/workflows/uv-python-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
+
+  task-save-cache:
+    needs: [uv-python-save-cache]
+    if: ${{ !cancelled() && needs.uv-python-save-cache.result == 'success' }}
+    uses: ./.github/workflows/task-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
+
+  java-save-cache:
+    needs: [task-save-cache]
+    if: ${{ !cancelled() && needs.task-save-cache.result == 'success' }}
+    uses: ./.github/workflows/maven-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
+
+  gradle-save-cache:
+    needs: [java-save-cache]
+    if: ${{ !cancelled() && needs.java-save-cache.result == 'success' }}
+    uses: ./.github/workflows/gradle-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
+
+  docker-save-cache:
+    needs: [gradle-save-cache]
+    if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
+    uses: ./.github/workflows/docker-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets: inherit
