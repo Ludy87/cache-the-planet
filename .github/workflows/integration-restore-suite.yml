@@ -1,0 +1,77 @@
+name: Cache integration restore suite
+
+on:
+  workflow_run:
+    workflows: [Publish PR cache artifacts]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  node-restore-cache:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/npm-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  uv-restore-cache:
+    needs: [node-restore-cache]
+    if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}
+    uses: ./.github/workflows/uv-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  uv-python-restore-cache:
+    needs: [uv-restore-cache]
+    if: ${{ !cancelled() && needs.uv-restore-cache.result == 'success' }}
+    uses: ./.github/workflows/uv-python-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  task-restore-cache:
+    needs: [uv-python-restore-cache]
+    if: ${{ !cancelled() && needs.uv-python-restore-cache.result == 'success' }}
+    uses: ./.github/workflows/task-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  java-restore-cache:
+    needs: [task-restore-cache]
+    if: ${{ !cancelled() && needs.task-restore-cache.result == 'success' }}
+    uses: ./.github/workflows/maven-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  gradle-restore-cache:
+    needs: [java-restore-cache]
+    if: ${{ !cancelled() && needs.java-restore-cache.result == 'success' }}
+    uses: ./.github/workflows/gradle-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  docker-restore-cache:
+    needs: [gradle-restore-cache]
+    if: ${{ !cancelled() && needs.gradle-restore-cache.result == 'success' }}
+    uses: ./.github/workflows/docker-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
