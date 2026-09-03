@@ -77,13 +77,6 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 38980000
-    },
-    "shared/Ludy87/cache-the-planet/uv-python-3-13/linux-x64/4e8e8d68eaa5b67145ca8e7d29fef75fe99de96bf3831a38e7c02783b3d2367c/v4": {
-      "object": "sha256:793c11fa0c8153874b83ffd68bf8f0ea068cb4f0b8aa25de2d0596a2c49ebfdc",
-      "updated_at": "2026-09-03T08:45:43.566Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 38979470
     }
   },
   "monitoring": {
