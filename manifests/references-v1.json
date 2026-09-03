@@ -57,13 +57,6 @@
       "created_by": "Ludy87",
       "size": 4033935
     },
-    "untrusted/Ludy87/cache-the-planet/pr-28/uv/linux-x64/d081317c6c74a900349b2970baed05346fb09f99c77c6641e439677124a982e0/v2": {
-      "object": "sha256:87ec7600ad15f879f3c2cc670743597efc3cef778ecf2c680c0821acf507dc7f",
-      "updated_at": "2026-09-01T08:47:41.827Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 1491721
-    },
     "shared/Ludy87/cache-the-planet/docker/linux-x64/d8625ec0aded7687dfdee402d0988854c5a33794c71b1da2e9ea0674606a39c1/v2": {
       "object": "sha256:64cf496c00e79535039d9f95571ccff0610b35e79ee067eb7c1b3341e1b87b18",
       "updated_at": "2026-09-01T10:03:06.226Z",
