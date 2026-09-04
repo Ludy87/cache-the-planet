@@ -14,12 +14,13 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
     const hash = c.hashFromAssetName(asset.name);
     if (!hash || hash === keepHash || liveHashes.has(hash)) continue;
     try {
-      await c.deleteObject(repository, hash);
+      await c.deleteObject(repository, hash, false);
       c.log(`removed duplicate cache asset: key=${key}; content-hash=${hash}`);
     } catch (error) {
       c.log(`duplicate cache asset could not be deleted: ${error.message}`);
     }
   }
+  c.invalidateRepositoryCache(repository);
 }
 
 async function replaceOlderReferences(repository, key) {
@@ -53,12 +54,13 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
   for (const hash of hashes) {
     if (liveHashes.has(hash)) continue;
     try {
-      await c.deleteObject(repository, hash);
+      await c.deleteObject(repository, hash, false);
       c.log(`removed replaced cache asset: content-hash=${hash}`);
     } catch (error) {
       c.log(`replaced cache asset could not be deleted: ${error.message}`);
     }
   }
+  c.invalidateRepositoryCache(repository);
 }
 
 (async () => {
@@ -240,6 +242,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
             `?name=${encodeURIComponent(name)}`,
           );
           await c.upload(uploadUrl, archive.file, name, "application/zstd");
+          c.invalidateRepositoryCache(repository);
         }
         const updated = await c.replaceRef(
           repository,
@@ -320,6 +323,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `?name=${encodeURIComponent(name)}`,
         );
         await c.upload(uploadUrl, archive.file, name, "application/zstd");
+        c.invalidateRepositoryCache(repository);
         c.log(`uploaded object ${hash}`);
       } catch (error) {
         if (error.status !== 422) throw error;
