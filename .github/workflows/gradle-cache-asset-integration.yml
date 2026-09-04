@@ -38,8 +38,10 @@ jobs:
           persist-credentials: false
       - name: Hash Gradle files
         id: hash
+        env:
+          ZIZMOR_VALUE_29: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="${{ hashFiles(env.FILES_TO_HASH) }}"
+          HASH="$ZIZMOR_VALUE_29"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
@@ -123,23 +125,39 @@ jobs:
       - name: Assert exact asset cache hit start with trusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'trusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_30: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_31: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_32: ${{ github.repository }}
+          ZIZMOR_VALUE_33: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "trusted/${{ github.repository }}/main/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_30" = "true"
+          test "$ZIZMOR_VALUE_31" = "trusted/$ZIZMOR_VALUE_32/main/gradle-java17/linux-x64/$ZIZMOR_VALUE_33/v1"
 
       - name: Assert exact asset cache hit start with untrusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'untrusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_34: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_35: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_36: ${{ github.repository }}
+          ZIZMOR_VALUE_37: ${{ github.event.pull_request.number }}
+          ZIZMOR_VALUE_38: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_34" = "true"
+          test "$ZIZMOR_VALUE_35" = "untrusted/$ZIZMOR_VALUE_36/pr-$ZIZMOR_VALUE_37/gradle-java17/linux-x64/$ZIZMOR_VALUE_38/v1"
 
       - name: Assert exact asset cache hit start with shared
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'shared/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_39: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_40: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_41: ${{ github.repository }}
+          ZIZMOR_VALUE_42: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "shared/${{ github.repository }}/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_39" = "true"
+          test "$ZIZMOR_VALUE_40" = "shared/$ZIZMOR_VALUE_41/gradle-java17/linux-x64/$ZIZMOR_VALUE_42/v1"
 
       - name: Restore Gradle cache asset - auto with restore-keys
         if: ${{ steps.cache-auto.outputs.cache-hit != 'true' }}
@@ -170,9 +188,14 @@ jobs:
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_43: ${{ steps.cache-trusted.outputs.cache-hit }}
+          ZIZMOR_VALUE_44: ${{ steps.cache-trusted.outputs.matched-key }}
+          ZIZMOR_VALUE_45: ${{ github.repository }}
+          ZIZMOR_VALUE_46: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-trusted.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-trusted.outputs.matched-key }}" = "trusted/${{ github.repository }}/main/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_43" = "true"
+          test "$ZIZMOR_VALUE_44" = "trusted/$ZIZMOR_VALUE_45/main/gradle-java17/linux-x64/$ZIZMOR_VALUE_46/v1"
 
       - name: Restore Gradle cache asset - shared
         id: cache-shared
@@ -190,9 +213,14 @@ jobs:
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_47: ${{ steps.cache-shared.outputs.cache-hit }}
+          ZIZMOR_VALUE_48: ${{ steps.cache-shared.outputs.matched-key }}
+          ZIZMOR_VALUE_49: ${{ github.repository }}
+          ZIZMOR_VALUE_50: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-shared.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-shared.outputs.matched-key }}" = "shared/${{ github.repository }}/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_47" = "true"
+          test "$ZIZMOR_VALUE_48" = "shared/$ZIZMOR_VALUE_49/gradle-java17/linux-x64/$ZIZMOR_VALUE_50/v1"
 
       - name: Restore Gradle cache asset - untrusted
         id: cache-untrusted
@@ -210,9 +238,15 @@ jobs:
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_51: ${{ steps.cache-untrusted.outputs.cache-hit }}
+          ZIZMOR_VALUE_52: ${{ steps.cache-untrusted.outputs.matched-key }}
+          ZIZMOR_VALUE_53: ${{ github.repository }}
+          ZIZMOR_VALUE_54: ${{ github.event.pull_request.number }}
+          ZIZMOR_VALUE_55: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-untrusted.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-untrusted.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/gradle-java17/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_51" = "true"
+          test "$ZIZMOR_VALUE_52" = "untrusted/$ZIZMOR_VALUE_53/pr-$ZIZMOR_VALUE_54/gradle-java17/linux-x64/$ZIZMOR_VALUE_55/v1"
 
       - name: Build offline with restored Gradle cache
         working-directory: examples/gradle-cache

@@ -28,6 +28,9 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: Ludy87
           repositories: cache-the-planet
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
 
       - name: Release Please
         id: release
@@ -46,16 +49,19 @@ jobs:
 
       - name: Update floating major and minor tags
         if: steps.release.outputs.release_created == 'true'
+        env:
+          ZIZMOR_VALUE_110: ${{ steps.release.outputs.major }}
+          ZIZMOR_VALUE_111: ${{ steps.release.outputs.minor }}
         run: |
           set -euo pipefail
 
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+          git tag -d v$ZIZMOR_VALUE_110 || true
+          git tag -d v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111 || true
+          git push origin :v$ZIZMOR_VALUE_110 || true
+          git push origin :v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111 || true
+          git tag -a v$ZIZMOR_VALUE_110 -m "Release v$ZIZMOR_VALUE_110"
+          git tag -a v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111 -m "Release v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111"
+          git push origin v$ZIZMOR_VALUE_110
+          git push origin v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111

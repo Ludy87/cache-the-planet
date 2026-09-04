@@ -34,7 +34,9 @@ jobs:
       dry-run: false
     permissions:
       contents: write
-    secrets: inherit
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   node-save-cache:
     needs: [build-dist-pr, build-dist-trusted]

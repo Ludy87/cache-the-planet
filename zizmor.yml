@@ -1,0 +1,10 @@
+# These workflow_run triggers are the deliberate trust boundary between
+# untrusted pull-request jobs and trusted artifact validation/publication.
+# Each workflow validates the originating workflow, repository, conclusion,
+# PR identity, and artifact contents before performing any privileged action.
+rules:
+  dangerous-triggers:
+    ignore:
+      - integration-restore-suite.yml
+      - publish-pr-cache-artifacts.yml
+      - test.yml

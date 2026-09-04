@@ -32,11 +32,16 @@ permissions:
 jobs:
   unit:
     name: Unit tests
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.event_name != 'workflow_run' || (
+        github.event.workflow_run.name == 'Cache integration save suite' &&
+        github.event.workflow_run.repository.full_name == github.repository &&
+        github.event.workflow_run.conclusion == 'success'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
     steps:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

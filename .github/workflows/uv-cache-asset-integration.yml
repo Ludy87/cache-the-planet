@@ -36,8 +36,10 @@ jobs:
           persist-credentials: false
       - name: Hash uv files
         id: hash
+        env:
+          ZIZMOR_VALUE_139: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="${{ hashFiles(env.FILES_TO_HASH) }}"
+          HASH="$ZIZMOR_VALUE_139"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
@@ -158,23 +160,39 @@ jobs:
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'trusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_140: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_141: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_142: ${{ github.repository }}
+          ZIZMOR_VALUE_143: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "trusted/${{ github.repository }}/main/uv/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v2"
+          test "$ZIZMOR_VALUE_140" = "true"
+          test "$ZIZMOR_VALUE_141" = "trusted/$ZIZMOR_VALUE_142/main/uv/linux-x64/$ZIZMOR_VALUE_143/v2"
 
       - name: Assert exact asset cache hit start with shared
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'shared/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_144: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_145: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_146: ${{ github.repository }}
+          ZIZMOR_VALUE_147: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "shared/${{ github.repository }}/uv/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v2"
+          test "$ZIZMOR_VALUE_144" = "true"
+          test "$ZIZMOR_VALUE_145" = "shared/$ZIZMOR_VALUE_146/uv/linux-x64/$ZIZMOR_VALUE_147/v2"
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'untrusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_148: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_149: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_150: ${{ github.repository }}
+          ZIZMOR_VALUE_151: ${{ github.event.pull_request.number }}
+          ZIZMOR_VALUE_152: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/uv/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v2"
+          test "$ZIZMOR_VALUE_148" = "true"
+          test "$ZIZMOR_VALUE_149" = "untrusted/$ZIZMOR_VALUE_150/pr-$ZIZMOR_VALUE_151/uv/linux-x64/$ZIZMOR_VALUE_152/v2"
 
       - name: Restore uv cache asset - trusted
         id: cache-trusted
@@ -193,9 +211,14 @@ jobs:
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_153: ${{ steps.cache-trusted.outputs.cache-hit }}
+          ZIZMOR_VALUE_154: ${{ steps.cache-trusted.outputs.matched-key }}
+          ZIZMOR_VALUE_155: ${{ github.repository }}
+          ZIZMOR_VALUE_156: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-trusted.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-trusted.outputs.matched-key }}" = "trusted/${{ github.repository }}/main/uv/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v2"
+          test "$ZIZMOR_VALUE_153" = "true"
+          test "$ZIZMOR_VALUE_154" = "trusted/$ZIZMOR_VALUE_155/main/uv/linux-x64/$ZIZMOR_VALUE_156/v2"
 
       - name: Restore uv cache asset - shared
         id: cache-shared
@@ -214,9 +237,14 @@ jobs:
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_157: ${{ steps.cache-shared.outputs.cache-hit }}
+          ZIZMOR_VALUE_158: ${{ steps.cache-shared.outputs.matched-key }}
+          ZIZMOR_VALUE_159: ${{ github.repository }}
+          ZIZMOR_VALUE_160: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-shared.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-shared.outputs.matched-key }}" = "shared/${{ github.repository }}/uv/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v2"
+          test "$ZIZMOR_VALUE_157" = "true"
+          test "$ZIZMOR_VALUE_158" = "shared/$ZIZMOR_VALUE_159/uv/linux-x64/$ZIZMOR_VALUE_160/v2"
 
       - name: Restore uv cache asset - untrusted
         id: cache-untrusted
@@ -235,9 +263,15 @@ jobs:
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_161: ${{ steps.cache-untrusted.outputs.cache-hit }}
+          ZIZMOR_VALUE_162: ${{ steps.cache-untrusted.outputs.matched-key }}
+          ZIZMOR_VALUE_163: ${{ github.repository }}
+          ZIZMOR_VALUE_164: ${{ github.event.pull_request.number }}
+          ZIZMOR_VALUE_165: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-untrusted.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-untrusted.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/uv/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v2"
+          test "$ZIZMOR_VALUE_161" = "true"
+          test "$ZIZMOR_VALUE_162" = "untrusted/$ZIZMOR_VALUE_163/pr-$ZIZMOR_VALUE_164/uv/linux-x64/$ZIZMOR_VALUE_165/v2"
           test -d .cache/uv
 
       - name: Verify uv can use restored cache

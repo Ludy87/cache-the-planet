@@ -37,8 +37,10 @@ jobs:
           persist-credentials: false
       - name: Hash Task files
         id: hash
+        env:
+          ZIZMOR_VALUE_112: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="${{ hashFiles(env.FILES_TO_HASH) }}"
+          HASH="$ZIZMOR_VALUE_112"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
@@ -134,23 +136,39 @@ jobs:
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'trusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_113: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_114: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_115: ${{ github.repository }}
+          ZIZMOR_VALUE_116: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "trusted/${{ github.repository }}/main/task/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_113" = "true"
+          test "$ZIZMOR_VALUE_114" = "trusted/$ZIZMOR_VALUE_115/main/task/linux-x64/$ZIZMOR_VALUE_116/v1"
 
       - name: Assert exact asset cache hit start with shared
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'shared/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_117: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_118: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_119: ${{ github.repository }}
+          ZIZMOR_VALUE_120: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "shared/${{ github.repository }}/task/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_117" = "true"
+          test "$ZIZMOR_VALUE_118" = "shared/$ZIZMOR_VALUE_119/task/linux-x64/$ZIZMOR_VALUE_120/v1"
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'untrusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_121: ${{ steps.cache-auto.outputs.cache-hit }}
+          ZIZMOR_VALUE_122: ${{ steps.cache-auto.outputs.matched-key }}
+          ZIZMOR_VALUE_123: ${{ github.repository }}
+          ZIZMOR_VALUE_124: ${{ github.event.pull_request.number }}
+          ZIZMOR_VALUE_125: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-auto.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-auto.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/task/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_121" = "true"
+          test "$ZIZMOR_VALUE_122" = "untrusted/$ZIZMOR_VALUE_123/pr-$ZIZMOR_VALUE_124/task/linux-x64/$ZIZMOR_VALUE_125/v1"
 
       - name: Restore task build cache asset - trusted
         id: cache-trusted
@@ -170,9 +188,14 @@ jobs:
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_126: ${{ steps.cache-trusted.outputs.cache-hit }}
+          ZIZMOR_VALUE_127: ${{ steps.cache-trusted.outputs.matched-key }}
+          ZIZMOR_VALUE_128: ${{ github.repository }}
+          ZIZMOR_VALUE_129: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-trusted.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-trusted.outputs.matched-key }}" = "trusted/${{ github.repository }}/main/task/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_126" = "true"
+          test "$ZIZMOR_VALUE_127" = "trusted/$ZIZMOR_VALUE_128/main/task/linux-x64/$ZIZMOR_VALUE_129/v1"
 
       - name: Restore task build cache asset - shared
         id: cache-shared
@@ -192,9 +215,14 @@ jobs:
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_130: ${{ steps.cache-shared.outputs.cache-hit }}
+          ZIZMOR_VALUE_131: ${{ steps.cache-shared.outputs.matched-key }}
+          ZIZMOR_VALUE_132: ${{ github.repository }}
+          ZIZMOR_VALUE_133: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-shared.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-shared.outputs.matched-key }}" = "shared/${{ github.repository }}/task/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_130" = "true"
+          test "$ZIZMOR_VALUE_131" = "shared/$ZIZMOR_VALUE_132/task/linux-x64/$ZIZMOR_VALUE_133/v1"
 
       - name: Restore task build cache asset - untrusted
         id: cache-untrusted
@@ -214,9 +242,15 @@ jobs:
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
         shell: bash
+        env:
+          ZIZMOR_VALUE_134: ${{ steps.cache-untrusted.outputs.cache-hit }}
+          ZIZMOR_VALUE_135: ${{ steps.cache-untrusted.outputs.matched-key }}
+          ZIZMOR_VALUE_136: ${{ github.repository }}
+          ZIZMOR_VALUE_137: ${{ github.event.pull_request.number }}
+          ZIZMOR_VALUE_138: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "${{ steps.cache-untrusted.outputs.cache-hit }}" = "true"
-          test "${{ steps.cache-untrusted.outputs.matched-key }}" = "untrusted/${{ github.repository }}/pr-${{ github.event.pull_request.number }}/task/linux-x64/${{ needs.hash_pr.outputs.files_hash }}/v1"
+          test "$ZIZMOR_VALUE_134" = "true"
+          test "$ZIZMOR_VALUE_135" = "untrusted/$ZIZMOR_VALUE_136/pr-$ZIZMOR_VALUE_137/task/linux-x64/$ZIZMOR_VALUE_138/v1"
 
       - name: Verify restored task cache
         run: task --taskfile examples/task-cache/Taskfile.yml verify

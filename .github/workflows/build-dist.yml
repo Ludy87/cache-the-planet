@@ -12,6 +12,11 @@ on:
         required: false
         default: true
         type: boolean
+    secrets:
+      APP_ID:
+        required: false
+      APP_PRIVATE_KEY:
+        required: false
   workflow_dispatch:
 
 env:
