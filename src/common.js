@@ -39,6 +39,9 @@ function authorizationHeaders() {
 
 let githubClientPromise;
 let configurationCache;
+const releaseCache = new Map();
+const assetsCache = new Map();
+const manifestLocks = new Map();
 
 function configuration() {
   if (configurationCache) return configurationCache;
@@ -581,7 +584,13 @@ function fail(error) {
   return false;
 }
 
-function githubApiError(status, message) {
+function headerValue(headers, name) {
+  if (!headers) return "";
+  if (typeof headers.get === "function") return headers.get(name) || "";
+  return headers[name] || headers[name.toLowerCase()] || "";
+}
+
+function githubApiError(status, message, headers) {
   if (status === 401) {
     return new Error(
       "GitHub authentication failed (401 Bad credentials): the cache repository rejected the token. " +
@@ -591,6 +600,18 @@ function githubApiError(status, message) {
     );
   }
   if (status === 403) {
+    if (/rate limit exceeded|rate limit/i.test(String(message))) {
+      const retryAfter = headerValue(headers, "retry-after");
+      const reset = headerValue(headers, "x-ratelimit-reset");
+      const resetText = reset
+        ? ` The limit resets at ${new Date(Number(reset) * 1000).toISOString()}.`
+        : "";
+      return new Error(
+        "GitHub API rate limit exceeded (403): GitHub temporarily rejected the cache request. " +
+          `Wait${retryAfter ? ` at least ${retryAfter} seconds` : ""} until the rate limit resets, or use an authenticated token with sufficient API quota.` +
+          `${resetText} GitHub message: ${message}`,
+      );
+    }
     return new Error(
       `GitHub authorization failed (403): the token is valid but is not allowed to access the cache repository. ${message}`,
     );
@@ -631,7 +652,11 @@ async function gh(url, options = {}) {
       return { body: response.data, headers: response.headers };
     } catch (error) {
       const message = error.response?.data?.message || error.message;
-      const apiError = githubApiError(error.status || 500, message);
+      const apiError = githubApiError(
+        error.status || 500,
+        message,
+        error.response?.headers,
+      );
       apiError.status = error.status;
       apiError.headers = error.response?.headers;
       throw apiError;
@@ -654,7 +679,11 @@ async function gh(url, options = {}) {
     body = text;
   }
   if (!response.ok) {
-    const error = githubApiError(response.status, body.message || text);
+    const error = githubApiError(
+      response.status,
+      body.message || text,
+      response.headers,
+    );
     error.status = response.status;
     error.headers = response.headers;
     throw error;
@@ -682,7 +711,7 @@ async function upload(url, file, name, contentType) {
   } catch {
     message = text;
   }
-  const error = githubApiError(response.status, message);
+  const error = githubApiError(response.status, message, response.headers);
   error.status = response.status;
   throw error;
 }
@@ -1042,34 +1071,59 @@ function digest(file) {
 }
 
 async function release(repository) {
+  if (releaseCache.has(repository)) return releaseCache.get(repository);
+  const pending = (async () => {
+    try {
+      return (await gh(`/repos/${repository}/releases/tags/cache-v1`)).body;
+    } catch (error) {
+      if (error.status !== 404) throw error;
+      return (
+        await gh(`/repos/${repository}/releases`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tag_name: "cache-v1",
+            name: "Cache objects (v1)",
+            prerelease: true,
+          }),
+        })
+      ).body;
+    }
+  })();
+  releaseCache.set(repository, pending);
   try {
-    return (await gh(`/repos/${repository}/releases/tags/cache-v1`)).body;
+    return await pending;
   } catch (error) {
-    if (error.status !== 404) throw error;
-    return (
-      await gh(`/repos/${repository}/releases`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tag_name: "cache-v1",
-          name: "Cache objects (v1)",
-          prerelease: true,
-        }),
-      })
-    ).body;
+    releaseCache.delete(repository);
+    throw error;
   }
 }
 
 async function assets(repository) {
-  const cacheRelease = await release(repository);
-  return {
-    release: cacheRelease,
-    assets: (
-      await gh(
-        `/repos/${repository}/releases/${cacheRelease.id}/assets?per_page=100`,
-      )
-    ).body,
-  };
+  if (assetsCache.has(repository)) return assetsCache.get(repository);
+  const pending = (async () => {
+    const cacheRelease = await release(repository);
+    return {
+      release: cacheRelease,
+      assets: (
+        await gh(
+          `/repos/${repository}/releases/${cacheRelease.id}/assets?per_page=100`,
+        )
+      ).body,
+    };
+  })();
+  assetsCache.set(repository, pending);
+  try {
+    return await pending;
+  } catch (error) {
+    assetsCache.delete(repository);
+    throw error;
+  }
+}
+
+function invalidateRepositoryCache(repository) {
+  assetsCache.delete(repository);
+  releaseCache.delete(repository);
 }
 
 async function object(repository, hash) {
@@ -1144,7 +1198,7 @@ async function refs(repository) {
   }
 }
 
-async function updateManifest(repository, message, update) {
+async function updateManifestUnlocked(repository, message, update) {
   const maxAttempts = 12;
   const branch =
     process.env.CACHE_MANIFEST_BRANCH || input("manifest-branch", "main");
@@ -1190,6 +1244,19 @@ async function updateManifest(repository, message, update) {
     }
   }
   throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
+}
+
+async function updateManifest(repository, message, update) {
+  const previous = manifestLocks.get(repository) || Promise.resolve();
+  const current = previous.catch(() => {}).then(() =>
+    updateManifestUnlocked(repository, message, update),
+  );
+  manifestLocks.set(repository, current);
+  try {
+    return await current;
+  } finally {
+    if (manifestLocks.get(repository) === current) manifestLocks.delete(repository);
+  }
 }
 
 function manifestWriteGuard(manifest, replacingKey = null) {
@@ -1296,12 +1363,13 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
   return result;
 }
 
-async function deleteObject(repository, hash) {
+async function deleteObject(repository, hash, invalidate = true) {
   const asset = await object(repository, hash);
   if (!asset) return false;
   await gh(`/repos/${repository}/releases/assets/${asset.id}`, {
     method: "DELETE",
   });
+  if (invalidate) invalidateRepositoryCache(repository);
   return true;
 }
 
@@ -1411,6 +1479,7 @@ module.exports = {
   decryptFile,
   release,
   assets,
+  invalidateRepositoryCache,
   object,
   refs,
   updateManifest,
