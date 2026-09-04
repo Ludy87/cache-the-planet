@@ -69,7 +69,7 @@ jobs:
           strict: false
         continue-on-error: true
 
-      - run: npm ci ${{ inputs.dry-run && '--dry-run' || '' }}
+      - run: npm ci --no-audit --no-fund ${{ inputs.dry-run && '--dry-run' || '' }}
 
       - name: Save npm cache asset
         if: ${{ !inputs.dry-run && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && success() && steps.npm-cache.outputs.cache-hit != 'true' }}

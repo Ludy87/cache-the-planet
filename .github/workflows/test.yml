@@ -64,7 +64,7 @@ jobs:
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm
 
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
 
       - run: npm run test
 

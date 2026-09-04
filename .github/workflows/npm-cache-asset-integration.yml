@@ -62,7 +62,7 @@ jobs:
         run: npm config set cache "$PWD/.cache/npm" --global
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Save npm cache asset
         if: ${{ success() }}
@@ -252,4 +252,4 @@ jobs:
           test "$MATCHED_KEY" = "untrusted/$CACHE_REPOSITORY/pr-$PR_NUMBER/npm/linux-x64/$FILES_HASH/v1"
 
       - name: Verify npm can use restored cache
-        run: npm ci --prefer-offline
+        run: npm ci --prefer-offline --no-audit --no-fund
