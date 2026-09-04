@@ -19,24 +19,31 @@ permissions:
   contents: read
 
 jobs:
-  build-dist:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.event_name != 'workflow_dispatch' }}
+  build-dist-pr:
+    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/build-dist.yml
     with:
-      dry-run: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+      dry-run: true
+    permissions:
+      contents: read
+
+  build-dist-trusted:
+    if: ${{ github.event_name != 'pull_request' }}
+    uses: ./.github/workflows/build-dist.yml
+    with:
+      dry-run: false
     permissions:
       contents: write
     secrets: inherit
 
   node-save-cache:
-    needs: [build-dist]
-    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    needs: [build-dist-pr, build-dist-trusted]
+    if: ${{ !cancelled() && (needs.build-dist-pr.result == 'success' || needs.build-dist-pr.result == 'skipped') && (needs.build-dist-trusted.result == 'success' || needs.build-dist-trusted.result == 'skipped') }}
     uses: ./.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   uv-save-cache:
     needs: [node-save-cache]
@@ -46,7 +53,6 @@ jobs:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   uv-python-save-cache:
     needs: [uv-save-cache]
@@ -56,7 +62,6 @@ jobs:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   task-save-cache:
     needs: [uv-python-save-cache]
@@ -66,7 +71,6 @@ jobs:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   java-save-cache:
     needs: [task-save-cache]
@@ -76,7 +80,6 @@ jobs:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   gradle-save-cache:
     needs: [java-save-cache]
@@ -86,7 +89,6 @@ jobs:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   docker-save-cache:
     needs: [gradle-save-cache]
@@ -96,13 +98,13 @@ jobs:
       save-cache: true
     permissions:
       contents: write
-    secrets: inherit
 
   all-save-checks-passed:
     name: All save checks passed
     if: ${{ !cancelled() }}
     needs:
-      - build-dist
+      - build-dist-pr
+      - build-dist-trusted
       - node-save-cache
       - uv-save-cache
       - uv-python-save-cache
@@ -121,7 +123,8 @@ jobs:
       - name: Verify every required job passed (or was legitimately skipped)
         env:
           JOB_RESULTS: |
-            build-dist=${{ needs.build-dist.result }}
+            build-dist-pr=${{ needs.build-dist-pr.result }}
+            build-dist-trusted=${{ needs.build-dist-trusted.result }}
             node-save-cache=${{ needs.node-save-cache.result }}
             uv-save-cache=${{ needs.uv-save-cache.result }}
             uv-python-save-cache=${{ needs.uv-python-save-cache.result }}
@@ -130,12 +133,10 @@ jobs:
             gradle-save-cache=${{ needs.gradle-save-cache.result }}
             docker-save-cache=${{ needs.docker-save-cache.result }}
         run: |
-          for job in $JOB_RESULTS; do
-            [[ -z "$job" ]] && continue
-            job_name=$(echo $job | cut -d '=' -f 1)
-            job_result=$(echo $job | cut -d '=' -f 2)
+          while IFS='=' read -r job_name job_result; do
+            [[ -z "$job_name" ]] && continue
             if [[ "$job_result" != "success" && "$job_result" != "skipped" ]]; then
               echo "Job $job_name did not pass (result: $job_result)"
               exit 1
             fi
-          done
+          done <<< "$JOB_RESULTS"

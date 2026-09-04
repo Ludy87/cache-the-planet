@@ -3,14 +3,28 @@ const path = require("path");
 const os = require("os");
 const crypto = require("crypto");
 const cp = require("child_process");
+const { Readable, Transform } = require("stream");
+const { pipeline } = require("stream/promises");
 
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
-const maxCompressedBytes = Number(
-  process.env.CACHE_MAX_COMPRESSED_BYTES || 2 * 1024 ** 3,
+
+function positiveEnvironmentLimit(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive safe integer`);
+  }
+  return value;
+}
+
+const maxCompressedBytes = positiveEnvironmentLimit(
+  "CACHE_MAX_COMPRESSED_BYTES",
+  2 * 1024 ** 3,
 );
-const maxTarBytes = Number(process.env.CACHE_MAX_TAR_BYTES || 8 * 1024 ** 3);
-const maxArchiveEntries = Number(process.env.CACHE_MAX_ENTRIES || 200000);
+const maxTarBytes = positiveEnvironmentLimit("CACHE_MAX_TAR_BYTES", 8 * 1024 ** 3);
+const maxArchiveEntries = positiveEnvironmentLimit("CACHE_MAX_ENTRIES", 200000);
 const maxArchivePathLength = 4096;
 const defaultManifestReferenceLimit = 100000;
 const defaultManifestWritesPerHour = 1000;
@@ -1011,25 +1025,46 @@ async function makeArchive() {
       );
     }),
   ]);
-  validateArchive(output);
+  await validateArchive(output);
   encryptFile(output);
   return { file: output, dir: directory };
 }
 
-function validateArchive(file) {
+async function decompressZstd(inputFile, outputFile, maxBytes) {
+  const zstd = cp.spawn("zstd", ["-q", "-d", "-c", inputFile], {
+    stdio: ["ignore", "pipe", "inherit"],
+  });
+  const exit = new Promise((resolve, reject) => {
+    zstd.once("error", reject);
+    zstd.once("close", resolve);
+  });
+  let total = 0;
+  const limiter = new Transform({
+    transform(chunk, encoding, callback) {
+      total += chunk.length;
+      if (total > maxBytes) {
+        callback(new Error("cache archive exceeds the uncompressed size limit"));
+        return;
+      }
+      callback(null, chunk);
+    },
+  });
+  try {
+    await pipeline(zstd.stdout, limiter, fs.createWriteStream(outputFile));
+    const code = await exit;
+    if (code !== 0) throw new Error("zstd decompression failed");
+  } catch (error) {
+    zstd.kill("SIGKILL");
+    throw error;
+  }
+}
+
+async function validateArchive(file) {
   const tarFile = path.join(path.dirname(file), "validation.tar");
   if (fs.statSync(file).size > maxCompressedBytes) {
     throw new Error("cache archive exceeds the compressed size limit");
   }
-  const decompression = cp.spawnSync(
-    "zstd",
-    ["-q", "-d", "-f", file, "-o", tarFile],
-    {
-      stdio: ["ignore", "inherit", "inherit"],
-    },
-  );
-  if (decompression.status)
-    throw new Error("created zstd archive cannot be decompressed");
+  await decompressZstd(file, tarFile, maxTarBytes);
   inspectTar(tarFile);
 }
 
@@ -1380,35 +1415,42 @@ async function download(repository, hash) {
   const file = path.join(directory, asset.name);
   const response = await fetch(asset.browser_download_url, {
     headers: authorizationHeaders(),
+    signal: AbortSignal.timeout(120000),
   });
   if (!response.ok) throw new Error(`download failed: ${response.status}`);
   const contentLength = Number(response.headers.get("content-length") || 0);
   if (contentLength > maxCompressedBytes)
     throw new Error("cache archive exceeds the compressed size limit");
-  const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.length > maxCompressedBytes)
-    throw new Error("cache archive exceeds the compressed size limit");
-  fs.writeFileSync(file, bytes);
+  if (!response.body) throw new Error("download response has no body");
+  let total = 0;
+  const limiter = new Transform({
+    transform(chunk, encoding, callback) {
+      total += chunk.length;
+      if (total > maxCompressedBytes) {
+        callback(new Error("cache archive exceeds the compressed size limit"));
+        return;
+      }
+      callback(null, chunk);
+    },
+  });
+  await pipeline(
+    Readable.fromWeb(response.body),
+    limiter,
+    fs.createWriteStream(file),
+  );
   if (digest(file) !== hash)
     throw new Error("integrity check failed: sha256 mismatch");
   return file;
 }
 
-function extract(file) {
+async function extract(file) {
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   if (fs.statSync(file).size > maxCompressedBytes) {
     throw new Error("cache archive exceeds the compressed size limit");
   }
   const decrypted = decryptFile(file);
   const tarFile = path.join(path.dirname(decrypted), "object.tar");
-  const decompression = cp.spawnSync(
-    "zstd",
-    ["-q", "-d", "-f", decrypted, "-o", tarFile],
-    {
-      stdio: ["ignore", "inherit", "inherit"],
-    },
-  );
-  if (decompression.status) throw new Error("zstd decompression failed");
+  await decompressZstd(decrypted, tarFile, maxTarBytes);
   const names = inspectTar(tarFile);
   for (const name of names) {
     if (

@@ -147,6 +147,7 @@ jobs:
           cache-name: gradle-java17
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
+          path: .cache/gradle
           restore-keys: |
             linux-x64/
 

@@ -86,7 +86,7 @@ function setOutput(name, value) {
     }
 
     const archive = await c.download(repository, found[1].object);
-    c.extract(archive);
+    await c.extract(archive);
     const cacheIdentity = (value) => {
       const parts = value.split("/");
       if (parts[0] === "shared") return parts.slice(3).join("/");
