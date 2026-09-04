@@ -36,9 +36,9 @@ jobs:
       - name: Hash Maven files
         id: hash
         env:
-          ZIZMOR_VALUE_56: ${{ hashFiles(env.FILES_TO_HASH) }}
+          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="$ZIZMOR_VALUE_56"
+          HASH="$FILES_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
@@ -131,38 +131,38 @@ jobs:
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'trusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_57: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_58: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_59: ${{ github.repository }}
-          ZIZMOR_VALUE_60: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_57" = "true"
-          test "$ZIZMOR_VALUE_58" = "trusted/$ZIZMOR_VALUE_59/main/maven-java17/linux-x64/$ZIZMOR_VALUE_60/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "trusted/$CACHE_REPOSITORY/main/maven-java17/linux-x64/$FILES_HASH/v1"
 
       - name: Assert exact asset cache hit start with shared
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'shared/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_61: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_62: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_63: ${{ github.repository }}
-          ZIZMOR_VALUE_64: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_61" = "true"
-          test "$ZIZMOR_VALUE_62" = "shared/$ZIZMOR_VALUE_63/maven-java17/linux-x64/$ZIZMOR_VALUE_64/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "shared/$CACHE_REPOSITORY/maven-java17/linux-x64/$FILES_HASH/v1"
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'untrusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_65: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_66: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_67: ${{ github.repository }}
-          ZIZMOR_VALUE_68: ${{ github.event.pull_request.number }}
-          ZIZMOR_VALUE_69: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_65" = "true"
-          test "$ZIZMOR_VALUE_66" = "untrusted/$ZIZMOR_VALUE_67/pr-$ZIZMOR_VALUE_68/maven-java17/linux-x64/$ZIZMOR_VALUE_69/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "untrusted/$CACHE_REPOSITORY/pr-$PR_NUMBER/maven-java17/linux-x64/$FILES_HASH/v1"
 
       - name: Restore Maven cache asset - trusted
         id: cache-trusted
@@ -181,13 +181,13 @@ jobs:
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_70: ${{ steps.cache-trusted.outputs.cache-hit }}
-          ZIZMOR_VALUE_71: ${{ steps.cache-trusted.outputs.matched-key }}
-          ZIZMOR_VALUE_72: ${{ github.repository }}
-          ZIZMOR_VALUE_73: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-trusted.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-trusted.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_70" = "true"
-          test "$ZIZMOR_VALUE_71" = "trusted/$ZIZMOR_VALUE_72/main/maven-java17/linux-x64/$ZIZMOR_VALUE_73/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "trusted/$CACHE_REPOSITORY/main/maven-java17/linux-x64/$FILES_HASH/v1"
 
       - name: Restore Maven cache asset - shared
         id: cache-shared
@@ -206,13 +206,13 @@ jobs:
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_74: ${{ steps.cache-shared.outputs.cache-hit }}
-          ZIZMOR_VALUE_75: ${{ steps.cache-shared.outputs.matched-key }}
-          ZIZMOR_VALUE_76: ${{ github.repository }}
-          ZIZMOR_VALUE_77: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-shared.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-shared.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_74" = "true"
-          test "$ZIZMOR_VALUE_75" = "shared/$ZIZMOR_VALUE_76/maven-java17/linux-x64/$ZIZMOR_VALUE_77/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "shared/$CACHE_REPOSITORY/maven-java17/linux-x64/$FILES_HASH/v1"
 
       - name: Restore Maven cache asset - untrusted
         id: cache-untrusted
@@ -231,14 +231,14 @@ jobs:
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_78: ${{ steps.cache-untrusted.outputs.cache-hit }}
-          ZIZMOR_VALUE_79: ${{ steps.cache-untrusted.outputs.matched-key }}
-          ZIZMOR_VALUE_80: ${{ github.repository }}
-          ZIZMOR_VALUE_81: ${{ github.event.pull_request.number }}
-          ZIZMOR_VALUE_82: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-untrusted.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-untrusted.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_78" = "true"
-          test "$ZIZMOR_VALUE_79" = "untrusted/$ZIZMOR_VALUE_80/pr-$ZIZMOR_VALUE_81/maven-java17/linux-x64/$ZIZMOR_VALUE_82/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "untrusted/$CACHE_REPOSITORY/pr-$PR_NUMBER/maven-java17/linux-x64/$FILES_HASH/v1"
 
       - name: Build offline with restored Maven cache
         run: mvn -B -o -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml

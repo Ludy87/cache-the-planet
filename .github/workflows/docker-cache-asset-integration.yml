@@ -38,9 +38,9 @@ jobs:
       - name: Hash Docker files
         id: hash
         env:
-          ZIZMOR_VALUE_1: ${{ hashFiles(env.FILES_TO_HASH) }}
+          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="$ZIZMOR_VALUE_1"
+          HASH="$FILES_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
@@ -59,9 +59,9 @@ jobs:
 
       - name: echo Dockerfile and context hash
         env:
-          ZIZMOR_VALUE_2: ${{ needs.hash_pr.outputs.files_hash }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          echo "Dockerfile and context hash: $ZIZMOR_VALUE_2"
+          echo "Dockerfile and context hash: $FILES_HASH"
 
       - name: Restore Docker cache
         uses: ./
@@ -160,38 +160,38 @@ jobs:
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'trusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_3: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_4: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_5: ${{ github.repository }}
-          ZIZMOR_VALUE_6: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_3" = "true"
-          test "$ZIZMOR_VALUE_4" = "trusted/$ZIZMOR_VALUE_5/main/docker/linux-x64/$ZIZMOR_VALUE_6/v2"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "trusted/$CACHE_REPOSITORY/main/docker/linux-x64/$FILES_HASH/v2"
 
       - name: Assert exact asset cache hit start with shared
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'shared/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_7: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_8: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_9: ${{ github.repository }}
-          ZIZMOR_VALUE_10: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH0: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_7" = "true"
-          test "$ZIZMOR_VALUE_8" = "shared/$ZIZMOR_VALUE_9/docker/linux-x64/$ZIZMOR_VALUE_10/v2"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "shared/$CACHE_REPOSITORY/docker/linux-x64/$FILES_HASH0/v2"
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'untrusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_11: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_12: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_13: ${{ github.repository }}
-          ZIZMOR_VALUE_14: ${{ github.event.pull_request.number }}
-          ZIZMOR_VALUE_15: ${{ needs.hash_pr.outputs.files_hash }}
+          FILES_HASH1: ${{ steps.cache-auto.outputs.cache-hit }}
+          FILES_HASH2: ${{ steps.cache-auto.outputs.matched-key }}
+          FILES_HASH3: ${{ github.repository }}
+          FILES_HASH4: ${{ github.event.pull_request.number }}
+          FILES_HASH5: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_11" = "true"
-          test "$ZIZMOR_VALUE_12" = "untrusted/$ZIZMOR_VALUE_13/pr-$ZIZMOR_VALUE_14/docker/linux-x64/$ZIZMOR_VALUE_15/v2"
+          test "$FILES_HASH1" = "true"
+          test "$FILES_HASH2" = "untrusted/$FILES_HASH3/pr-$FILES_HASH4/docker/linux-x64/$FILES_HASH5/v2"
 
       - name: Restore Docker cache asset - trusted
         id: cache-trusted
@@ -211,13 +211,13 @@ jobs:
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_16: ${{ steps.cache-trusted.outputs.cache-hit }}
-          ZIZMOR_VALUE_17: ${{ steps.cache-trusted.outputs.matched-key }}
-          ZIZMOR_VALUE_18: ${{ github.repository }}
-          ZIZMOR_VALUE_19: ${{ needs.hash_pr.outputs.files_hash }}
+          FILES_HASH6: ${{ steps.cache-trusted.outputs.cache-hit }}
+          FILES_HASH7: ${{ steps.cache-trusted.outputs.matched-key }}
+          FILES_HASH8: ${{ github.repository }}
+          FILES_HASH9: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_16" = "true"
-          test "$ZIZMOR_VALUE_17" = "trusted/$ZIZMOR_VALUE_18/main/docker/linux-x64/$ZIZMOR_VALUE_19/v2"
+          test "$FILES_HASH6" = "true"
+          test "$FILES_HASH7" = "trusted/$FILES_HASH8/main/docker/linux-x64/$FILES_HASH9/v2"
 
       - name: Restore Docker cache asset - shared
         id: cache-shared
@@ -237,13 +237,13 @@ jobs:
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_20: ${{ steps.cache-shared.outputs.cache-hit }}
-          ZIZMOR_VALUE_21: ${{ steps.cache-shared.outputs.matched-key }}
-          ZIZMOR_VALUE_22: ${{ github.repository }}
-          ZIZMOR_VALUE_23: ${{ needs.hash_pr.outputs.files_hash }}
+          FILES_HASH0: ${{ steps.cache-shared.outputs.cache-hit }}
+          FILES_HASH1: ${{ steps.cache-shared.outputs.matched-key }}
+          FILES_HASH2: ${{ github.repository }}
+          FILES_HASH3: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_20" = "true"
-          test "$ZIZMOR_VALUE_21" = "shared/$ZIZMOR_VALUE_22/docker/linux-x64/$ZIZMOR_VALUE_23/v2"
+          test "$FILES_HASH0" = "true"
+          test "$FILES_HASH1" = "shared/$FILES_HASH2/docker/linux-x64/$FILES_HASH3/v2"
 
       - name: Restore Docker cache asset - untrusted
         id: cache-untrusted
@@ -263,14 +263,14 @@ jobs:
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_24: ${{ steps.cache-untrusted.outputs.cache-hit }}
-          ZIZMOR_VALUE_25: ${{ steps.cache-untrusted.outputs.matched-key }}
-          ZIZMOR_VALUE_26: ${{ github.repository }}
-          ZIZMOR_VALUE_27: ${{ github.event.pull_request.number }}
-          ZIZMOR_VALUE_28: ${{ needs.hash_pr.outputs.files_hash }}
+          FILES_HASH4: ${{ steps.cache-untrusted.outputs.cache-hit }}
+          FILES_HASH5: ${{ steps.cache-untrusted.outputs.matched-key }}
+          FILES_HASH6: ${{ github.repository }}
+          FILES_HASH7: ${{ github.event.pull_request.number }}
+          FILES_HASH8: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_24" = "true"
-          test "$ZIZMOR_VALUE_25" = "untrusted/$ZIZMOR_VALUE_26/pr-$ZIZMOR_VALUE_27/docker/linux-x64/$ZIZMOR_VALUE_28/v2"
+          test "$FILES_HASH4" = "true"
+          test "$FILES_HASH5" = "untrusted/$FILES_HASH6/pr-$FILES_HASH7/docker/linux-x64/$FILES_HASH8/v2"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0

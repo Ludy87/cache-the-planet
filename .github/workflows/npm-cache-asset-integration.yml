@@ -36,9 +36,9 @@ jobs:
       - name: Hash npm files
         id: hash
         env:
-          ZIZMOR_VALUE_83: ${{ hashFiles(env.FILES_TO_HASH) }}
+          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="$ZIZMOR_VALUE_83"
+          HASH="$FILES_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
@@ -125,27 +125,27 @@ jobs:
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'trusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_84: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_85: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_86: ${{ github.repository }}
-          ZIZMOR_VALUE_87: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_84" = "true"
-          test "$ZIZMOR_VALUE_85" = "trusted/$ZIZMOR_VALUE_86/main/npm/linux-x64/$ZIZMOR_VALUE_87/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "trusted/$CACHE_REPOSITORY/main/npm/linux-x64/$FILES_HASH/v1"
           test -d .cache/npm
 
       - name: Assert exact asset cache hit start with untrusted
         if: ${{ steps.cache-auto.outputs.matched-key != '' && startsWith(steps.cache-auto.outputs.matched-key, 'untrusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_88: ${{ steps.cache-auto.outputs.cache-hit }}
-          ZIZMOR_VALUE_89: ${{ steps.cache-auto.outputs.matched-key }}
-          ZIZMOR_VALUE_90: ${{ github.repository }}
-          ZIZMOR_VALUE_91: ${{ github.event.pull_request.number }}
-          ZIZMOR_VALUE_92: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_88" = "true"
-          test "$ZIZMOR_VALUE_89" = "untrusted/$ZIZMOR_VALUE_90/pr-$ZIZMOR_VALUE_91/npm/linux-x64/$ZIZMOR_VALUE_92/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "untrusted/$CACHE_REPOSITORY/pr-$PR_NUMBER/npm/linux-x64/$FILES_HASH/v1"
           test -d .cache/npm
 
       - name: Restore npm cache asset - auto allow shared restore
@@ -166,13 +166,13 @@ jobs:
         if: ${{ steps.cache-auto-allow-shared-restore.outputs.matched-key != '' && startsWith(steps.cache-auto-allow-shared-restore.outputs.matched-key, 'shared/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_93: ${{ steps.cache-auto-allow-shared-restore.outputs.cache-hit }}
-          ZIZMOR_VALUE_94: ${{ steps.cache-auto-allow-shared-restore.outputs.matched-key }}
-          ZIZMOR_VALUE_95: ${{ github.repository }}
-          ZIZMOR_VALUE_96: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-auto-allow-shared-restore.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-auto-allow-shared-restore.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_93" = "true"
-          test "$ZIZMOR_VALUE_94" = "shared/$ZIZMOR_VALUE_95/npm/linux-x64/$ZIZMOR_VALUE_96/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "shared/$CACHE_REPOSITORY/npm/linux-x64/$FILES_HASH/v1"
           test -d .cache/npm
 
       - name: Restore npm cache asset - trusted
@@ -192,13 +192,13 @@ jobs:
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_97: ${{ steps.cache-trusted.outputs.cache-hit }}
-          ZIZMOR_VALUE_98: ${{ steps.cache-trusted.outputs.matched-key }}
-          ZIZMOR_VALUE_99: ${{ github.repository }}
-          ZIZMOR_VALUE_100: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-trusted.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-trusted.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_97" = "true"
-          test "$ZIZMOR_VALUE_98" = "trusted/$ZIZMOR_VALUE_99/main/npm/linux-x64/$ZIZMOR_VALUE_100/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "trusted/$CACHE_REPOSITORY/main/npm/linux-x64/$FILES_HASH/v1"
 
       - name: Restore npm cache asset - shared
         id: cache-shared
@@ -217,13 +217,13 @@ jobs:
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_101: ${{ steps.cache-shared.outputs.cache-hit }}
-          ZIZMOR_VALUE_102: ${{ steps.cache-shared.outputs.matched-key }}
-          ZIZMOR_VALUE_103: ${{ github.repository }}
-          ZIZMOR_VALUE_104: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-shared.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-shared.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_101" = "true"
-          test "$ZIZMOR_VALUE_102" = "shared/$ZIZMOR_VALUE_103/npm/linux-x64/$ZIZMOR_VALUE_104/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "shared/$CACHE_REPOSITORY/npm/linux-x64/$FILES_HASH/v1"
 
       - name: Restore npm cache asset - untrusted
         id: cache-untrusted
@@ -242,14 +242,14 @@ jobs:
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
         shell: bash
         env:
-          ZIZMOR_VALUE_105: ${{ steps.cache-untrusted.outputs.cache-hit }}
-          ZIZMOR_VALUE_106: ${{ steps.cache-untrusted.outputs.matched-key }}
-          ZIZMOR_VALUE_107: ${{ github.repository }}
-          ZIZMOR_VALUE_108: ${{ github.event.pull_request.number }}
-          ZIZMOR_VALUE_109: ${{ needs.hash_pr.outputs.files_hash }}
+          CACHE_HIT: ${{ steps.cache-untrusted.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache-untrusted.outputs.matched-key }}
+          CACHE_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
         run: |
-          test "$ZIZMOR_VALUE_105" = "true"
-          test "$ZIZMOR_VALUE_106" = "untrusted/$ZIZMOR_VALUE_107/pr-$ZIZMOR_VALUE_108/npm/linux-x64/$ZIZMOR_VALUE_109/v1"
+          test "$CACHE_HIT" = "true"
+          test "$MATCHED_KEY" = "untrusted/$CACHE_REPOSITORY/pr-$PR_NUMBER/npm/linux-x64/$FILES_HASH/v1"
 
       - name: Verify npm can use restored cache
         run: npm ci --prefer-offline
