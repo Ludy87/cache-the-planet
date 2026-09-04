@@ -57,11 +57,11 @@ jobs:
 
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git tag -d v$ZIZMOR_VALUE_110 || true
-          git tag -d v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111 || true
-          git push origin :v$ZIZMOR_VALUE_110 || true
-          git push origin :v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111 || true
-          git tag -a v$ZIZMOR_VALUE_110 -m "Release v$ZIZMOR_VALUE_110"
-          git tag -a v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111 -m "Release v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111"
-          git push origin v$ZIZMOR_VALUE_110
-          git push origin v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111
+          git tag -d "v$ZIZMOR_VALUE_110" || true
+          git tag -d "v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111" || true
+          git push origin ":v$ZIZMOR_VALUE_110" || true
+          git push origin ":v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111" || true
+          git tag -a "v$ZIZMOR_VALUE_110" -m "Release v$ZIZMOR_VALUE_110"
+          git tag -a "v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111" -m "Release v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111"
+          git push origin "v$ZIZMOR_VALUE_110"
+          git push origin "v$ZIZMOR_VALUE_110.$ZIZMOR_VALUE_111"
