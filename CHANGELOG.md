@@ -8,6 +8,13 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.3.0](https://github.com/Ludy87/cache-the-planet/compare/v1.2.7...v1.3.0) (2026-09-05)
+
+
+### 🎉 Features
+
+* configure cache repository and manifest branch ([#68](https://github.com/Ludy87/cache-the-planet/issues/68)) ([d8096a8](https://github.com/Ludy87/cache-the-planet/commit/d8096a8de75a681eeec5940838d6b8a83ec937e1))
+
 ## [1.2.7](https://github.com/Ludy87/cache-the-planet/compare/v1.2.6...v1.2.7) (2026-09-05)
 
 
