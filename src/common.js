@@ -953,6 +953,10 @@ function encryptionKey() {
   return crypto.createHash("sha256").update(value, "utf8").digest();
 }
 
+function encryptionEnabled() {
+  return Boolean(encryptionKey());
+}
+
 function encryptFile(file) {
   const key = encryptionKey();
   if (!key) return file;
@@ -1747,6 +1751,7 @@ module.exports = {
   decompressZstd,
   validateArchiveFile,
   removeTemporaryFile,
+  encryptionEnabled,
   encryptFile,
   decryptFile,
   release,

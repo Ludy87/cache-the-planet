@@ -58,6 +58,7 @@ const c = require("./common");
         Status: "MISS",
         "Requested key": key,
         "Matched key": "—",
+        Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
       });
       console.log(`Cache miss: no cache found for key: ${key}`);
       return;
@@ -72,6 +73,7 @@ const c = require("./common");
         "Requested key": key,
         "Matched key": found[0],
         Asset: "missing",
+        Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
       });
       console.log(
         `Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`,
@@ -106,6 +108,7 @@ const c = require("./common");
       "Matched key": found[0],
       Asset: asset.name,
       "Content hash": found[1].object,
+      Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
     });
     console.log(`Cache found:`);
     console.log(`requested-key=${key};`);

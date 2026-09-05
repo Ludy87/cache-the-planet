@@ -85,6 +85,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         Status: "SKIPPED",
         Reason: "Fork pull request is read-only",
         "Is fork": "true",
+        Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
       });
       c.log(
         "fork pull request: save skipped because write-capable secrets are unavailable",

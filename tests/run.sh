@@ -15,7 +15,7 @@ const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 const { securityScan: sourceSecurityScan } = require('./src/common');
-const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, assetNamePrefix, assetMatchesKeyCombination, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest, summary } = require('./src/common');
+const { scopedKey, scopeCounterpartKey, pullRequestCacheCombination, sharedEquivalentKey, expiredUntrustedReferences, scopedRestorePrefix, sharedRestorePrefix, assertTrustedRestoreAllowed, assetName, assetNamePrefix, assetMatchesKeyCombination, hashFromAssetName, manifestWriteGuard, excludePatterns, isForkPullRequest, summary, encryptionEnabled } = require('./src/common');
 const { inspectTar } = require('./src/common');
 const { securityScan: distSecurityScan } = require('./dist/common');
 const { encryptFile, decryptFile } = require('./src/common');
@@ -99,7 +99,14 @@ try {
   if (!fs.readFileSync(summaryFile, 'utf8').includes('| Status | HIT |')) {
     throw new Error('cache step summary was not generated correctly');
   }
+  if (!encryptionEnabled()) {
+    throw new Error('encryption status should be enabled when encryption-key is set');
+  }
   delete process.env.GITHUB_STEP_SUMMARY;
+  delete process.env['INPUT_ENCRYPTION-KEY'];
+  if (encryptionEnabled()) {
+    throw new Error('encryption status should be disabled without encryption-key');
+  }
   fs.mkdirSync(path.join(root, '.ssh'));
   fs.writeFileSync(path.join(root, '.ssh', 'config'), 'Host example\n');
   rejected = false;
