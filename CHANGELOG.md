@@ -8,6 +8,18 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.2.6](https://github.com/Ludy87/cache-the-planet/compare/v1.2.5...v1.2.6) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** stabilize archive fuzz test and add uncached test job ([#65](https://github.com/Ludy87/cache-the-planet/issues/65)) ([f3909df](https://github.com/Ludy87/cache-the-planet/commit/f3909df7d6a48212d9687f6666799cee1c4997af))
+
+
+### Security
+
+* add dependency audit and SBOM checks ([#63](https://github.com/Ludy87/cache-the-planet/issues/63)) ([aea21d3](https://github.com/Ludy87/cache-the-planet/commit/aea21d366d2f1291534b03021200c6e26c835b97))
+
 ## [1.2.5](https://github.com/Ludy87/cache-the-planet/compare/v1.2.4...v1.2.5) (2026-09-05)
 
 
