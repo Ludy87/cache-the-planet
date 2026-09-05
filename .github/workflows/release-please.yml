@@ -45,7 +45,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ steps.release.outputs.sha }}
-          persist-credentials: false
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          persist-credentials: true
 
       - name: Update floating major and minor tags
         if: steps.release.outputs.release_created == 'true'
@@ -62,12 +63,10 @@ jobs:
             git tag -d "v$RELEASE_MAJOR"
           fi
           git tag -a "v$RELEASE_MAJOR" -m "Release v$RELEASE_MAJOR"
-          git -c http.extraheader="AUTHORIZATION: bearer $RELEASE_TOKEN" \
-            push --force origin "v$RELEASE_MAJOR"
+          git push --force origin "v$RELEASE_MAJOR"
 
           if git show-ref --verify --quiet "refs/tags/v$RELEASE_MAJOR.$RELEASE_MINOR"; then
             git tag -d "v$RELEASE_MAJOR.$RELEASE_MINOR"
           fi
           git tag -a "v$RELEASE_MAJOR.$RELEASE_MINOR" -m "Release v$RELEASE_MAJOR.$RELEASE_MINOR"
-          git -c http.extraheader="AUTHORIZATION: bearer $RELEASE_TOKEN" \
-            push --force origin "v$RELEASE_MAJOR.$RELEASE_MINOR"
+          git push --force origin "v$RELEASE_MAJOR.$RELEASE_MINOR"
