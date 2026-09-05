@@ -16,6 +16,13 @@ Der physische Asset-Name enthält zusätzlich den lesbaren Cache-Key:
 Der Hash bleibt die maßgebliche Identität; der lesbare Teil dient nur der
 Zuordnung und darf nicht als Vertrauensnachweis verwendet werden.
 
+PR-Cleanup entfernt beim Schließen einer Pull Request ausschließlich die
+Referenzen des korrelierten Schlüssels
+`untrusted/<owner>/<repository>/pr-<number>/`. Danach werden nur Assets
+gelöscht, die nicht mehr referenziert sind. Garbage Collection darf Referenzen
+und Assets nur in einem ausdrücklich autorisierten Verwaltungsjob ändern; der
+Standardmodus ist ein unverbindlicher Dry-Run.
+
 Das Manifest liegt im Cache-Repository unter
 `manifests/references-v1.json`:
 

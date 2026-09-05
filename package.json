@@ -38,7 +38,7 @@
   "scripts": {
     "build": "esbuild ./src/restore.js --bundle --platform=node --target=node24 --minify --outfile=./dist/restore.js && esbuild ./src/save.js --bundle --platform=node --target=node24 --minify --outfile=./dist/save.js && esbuild ./src/gc.js --bundle --platform=node --target=node24 --minify --outfile=./dist/gc.js && esbuild ./src/pr-cleanup.js --bundle --platform=node --target=node24 --minify --outfile=./dist/pr-cleanup.js && esbuild ./src/common.js --platform=node --target=node24 --minify --outfile=./dist/common.js",
     "build:check": "npm run build && git diff --exit-code -- dist",
-    "test": "node --check src/common.js && node --check src/restore.js && node --check src/save.js && node --check src/gc.js && node --check src/pr-cleanup.js"
+    "test": "node --check src/common.js && node --check src/restore.js && node --check src/save.js && node --check src/gc.js && node --check src/pr-cleanup.js && node --check scripts/publish-pr-cache-artifacts.js && node --test tests/*.test.js"
   },
   "devDependencies": {
     "esbuild": "0.28.2"

@@ -9,21 +9,27 @@ const { pipeline } = require("stream/promises");
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
 
-function positiveEnvironmentLimit(name, fallback) {
-  const raw = process.env[name];
-  if (raw === undefined || raw === "") return fallback;
-  const value = Number(raw);
-  if (!Number.isSafeInteger(value) || value < 1) {
+function parsePositiveSafeInteger(value, name, fallback) {
+  if (value === undefined || value === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
     throw new Error(`${name} must be a positive safe integer`);
   }
-  return value;
+  return parsed;
+}
+
+function positiveEnvironmentLimit(name, fallback) {
+  return parsePositiveSafeInteger(process.env[name], name, fallback);
 }
 
 const maxCompressedBytes = positiveEnvironmentLimit(
   "CACHE_MAX_COMPRESSED_BYTES",
   2 * 1024 ** 3,
 );
-const maxTarBytes = positiveEnvironmentLimit("CACHE_MAX_TAR_BYTES", 8 * 1024 ** 3);
+const maxTarBytes = positiveEnvironmentLimit(
+  "CACHE_MAX_TAR_BYTES",
+  8 * 1024 ** 3,
+);
 const maxArchiveEntries = positiveEnvironmentLimit("CACHE_MAX_ENTRIES", 200000);
 const maxArchivePathLength = 4096;
 const defaultManifestReferenceLimit = 100000;
@@ -95,11 +101,70 @@ function configuredLimit(
   const environmentValue = process.env[environmentName];
   const configValue = configuration()[section]?.[configName];
   const value = environmentValue ?? configValue ?? fallback;
-  const limit = Number(value);
-  if (!Number.isInteger(limit) || limit < 1) {
-    throw new Error(`${environmentName} must be a positive integer`);
+  return parsePositiveSafeInteger(value, environmentName, fallback);
+}
+
+function validateCacheHash(hash) {
+  if (typeof hash !== "string" || !/^sha256:[a-f0-9]{64}$/i.test(hash)) {
+    throw new Error("cache object must be a sha256 hash");
   }
-  return limit;
+  return hash.toLowerCase();
+}
+
+function validateManifestReference(reference) {
+  if (!reference || typeof reference !== "object" || Array.isArray(reference)) {
+    throw new Error("manifest reference must be an object");
+  }
+  validateCacheHash(reference.object);
+  if (reference.size !== null && reference.size !== undefined) {
+    parsePositiveSafeInteger(reference.size, "manifest reference size");
+  }
+  if (
+    reference.updated_at !== undefined &&
+    !Number.isFinite(Date.parse(reference.updated_at))
+  ) {
+    throw new Error("manifest reference updated_at must be a valid timestamp");
+  }
+  return reference;
+}
+
+function validateManifest(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("manifest must be an object");
+  }
+  if (
+    !value.references ||
+    typeof value.references !== "object" ||
+    Array.isArray(value.references)
+  ) {
+    throw new Error("manifest references must be an object");
+  }
+  for (const reference of Object.values(value.references)) {
+    validateManifestReference(reference);
+  }
+  return value;
+}
+
+function createBoundedTransform(limit, errorMessage) {
+  const maxBytes = parsePositiveSafeInteger(limit, "stream limit");
+  let total = 0;
+  return new Transform({
+    transform(chunk, encoding, callback) {
+      total += chunk.length;
+      if (total > maxBytes) {
+        callback(new Error(errorMessage));
+        return;
+      }
+      callback(null, chunk);
+    },
+  });
+}
+
+function removeTemporaryFile(file) {
+  if (!file) return;
+  try {
+    fs.rmSync(file, { force: true, recursive: true });
+  } catch {}
 }
 
 function configuredCacheNames() {
@@ -1038,35 +1103,35 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
     zstd.once("error", reject);
     zstd.once("close", resolve);
   });
-  let total = 0;
-  const limiter = new Transform({
-    transform(chunk, encoding, callback) {
-      total += chunk.length;
-      if (total > maxBytes) {
-        callback(new Error("cache archive exceeds the uncompressed size limit"));
-        return;
-      }
-      callback(null, chunk);
-    },
-  });
+  const limiter = createBoundedTransform(
+    maxBytes,
+    "cache archive exceeds the uncompressed size limit",
+  );
   try {
     await pipeline(zstd.stdout, limiter, fs.createWriteStream(outputFile));
     const code = await exit;
     if (code !== 0) throw new Error("zstd decompression failed");
   } catch (error) {
     zstd.kill("SIGKILL");
+    removeTemporaryFile(outputFile);
     throw error;
   }
 }
 
-async function validateArchive(file) {
+async function validateArchiveFile(file) {
   const tarFile = path.join(path.dirname(file), "validation.tar");
-  if (fs.statSync(file).size > maxCompressedBytes) {
-    throw new Error("cache archive exceeds the compressed size limit");
+  try {
+    if (fs.statSync(file).size > maxCompressedBytes) {
+      throw new Error("cache archive exceeds the compressed size limit");
+    }
+    await decompressZstd(file, tarFile, maxTarBytes);
+    return inspectTar(tarFile);
+  } finally {
+    removeTemporaryFile(tarFile);
   }
-  await decompressZstd(file, tarFile, maxTarBytes);
-  inspectTar(tarFile);
 }
+
+const validateArchive = validateArchiveFile;
 
 function inspectTar(tarFile) {
   const tarSize = fs.statSync(tarFile).size;
@@ -1083,6 +1148,16 @@ function inspectTar(tarFile) {
     throw new Error("cache archive contains too many entries");
   if (names.some((name) => name.length > maxArchivePathLength)) {
     throw new Error("cache archive contains an excessively long path");
+  }
+  if (
+    names.some(
+      (name) =>
+        path.isAbsolute(name) ||
+        name.split("/").includes("..") ||
+        name.split("\\").includes(".."),
+    )
+  ) {
+    throw new Error("cache archive contains an unsafe path");
   }
   const details = cp.spawnSync("tar", ["-tvf", tarFile], { encoding: "utf8" });
   if (details.status)
@@ -1162,6 +1237,7 @@ function invalidateRepositoryCache(repository) {
 }
 
 async function object(repository, hash) {
+  validateCacheHash(hash);
   const result = await assets(repository);
   return result.assets.find(
     (asset) =>
@@ -1218,8 +1294,12 @@ async function manifest(repository) {
   const result = await gh(
     `/repos/${repository}/contents/manifests/references-v1.json?ref=${encodeURIComponent(branch)}`,
   );
+  const json = JSON.parse(
+    Buffer.from(result.body.content, "base64").toString(),
+  );
+  validateManifest(json);
   return {
-    json: JSON.parse(Buffer.from(result.body.content, "base64").toString()),
+    json,
     sha: result.body.sha,
   };
 }
@@ -1283,14 +1363,15 @@ async function updateManifestUnlocked(repository, message, update) {
 
 async function updateManifest(repository, message, update) {
   const previous = manifestLocks.get(repository) || Promise.resolve();
-  const current = previous.catch(() => {}).then(() =>
-    updateManifestUnlocked(repository, message, update),
-  );
+  const current = previous
+    .catch(() => {})
+    .then(() => updateManifestUnlocked(repository, message, update));
   manifestLocks.set(repository, current);
   try {
     return await current;
   } finally {
-    if (manifestLocks.get(repository) === current) manifestLocks.delete(repository);
+    if (manifestLocks.get(repository) === current)
+      manifestLocks.delete(repository);
   }
 }
 
@@ -1409,38 +1490,58 @@ async function deleteObject(repository, hash, invalidate = true) {
 }
 
 async function download(repository, hash) {
+  validateCacheHash(hash);
   const asset = await object(repository, hash);
   if (!asset) throw new Error(`object ${hash} not found`);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
-  const response = await fetch(asset.browser_download_url, {
-    headers: authorizationHeaders(),
-    signal: AbortSignal.timeout(120000),
+  try {
+    await downloadToFile(asset.browser_download_url, file, {
+      maxBytes: maxCompressedBytes,
+      timeoutMs: 120000,
+      headers: authorizationHeaders(),
+    });
+    if (digest(file) !== hash)
+      throw new Error("integrity check failed: sha256 mismatch");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
+async function downloadToFile(url, output, options = {}) {
+  const maxBytes = parsePositiveSafeInteger(
+    options.maxBytes ?? maxCompressedBytes,
+    "download size limit",
+  );
+  const timeoutMs = parsePositiveSafeInteger(
+    options.timeoutMs ?? 120000,
+    "download timeout",
+  );
+  const response = await fetch(url, {
+    headers: options.headers || {},
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) throw new Error(`download failed: ${response.status}`);
   const contentLength = Number(response.headers.get("content-length") || 0);
-  if (contentLength > maxCompressedBytes)
+  if (contentLength > maxBytes)
     throw new Error("cache archive exceeds the compressed size limit");
   if (!response.body) throw new Error("download response has no body");
-  let total = 0;
-  const limiter = new Transform({
-    transform(chunk, encoding, callback) {
-      total += chunk.length;
-      if (total > maxCompressedBytes) {
-        callback(new Error("cache archive exceeds the compressed size limit"));
-        return;
-      }
-      callback(null, chunk);
-    },
-  });
-  await pipeline(
-    Readable.fromWeb(response.body),
-    limiter,
-    fs.createWriteStream(file),
-  );
-  if (digest(file) !== hash)
-    throw new Error("integrity check failed: sha256 mismatch");
-  return file;
+  try {
+    await pipeline(
+      Readable.fromWeb(response.body),
+      createBoundedTransform(
+        maxBytes,
+        "cache archive exceeds the compressed size limit",
+      ),
+      fs.createWriteStream(output),
+    );
+  } catch (error) {
+    removeTemporaryFile(output);
+    throw error;
+  }
+  return output;
 }
 
 async function extract(file) {
@@ -1450,34 +1551,30 @@ async function extract(file) {
   }
   const decrypted = decryptFile(file);
   const tarFile = path.join(path.dirname(decrypted), "object.tar");
-  await decompressZstd(decrypted, tarFile, maxTarBytes);
-  const names = inspectTar(tarFile);
-  for (const name of names) {
-    if (
-      path.isAbsolute(name) ||
-      name.split("/").includes("..") ||
-      name.split("\\").includes("..")
-    ) {
-      throw new Error("unsafe archive path");
-    }
+  try {
+    await decompressZstd(decrypted, tarFile, maxTarBytes);
+    inspectTar(tarFile);
+    const extraction = cp.spawnSync(
+      "tar",
+      [
+        "--extract",
+        "--file",
+        tarFile,
+        "--directory",
+        workspace,
+        "--no-same-owner",
+        "--no-same-permissions",
+      ],
+      { stdio: ["ignore", "inherit", "inherit"] },
+    );
+    if (extraction.status) throw new Error("tar extraction failed");
+  } finally {
+    removeTemporaryFile(tarFile);
   }
-  const extraction = cp.spawnSync(
-    "tar",
-    [
-      "--extract",
-      "--file",
-      tarFile,
-      "--directory",
-      workspace,
-      "--no-same-owner",
-      "--no-same-permissions",
-    ],
-    { stdio: ["ignore", "inherit", "inherit"] },
-  );
-  if (extraction.status) throw new Error("tar extraction failed");
 }
 
 module.exports = {
+  parsePositiveSafeInteger,
   input,
   hasInput,
   token,
@@ -1517,6 +1614,14 @@ module.exports = {
   assetName,
   assetMatchesKeyCombination,
   hashFromAssetName,
+  validateCacheHash,
+  validateManifestReference,
+  validateManifest,
+  createBoundedTransform,
+  downloadToFile,
+  decompressZstd,
+  validateArchiveFile,
+  removeTemporaryFile,
   encryptFile,
   decryptFile,
   release,

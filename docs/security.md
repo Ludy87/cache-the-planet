@@ -66,6 +66,16 @@ env:
 
 ## Cache-Scope
 
+### Administrative Actions
+
+`gc` und `pr-cleanup` sind privilegierte Verwaltungs-Actions und dürfen nicht
+mit nicht vertrauenswürdigem Pull-Request-Code ausgeführt werden. `gc` läuft
+standardmäßig im Dry-Run und benötigt `dry-run: false` für Löschungen.
+`pr-cleanup` validiert Repository und PR-Nummer und beschränkt jede Änderung
+auf `untrusted/<repository>/pr-<number>/`. Für diese Jobs sind kurzlebige
+GitHub-App-Tokens mit minimalen `Contents`-Rechten gegenüber langlebigen PATs
+zu bevorzugen.
+
 Der `scope`-Input steuert die automatische Namespace-Auswahl:
 
 | Scope | Zweck | Speichern erlaubt aus |

@@ -1,0 +1,49 @@
+name: Content-addressed cache garbage collection
+description: Safely inspect or remove unreferenced content-addressed cache assets
+author: cache-the-planet
+inputs:
+  repository:
+    description: owner/name of the cache repository
+    required: true
+  token:
+    description: GitHub token; defaults to GITHUB_TOKEN
+    required: false
+  mode:
+    description: orphan, expired, object, or all
+    required: false
+    default: orphan
+  object:
+    description: SHA-256 hash or asset filename for object mode
+    required: false
+  dry-run:
+    description: Do not delete assets or references unless explicitly false
+    required: false
+    default: "true"
+  grace-days:
+    description: Minimum age in days for orphan assets
+    required: false
+    default: "7"
+  untrusted-ttl-hours:
+    description: Lifetime of untrusted PR references in hours
+    required: false
+    default: "24"
+  expire-all-untrusted:
+    description: Expire all untrusted references when explicitly enabled
+    required: false
+    default: "false"
+  delete-shared:
+    description: Permit shared cleanup only for an explicit manual expired run
+    required: false
+    default: "false"
+runs:
+  using: node24
+  main: ../dist/gc.js
+outputs:
+  mode:
+    description: Effective garbage collection mode
+  dry-run:
+    description: true when no deletion was permitted
+  deleted-assets:
+    description: Number of assets deleted during this run
+  removed-references:
+    description: Number of manifest references removed during this run

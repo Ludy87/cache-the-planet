@@ -69,5 +69,8 @@ jobs:
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          EXPECTED_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          EXPECTED_WORKFLOW: Cache integration save suite
+          CACHE_CONFIG_FILE: .cache-the-planet.json
           PR_CACHE_ARTIFACTS_DIR: ${{ github.workspace }}/pr-cache-artifacts
         run: node scripts/publish-pr-cache-artifacts.js

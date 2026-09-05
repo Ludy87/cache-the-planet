@@ -46,6 +46,13 @@ werden.
 
 ## Aufräumen und Erweiterbarkeit
 
+Administrative Aufräumarbeiten können über `gc/action.yml` und
+`pr-cleanup/action.yml` wiederverwendet werden. Garbage Collection ist
+standardmäßig ein Dry-Run. PR-Cleanup akzeptiert nur ein explizites
+Repository/PR-Paar und löscht ausschließlich Referenzen unter
+`untrusted/<repository>/pr-<number>/`. Beide Actions verwenden die durch CI
+erzeugten Bundles aus `dist/`.
+
 Die Garbage-Collection entfernt nicht mehr referenzierte oder ausreichend alte
 Assets. Untrusted-PR-Referenzen laufen im geplanten Lauf nach 24 Stunden ab.
 Ein manueller `expired`-Lauf kann alle Untrusted-Referenzen löschen; Shared-

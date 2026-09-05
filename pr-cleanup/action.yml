@@ -1,0 +1,24 @@
+name: Content-addressed pull request cache cleanup
+description: Remove only the isolated cache namespace belonging to one closed pull request
+author: cache-the-planet
+inputs:
+  repository:
+    description: owner/name of the cache repository
+    required: true
+  token:
+    description: GitHub token; defaults to GITHUB_TOKEN
+    required: false
+  pr-repository:
+    description: owner/name of the repository that owns the pull request
+    required: true
+  pr-number:
+    description: Numeric pull request number
+    required: true
+runs:
+  using: node24
+  main: ../dist/pr-cleanup.js
+outputs:
+  removed-references:
+    description: Number of pull request references removed
+  deleted-assets:
+    description: Number of unreferenced pull request assets deleted

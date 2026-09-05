@@ -2,23 +2,51 @@ const c = require("./common");
 
 (async () => {
   try {
+    const setOutput = (name, value) => {
+      if (process.env.GITHUB_OUTPUT) {
+        require("fs").appendFileSync(
+          process.env.GITHUB_OUTPUT,
+          `${name}=${value}\n`,
+        );
+      }
+    };
     const repository = process.env.CACHE_REPOSITORY || c.input("repository");
-    const requestedMode = process.env.GC_MODE || "";
+    const requestedMode = process.env.GC_MODE || c.input("mode");
     const mode = process.argv.includes("--all")
       ? "all"
       : process.argv.includes("--object")
         ? "object"
         : requestedMode || "orphan";
-    const objectValue = process.env.GC_OBJECT || "";
+    const objectValue = process.env.GC_OBJECT || c.input("object");
     const dryRun =
-      process.argv.includes("--dry-run") || process.env.DRY_RUN !== "false";
-    const gracePeriod = Number(process.env.GRACE_DAYS || 7) * 86400000;
-    const untrustedTtl =
-      Number(process.env.UNTRUSTED_TTL_HOURS || 24) * 3600000;
-    const expireAllUntrusted = process.env.GC_EXPIRE_ALL_UNTRUSTED === "true";
+      process.argv.includes("--dry-run") ||
+      (process.env.DRY_RUN || c.input("dry-run")) !== "false";
+    const graceDays = c.parsePositiveSafeInteger(
+      process.env.GRACE_DAYS || c.input("grace-days"),
+      "GRACE_DAYS",
+      7,
+    );
+    const ttlHours = c.parsePositiveSafeInteger(
+      process.env.UNTRUSTED_TTL_HOURS || c.input("untrusted-ttl-hours"),
+      "UNTRUSTED_TTL_HOURS",
+      24,
+    );
+    const gracePeriod = graceDays * 86400000;
+    const untrustedTtl = ttlHours * 3600000;
+    const expireAllUntrusted =
+      (process.env.GC_EXPIRE_ALL_UNTRUSTED ||
+        c.input("expire-all-untrusted")) === "true";
     const deleteShared =
       process.env.GITHUB_EVENT_NAME === "workflow_dispatch" &&
-      process.env.GC_DELETE_SHARED === "true";
+      (process.env.GC_DELETE_SHARED || c.input("delete-shared")) === "true";
+    let deletedAssets = 0;
+    let removedReferences = 0;
+    setOutput("mode", mode);
+    setOutput("dry-run", dryRun ? "true" : "false");
+    const report = () => {
+      setOutput("deleted-assets", deletedAssets);
+      setOutput("removed-references", removedReferences);
+    };
     const manifest = await c.refs(repository);
     const references = manifest.json.references;
     const liveObjects = new Set(
@@ -57,6 +85,7 @@ const c = require("./common");
                 );
             for (const [key] of candidates) {
               delete current.references[key];
+              removedReferences += 1;
               changed = true;
             }
             return changed;
@@ -95,7 +124,9 @@ const c = require("./common");
           await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
             method: "DELETE",
           });
+        deletedAssets += 1;
       }
+      report();
       return;
     }
 
@@ -106,6 +137,7 @@ const c = require("./common");
           await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
             method: "DELETE",
           });
+        deletedAssets += 1;
       }
       if (Object.keys(references).length && !dryRun) {
         await c.updateManifest(
@@ -113,6 +145,7 @@ const c = require("./common");
           "cache: clear all references",
           (current) => {
             if (!Object.keys(current.references).length) return false;
+            removedReferences += Object.keys(current.references).length;
             current.references = {};
             return true;
           },
@@ -123,6 +156,7 @@ const c = require("./common");
           `would clear ${Object.keys(references).length} manifest reference(s)`,
         );
       }
+      report();
       return;
     }
 
@@ -147,6 +181,7 @@ const c = require("./common");
           await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
             method: "DELETE",
           });
+        deletedAssets += 1;
       } else {
         console.log(`object not found: ${hash}`);
       }
@@ -162,6 +197,7 @@ const c = require("./common");
             for (const key of matchingKeys) {
               if (current.references[key]?.object === hash) {
                 delete current.references[key];
+                removedReferences += 1;
                 changed = true;
               }
             }
@@ -173,6 +209,7 @@ const c = require("./common");
         console.log(
           `would remove ${matchingKeys.length} manifest reference(s)`,
         );
+      report();
       return;
     }
 
@@ -190,6 +227,7 @@ const c = require("./common");
         }
       }
     }
+    report();
   } catch (error) {
     c.fail(error);
   }

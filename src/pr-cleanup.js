@@ -3,16 +3,24 @@ const c = require("./common");
 (async () => {
   try {
     const repository = process.env.CACHE_REPOSITORY || c.input("repository");
-    const sourceRepository = process.env.PR_REPOSITORY;
-    const number = process.env.PR_NUMBER;
+    const sourceRepository =
+      process.env.PR_REPOSITORY || c.input("pr-repository");
+    const number = process.env.PR_NUMBER || c.input("pr-number");
     if (!repository || !sourceRepository || !number) {
       throw new Error(
         "CACHE_REPOSITORY, PR_REPOSITORY and PR_NUMBER are required",
       );
     }
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(sourceRepository)) {
+      throw new Error("PR_REPOSITORY must be an owner/name repository");
+    }
+    if (!/^\d+$/.test(String(number)) || Number(number) < 1) {
+      throw new Error("PR_NUMBER must be a positive integer");
+    }
 
     const prefix = `untrusted/${sourceRepository}/pr-${number}/`;
     let removed = [];
+    let deletedAssets = 0;
     const updatedManifest = await c.updateManifest(
       repository,
       `cache: remove closed PR ${sourceRepository}#${number}`,
@@ -46,12 +54,19 @@ const c = require("./common");
         await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
           method: "DELETE",
         });
+        deletedAssets += 1;
         console.log(`deleted PR cache asset ${asset.name}`);
       }
     }
     console.log(
       `removed ${removed.length} references for ${sourceRepository}#${number}`,
     );
+    if (process.env.GITHUB_OUTPUT) {
+      require("fs").appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `removed-references=${removed.length}\ndeleted-assets=${deletedAssets}\n`,
+      );
+    }
   } catch (error) {
     c.fail(error);
   }

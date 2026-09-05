@@ -689,6 +689,14 @@ zuerst ein Dry-Run ausgeführt werden; für die Löschung muss `dry_run: false`
 gesetzt werden. Shared-Caches werden manuell mit `delete_shared: true` und
 `mode: expired` einbezogen.
 
+Für wiederverwendbare Verwaltungsjobs gibt es außerdem `gc/action.yml` und
+`pr-cleanup/action.yml`. Die GC-Action startet immer mit `dry-run: true` und
+benötigt für Löschungen ausdrücklich `dry-run: false`. Die PR-Cleanup-Action
+akzeptiert ein konkretes `pr-repository`/`pr-number`-Paar und löscht nur den
+zugehörigen `untrusted/<repository>/pr-<number>/`-Namensraum. Beide Actions
+sollten ausschließlich in vertrauenswürdigen Jobs mit minimalen Contents-
+Rechten ausgeführt werden.
+
 ## Installation und Versionierung
 
 Im Client-Repository genügt die Referenz auf den Release-Tag:

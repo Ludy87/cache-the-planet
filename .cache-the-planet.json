@@ -1,11 +1,5 @@
 {
-  "monitoring": {
-    "max_manifest_references": 100000,
-    "max_manifest_writes_per_hour": 1000
-  },
   "security": {
-    "max_logical_key_length": 512,
-    "max_logical_key_components": 16,
     "allowed_cache_names": [
       "npm",
       "uv",
