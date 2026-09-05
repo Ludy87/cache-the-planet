@@ -109,8 +109,6 @@ function main() {
       "publisher must use .cache-the-planet.json from the default branch",
     );
   const allowedCacheNames = common.configuredCacheNames();
-  if (!allowedCacheNames?.length)
-    throw new Error(".cache-the-planet.json must define allowed_cache_names");
   const run = validateWorkflowRunIdentity(
     parseWorkflowRunEvent(JSON.parse(fs.readFileSync(eventPath, "utf8"))),
     repository,
@@ -161,7 +159,7 @@ function main() {
           env: {
             ...process.env,
             CACHE_CONFIG_FILE: "",
-            CACHE_ALLOWED_CACHE_NAMES: allowedCacheNames.join(","),
+            CACHE_ALLOWED_CACHE_NAMES: allowedCacheNames?.join(",") || "",
             GITHUB_EVENT_NAME: "pull_request",
             GITHUB_EVENT_PATH: eventFile,
             GITHUB_REF: `refs/pull/${number}/merge`,

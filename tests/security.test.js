@@ -190,6 +190,23 @@ test("the trusted default-branch configuration defines the cache allowlist", () 
   assert.ok(!config.security.allowed_cache_names.includes("uv-python"));
 });
 
+test("an absent or empty cache allowlist permits valid cache names", () => {
+  assert.doesNotThrow(() =>
+    publisher.validateArtifactName(
+      "cache-the-planet-pr-7-new-cache-abcdef12-v1",
+      7,
+    ),
+  );
+  assert.throws(
+    () =>
+      publisher.validateArtifactName(
+        "cache-the-planet-pr-7-invalid.name-abcdef12-v1",
+        7,
+      ),
+    /invalid PR cache artifact name/,
+  );
+});
+
 test("workflow security invariants remain present", () => {
   const workflowRoot = path.join(__dirname, "..", ".github", "workflows");
   for (const file of fs

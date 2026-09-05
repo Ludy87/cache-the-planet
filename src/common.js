@@ -176,10 +176,14 @@ function configuredCacheNames() {
         .map((value) => value.trim())
         .filter(Boolean)
     : configValue;
-  if (names === undefined) return null;
+  if (
+    names === undefined ||
+    names === null ||
+    (Array.isArray(names) && names.length === 0)
+  )
+    return null;
   if (
     !Array.isArray(names) ||
-    names.length === 0 ||
     names.some((value) => !/^[A-Za-z0-9_-]{1,32}$/.test(value))
   ) {
     throw new Error(
