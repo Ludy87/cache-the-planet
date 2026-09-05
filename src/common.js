@@ -775,16 +775,17 @@ async function gh(url, options = {}) {
 }
 
 async function upload(url, file, name, contentType) {
-  const bytes = fs.readFileSync(file);
+  const size = fs.statSync(file).size;
   const response = await fetch(url, {
     method: "POST",
     headers: {
       ...authorizationHeaders(),
       "Content-Type": contentType,
-      "Content-Length": bytes.length,
+      "Content-Length": size,
       "X-GitHub-Api-Version": apiVersion,
     },
-    body: bytes,
+    body: fs.createReadStream(file),
+    duplex: "half",
   });
   if (response.ok) return JSON.parse(await response.text());
   const text = await response.text();
@@ -883,48 +884,64 @@ function encryptionKey() {
 function encryptFile(file) {
   const key = encryptionKey();
   if (!key) return file;
-  const plaintext = fs.readFileSync(file);
   // Deriving the nonce from the compressed content keeps identical encrypted
   // caches deduplicable while remaining unique for different content.
-  const nonce = crypto
-    .createHash("sha256")
-    .update(plaintext)
-    .digest()
-    .subarray(0, 12);
+  const nonce = digestBytes(file).subarray(0, 12);
   const cipher = crypto.createCipheriv("aes-256-gcm", key, nonce);
-  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
   const encrypted = `${file}.enc`;
-  fs.writeFileSync(
-    encrypted,
-    Buffer.concat([encryptionMagic, nonce, cipher.getAuthTag(), ciphertext]),
-  );
-  fs.unlinkSync(file);
+  const input = fs.openSync(file, "r");
+  const output = fs.openSync(encrypted, "w");
+  try {
+    fs.writeSync(output, encryptionMagic);
+    fs.writeSync(output, nonce);
+    const tagOffset = encryptionMagic.length + nonce.length;
+    fs.writeSync(output, Buffer.alloc(16));
+    transformFile(input, output, cipher);
+    const finalChunk = cipher.final();
+    if (finalChunk.length) fs.writeSync(output, finalChunk);
+    fs.writeSync(output, cipher.getAuthTag(), 0, 16, tagOffset);
+  } finally {
+    fs.closeSync(input);
+    fs.closeSync(output);
+  }
+  fs.rmSync(file, { force: true });
   fs.renameSync(encrypted, file);
   return file;
 }
 
 function decryptFile(file) {
-  const inputBuffer = fs.readFileSync(file);
-  if (!inputBuffer.subarray(0, encryptionMagic.length).equals(encryptionMagic))
+  const input = fs.openSync(file, "r");
+  const header = Buffer.alloc(encryptionMagic.length + 12 + 16);
+  try {
+    fs.readSync(input, header, 0, header.length, 0);
+  } finally {
+    fs.closeSync(input);
+  }
+  if (!header.subarray(0, encryptionMagic.length).equals(encryptionMagic))
     return file;
   const key = encryptionKey();
   if (!key)
     throw new Error("encrypted cache requires the encryption-key input");
   const offset = encryptionMagic.length;
-  const nonce = inputBuffer.subarray(offset, offset + 12);
-  const tag = inputBuffer.subarray(offset + 12, offset + 28);
-  const ciphertext = inputBuffer.subarray(offset + 28);
+  const nonce = header.subarray(offset, offset + 12);
+  const tag = header.subarray(offset + 12, offset + 28);
+  const decrypted = `${file}.decrypted`;
   try {
     const decipher = crypto.createDecipheriv("aes-256-gcm", key, nonce);
     decipher.setAuthTag(tag);
-    const plaintext = Buffer.concat([
-      decipher.update(ciphertext),
-      decipher.final(),
-    ]);
-    const decrypted = `${file}.decrypted`;
-    fs.writeFileSync(decrypted, plaintext);
+    const source = fs.openSync(file, "r");
+    const destination = fs.openSync(decrypted, "w");
+    try {
+      transformFile(source, destination, decipher, offset + 28);
+      const finalChunk = decipher.final();
+      if (finalChunk.length) fs.writeSync(destination, finalChunk);
+    } finally {
+      fs.closeSync(source);
+      fs.closeSync(destination);
+    }
     return decrypted;
   } catch {
+    removeTemporaryFile(decrypted);
     throw new Error(
       "encrypted cache could not be decrypted; check encryption-key",
     );
@@ -1178,10 +1195,42 @@ function inspectTar(tarFile) {
   return names;
 }
 
-function digest(file) {
+function transformFile(input, output, transform, position = 0) {
+  const buffer = Buffer.allocUnsafe(1024 * 1024);
+  let offset = position;
+  let bytesRead;
+  do {
+    bytesRead = fs.readSync(input, buffer, 0, buffer.length, offset);
+    if (bytesRead) {
+      const chunk = transform.update(buffer.subarray(0, bytesRead));
+      if (chunk.length) fs.writeSync(output, chunk);
+      offset += bytesRead;
+    }
+  } while (bytesRead);
+}
+
+function digestBytes(file) {
   const hash = crypto.createHash("sha256");
-  hash.update(fs.readFileSync(file));
-  return `sha256:${hash.digest("hex")}`;
+  const input = fs.openSync(file, "r");
+  const buffer = Buffer.allocUnsafe(1024 * 1024);
+  try {
+    let offset = 0;
+    let bytesRead;
+    do {
+      bytesRead = fs.readSync(input, buffer, 0, buffer.length, offset);
+      if (bytesRead) {
+        hash.update(buffer.subarray(0, bytesRead));
+        offset += bytesRead;
+      }
+    } while (bytesRead);
+  } finally {
+    fs.closeSync(input);
+  }
+  return hash.digest();
+}
+
+function digest(file) {
+  return `sha256:${digestBytes(file).toString("hex")}`;
 }
 
 async function release(repository) {
@@ -1245,9 +1294,25 @@ async function object(repository, hash) {
   const result = await assets(repository);
   return result.assets.find(
     (asset) =>
-      asset.name === `${hash.slice(7)}.tar.zst` ||
-      asset.name.endsWith(`--${hash.slice(7)}.tar.zst`),
+      isSafeAsset(asset) &&
+      (asset.name === `${hash.slice(7)}.tar.zst` ||
+        asset.name.endsWith(`--${hash.slice(7)}.tar.zst`)),
   );
+}
+
+function isSafeAsset(asset) {
+  if (!asset || typeof asset.name !== "string") return false;
+  if (
+    asset.name.length > 255 ||
+    !/^[^/\\\0]+\.tar\.zst$/i.test(asset.name)
+  )
+    return false;
+  try {
+    const url = new URL(asset.browser_download_url);
+    return url.protocol === "https:" && url.hostname === "github.com";
+  } catch {
+    return false;
+  }
 }
 
 function assetNamePrefix(key) {
@@ -1618,6 +1683,7 @@ module.exports = {
   assetName,
   assetMatchesKeyCombination,
   hashFromAssetName,
+  isSafeAsset,
   validateCacheHash,
   validateManifestReference,
   validateManifest,

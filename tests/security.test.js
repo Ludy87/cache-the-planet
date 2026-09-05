@@ -65,6 +65,47 @@ test("cache hashes and manifest references are validated", () => {
   );
 });
 
+test("release assets are constrained before download", () => {
+  const hash = "a".repeat(64);
+  const safe = {
+    name: `trusted-owner-repo-main-cache--${hash}.tar.zst`,
+    browser_download_url: `https://github.com/owner/repo/releases/download/cache-v1/${hash}.tar.zst`,
+  };
+  assert.equal(common.isSafeAsset(safe), true);
+  assert.equal(
+    common.isSafeAsset({
+      ...safe,
+      name: `../outside--${hash}.tar.zst`,
+    }),
+    false,
+  );
+  assert.equal(
+    common.isSafeAsset({
+      ...safe,
+      browser_download_url: `https://attacker.example/${hash}.tar.zst`,
+    }),
+    false,
+  );
+});
+
+test("encryption and hashing do not load the complete archive", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-stream-test-"));
+  const file = path.join(root, "archive.bin");
+  const previousKey = process.env["INPUT_ENCRYPTION-KEY"];
+  try {
+    process.env["INPUT_ENCRYPTION-KEY"] = "0123456789abcdef".repeat(4);
+    fs.writeFileSync(file, Buffer.alloc(3 * 1024 * 1024 + 17, 7));
+    const originalHash = common.digest(file);
+    common.encryptFile(file);
+    const decrypted = common.decryptFile(file);
+    assert.equal(common.digest(decrypted), originalHash);
+  } finally {
+    if (previousKey === undefined) delete process.env["INPUT_ENCRYPTION-KEY"];
+    else process.env["INPUT_ENCRYPTION-KEY"] = previousKey;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("bounded downloads stream successfully and enforce the byte limit", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-test-"));
   const output = path.join(root, "download.bin");

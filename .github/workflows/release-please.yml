@@ -46,7 +46,7 @@ jobs:
         with:
           ref: ${{ steps.release.outputs.sha }}
           token: ${{ steps.bot-token.outputs.token || github.token }}
-          persist-credentials: true
+          persist-credentials: false
 
       - name: Update floating major and minor tags
         if: steps.release.outputs.release_created == 'true'
