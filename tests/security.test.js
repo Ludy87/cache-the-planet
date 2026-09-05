@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const childProcess = require("node:child_process");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -6,6 +7,26 @@ const test = require("node:test");
 
 const common = require("../src/common");
 const publisher = require("../scripts/publish-pr-cache-artifacts");
+
+function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
+  const configPath = path.join(workspace, ".cache-the-planet.json");
+  fs.writeFileSync(configPath, JSON.stringify(config));
+  const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
+    process.env["INPUT_CACHE-NAME"] = ${JSON.stringify(cacheName)};
+    const { cacheName } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+    process.stdout.write(cacheName());
+  `;
+  const result = childProcess.spawnSync(process.execPath, ["-e", script], {
+    cwd: workspace,
+    env: { ...process.env, ...extraEnv },
+    encoding: "utf8",
+  });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result;
+}
 
 test("positive limits accept safe integers and reject unsafe values", () => {
   assert.equal(common.parsePositiveSafeInteger("12", "LIMIT"), 12);
@@ -188,6 +209,63 @@ test("the trusted default-branch configuration defines the cache allowlist", () 
   assert.ok(Array.isArray(config.security?.allowed_cache_names));
   assert.ok(config.security.allowed_cache_names.includes("uv-python-3-13"));
   assert.ok(!config.security.allowed_cache_names.includes("uv-python"));
+});
+
+test("cache configuration allows, rejects, and defaults allowlists safely", () => {
+  const allowed = runCacheNameWithConfig({
+    security: { allowed_cache_names: ["npm", "uv"] },
+  });
+  assert.equal(allowed.status, 0);
+  assert.equal(allowed.stdout, "npm");
+
+  const rejected = runCacheNameWithConfig(
+    { security: { allowed_cache_names: ["npm"] } },
+    "uv",
+  );
+  assert.notEqual(rejected.status, 0);
+  assert.match(rejected.stderr, /not allowed by the configured cache-name allowlist/);
+
+  for (const config of [
+    {},
+    { security: {} },
+    { security: { allowed_cache_names: [] } },
+  ]) {
+    const unrestricted = runCacheNameWithConfig(config, "new-cache");
+    assert.equal(unrestricted.status, 0);
+    assert.equal(unrestricted.stdout, "new-cache");
+  }
+});
+
+test("cache configuration rejects malformed allowlists and paths outside the workspace", () => {
+  for (const config of [
+    { security: { allowed_cache_names: "npm" } },
+    { security: { allowed_cache_names: ["invalid.name"] } },
+    { security: { allowed_cache_names: [""] } },
+  ]) {
+    const invalid = runCacheNameWithConfig(config);
+    assert.notEqual(invalid.status, 0);
+    assert.match(invalid.stderr, /allowed_cache_names must be a non-empty list/);
+  }
+
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-path-"));
+  try {
+    const script = `
+      process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+      process.env.CACHE_CONFIG_FILE = "../outside.json";
+      process.env["INPUT_CACHE-NAME"] = "npm";
+      const { cacheName } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+      cacheName();
+    `;
+    const result = childProcess.spawnSync(process.execPath, ["-e", script], {
+      cwd: workspace,
+      env: process.env,
+      encoding: "utf8",
+    });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /config-file must be inside the GitHub workspace/);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
 });
 
 test("an absent or empty cache allowlist permits valid cache names", () => {
