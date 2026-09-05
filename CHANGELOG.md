@@ -8,6 +8,18 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.2.5](https://github.com/Ludy87/cache-the-planet/compare/v1.2.4...v1.2.5) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** harden release workflow token handling ([#61](https://github.com/Ludy87/cache-the-planet/issues/61)) ([a051ce5](https://github.com/Ludy87/cache-the-planet/commit/a051ce553c63807bb75b6627604b8275c25a3109))
+
+
+### Security
+
+* harden cache validation and API requests ([#60](https://github.com/Ludy87/cache-the-planet/issues/60)) ([5462103](https://github.com/Ludy87/cache-the-planet/commit/5462103453bd6a4f6289507cff2703cad6841f2e))
+
 ## [1.2.4](https://github.com/Ludy87/cache-the-planet/compare/v1.2.3...v1.2.4) (2026-09-05)
 
 
