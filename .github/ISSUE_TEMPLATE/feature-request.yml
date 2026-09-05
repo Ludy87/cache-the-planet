@@ -1,0 +1,45 @@
+name: Verbesserung vorschlagen
+description: Eine Verbesserung oder neue Funktion für cache-the-planet vorschlagen
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+      description: Beschreibe den Anwendungsfall und wer davon profitieren würde.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Vorschlag
+      description: Wie sollte die gewünschte Funktion oder Änderung funktionieren?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen
+      description: Welche bestehenden Lösungen oder Workarounds hast du geprüft?
+
+  - type: textarea
+    id: security
+    attributes:
+      label: Auswirkungen auf Sicherheit und Kompatibilität
+      description: Könnte der Vorschlag Cache-Scopes, Secrets, Archive, Berechtigungen oder bestehende v1-Objekte beeinflussen?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checkliste
+      options:
+        - label: Ich habe geprüft, dass kein bestehendes Issue denselben Vorschlag beschreibt.
+          required: true
+        - label: Ich habe keine vertraulichen Daten in den Vorschlag aufgenommen.
+          required: true

@@ -1,0 +1,64 @@
+name: Fehler melden
+description: Einen reproduzierbaren Fehler in cache-the-planet melden
+title: "fix: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für den Fehlerbericht. Bitte entferne Tokens, Secrets und andere vertrauliche Werte aus Logs und Beispielen.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Fehlerbeschreibung
+      description: Was ist passiert und was hast du erwartet?
+      placeholder: |
+        Erwartetes Verhalten:
+        Tatsächliches Verhalten:
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduktion
+      description: Füge die kleinstmögliche Konfiguration oder Workflow-Sequenz ein, mit der der Fehler auftritt.
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevante Logs
+      description: Füge gekürzte Logs oder Fehlermeldungen ohne Secrets ein.
+      render: text
+
+  - type: input
+    id: version
+    attributes:
+      label: Version oder Commit
+      placeholder: v1.2.3 oder abc1234
+    validations:
+      required: true
+
+  - type: input
+    id: runner
+    attributes:
+      label: Runner-Umgebung
+      description: Betriebssystem, Architektur sowie relevante Node-, tar- und zstd-Versionen
+      placeholder: ubuntu-24.04, x64, Node 24
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checkliste
+      options:
+        - label: Ich habe geprüft, dass der Bericht keine Tokens, Secrets oder sensiblen Cache-Inhalte enthält.
+          required: true
+        - label: Ich habe nach bestehenden Issues mit demselben Problem gesucht.
+          required: true
