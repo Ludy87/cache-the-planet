@@ -46,6 +46,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   uv-save-cache:
     needs: [node-save-cache]
@@ -55,6 +58,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   uv-python-save-cache:
     needs: [uv-save-cache]
@@ -64,6 +70,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   task-save-cache:
     needs: [uv-python-save-cache]
@@ -73,6 +82,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   java-save-cache:
     needs: [task-save-cache]
@@ -82,6 +94,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   gradle-save-cache:
     needs: [java-save-cache]
@@ -91,6 +106,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   docker-save-cache:
     needs: [gradle-save-cache]
@@ -100,6 +118,9 @@ jobs:
       save-cache: true
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   all-save-checks-passed:
     name: All save checks passed

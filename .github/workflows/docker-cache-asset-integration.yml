@@ -11,6 +11,12 @@ on:
         type: boolean
         default: false
 
+    secrets:
+      APP_ID:
+        required: false
+      APP_PRIVATE_KEY:
+        required: false
+
 env:
   CACHE_REPOSITORY: Ludy87/cache-the-planet
   CACHE_MANIFEST_BRANCH: cache-data
@@ -49,8 +55,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
     steps:
+      - name: Create AstraGermany-Bot token for trusted save
+        if: ${{ github.event_name != 'pull_request' && secrets.APP_ID != '' && secrets.APP_PRIVATE_KEY != '' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -69,7 +86,7 @@ jobs:
           repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           scope: auto
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           allow-shared-restore: true
@@ -110,7 +127,7 @@ jobs:
           # default-branch cache on main; the action creates the shared alias
           # only from the default branch when appropriate.
           scope: shared
-          token: ${{ github.token }}
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           path: examples/docker-cache/.cache/docker-buildx
