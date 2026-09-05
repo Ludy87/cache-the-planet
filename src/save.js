@@ -74,11 +74,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
   try {
     const repository = c.input("repository");
     const isFork = c.isForkPullRequest();
-    const setOutput = (name, value) => {
-      if (process.env.GITHUB_OUTPUT) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
-      }
-    };
+    const setOutput = c.setOutput;
     setOutput("is_fork", isFork ? "true" : "false");
     setOutput("read_only", isFork ? "true" : "false");
     const key = c.scopedKey(c.input("key"));
@@ -160,10 +156,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `shared cache already exists; isolated PR cache publish skipped: key=${sharedEquivalent}`,
         );
         if (process.env.GITHUB_OUTPUT) {
-          fs.appendFileSync(
-            process.env.GITHUB_OUTPUT,
-            `content-hash=${current.json.references[sharedEquivalent].object}\nasset-name=${sharedAsset.name}\n`,
-          );
+          setOutput("content-hash", current.json.references[sharedEquivalent].object);
+          setOutput("asset-name", sharedAsset.name);
         }
         return;
       }
@@ -203,10 +197,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `cache already exists for key=${key}; asset=${existingAssetName}`,
         );
         if (process.env.GITHUB_OUTPUT) {
-          fs.appendFileSync(
-            process.env.GITHUB_OUTPUT,
-            `content-hash=${existingReference.object}\nasset-name=${existingAssetName}\n`,
-          );
+          setOutput("content-hash", existingReference.object);
+          setOutput("asset-name", existingAssetName);
         }
         let updated = current.json;
         if (sharedKey || trustedKey) {
@@ -283,10 +275,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           }
         }
         if (process.env.GITHUB_OUTPUT) {
-          fs.appendFileSync(
-            process.env.GITHUB_OUTPUT,
-            `content-hash=${hash}\nasset-name=${existing?.name || name}\ncache-size=${fs.statSync(archive.file).size}\n`,
-          );
+          setOutput("content-hash", hash);
+          setOutput("asset-name", existing?.name || name);
+          setOutput("cache-size", fs.statSync(archive.file).size);
         }
         console.log(
           `Cache saved: key=${key}; asset=${existing?.name || name}; content-hash=${hash}`,
@@ -323,10 +314,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `linked existing cache reference: key=${key}; source=${relatedKey}`,
         );
         if (process.env.GITHUB_OUTPUT) {
-          fs.appendFileSync(
-            process.env.GITHUB_OUTPUT,
-            `content-hash=${relatedReference.object}\nasset-name=${relatedAsset.name}\n`,
-          );
+          setOutput("content-hash", relatedReference.object);
+          setOutput("asset-name", relatedAsset.name);
         }
         return;
       }
@@ -389,10 +378,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
     await cleanupDuplicateAssets(repository, key, hash, updated);
     if (process.env.GITHUB_OUTPUT) {
-      fs.appendFileSync(
-        process.env.GITHUB_OUTPUT,
-        `content-hash=${hash}\nasset-name=${existing?.name || name}\ncache-size=${fs.statSync(archive.file).size}\n`,
-      );
+      setOutput("content-hash", hash);
+      setOutput("asset-name", existing?.name || name);
+      setOutput("cache-size", fs.statSync(archive.file).size);
     }
     console.log(
       `Cache saved: key=${key}; asset=${existing?.name || name}; content-hash=${hash}`,
@@ -406,7 +394,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       (error.status === 401 || error.status === 403)
     ) {
       if (process.env.GITHUB_OUTPUT) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT, "read_only=true\n");
+        c.setOutput("read_only", "true");
       }
       c.log(
         `pull request cache save skipped: repository access denied (${error.status})`,

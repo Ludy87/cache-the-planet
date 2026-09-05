@@ -2,14 +2,6 @@ const c = require("./common");
 
 (async () => {
   try {
-    const setOutput = (name, value) => {
-      if (process.env.GITHUB_OUTPUT) {
-        require("fs").appendFileSync(
-          process.env.GITHUB_OUTPUT,
-          `${name}=${value}\n`,
-        );
-      }
-    };
     const repository = process.env.CACHE_REPOSITORY || c.input("repository");
     const requestedMode = process.env.GC_MODE || c.input("mode");
     const mode = process.argv.includes("--all")
@@ -41,11 +33,11 @@ const c = require("./common");
       (process.env.GC_DELETE_SHARED || c.input("delete-shared")) === "true";
     let deletedAssets = 0;
     let removedReferences = 0;
-    setOutput("mode", mode);
-    setOutput("dry-run", dryRun ? "true" : "false");
+    c.setOutput("mode", mode);
+    c.setOutput("dry-run", dryRun ? "true" : "false");
     const report = () => {
-      setOutput("deleted-assets", deletedAssets);
-      setOutput("removed-references", removedReferences);
+      c.setOutput("deleted-assets", deletedAssets);
+      c.setOutput("removed-references", removedReferences);
     };
     const manifest = await c.refs(repository);
     const references = manifest.json.references;

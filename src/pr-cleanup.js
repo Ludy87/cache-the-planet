@@ -61,12 +61,8 @@ const c = require("./common");
     console.log(
       `removed ${removed.length} references for ${sourceRepository}#${number}`,
     );
-    if (process.env.GITHUB_OUTPUT) {
-      require("fs").appendFileSync(
-        process.env.GITHUB_OUTPUT,
-        `removed-references=${removed.length}\ndeleted-assets=${deletedAssets}\n`,
-      );
-    }
+    c.setOutput("removed-references", removed.length);
+    c.setOutput("deleted-assets", deletedAssets);
   } catch (error) {
     c.fail(error);
   }

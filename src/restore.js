@@ -1,12 +1,6 @@
 const fs = require("fs");
 const c = require("./common");
 
-function setOutput(name, value) {
-  if (process.env.GITHUB_OUTPUT) {
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
-  }
-}
-
 (async () => {
   try {
     const repository = c.input("repository");
@@ -58,8 +52,8 @@ function setOutput(name, value) {
     }
 
     if (!found) {
-      setOutput("cache-hit", "false");
-      setOutput("matched-key", "");
+      c.setOutput("cache-hit", "false");
+      c.setOutput("matched-key", "");
       c.summary("Cache Restore", {
         Status: "MISS",
         "Requested key": key,
@@ -71,8 +65,8 @@ function setOutput(name, value) {
 
     const asset = await c.object(repository, found[1].object);
     if (!asset) {
-      setOutput("cache-hit", "false");
-      setOutput("matched-key", "");
+      c.setOutput("cache-hit", "false");
+      c.setOutput("matched-key", "");
       c.summary("Cache Restore", {
         Status: "MISS",
         "Requested key": key,
@@ -101,11 +95,11 @@ function setOutput(name, value) {
       (found[0].startsWith("shared/") &&
         cacheIdentity(found[0]) === cacheIdentity(key));
 
-    setOutput("cache-hit", cacheHit);
-    setOutput("matched-key", found[0]);
-    setOutput("content-hash", found[1].object);
-    setOutput("asset-name", asset.name);
-    setOutput("cache-size", fs.statSync(archive).size);
+    c.setOutput("cache-hit", cacheHit);
+    c.setOutput("matched-key", found[0]);
+    c.setOutput("content-hash", found[1].object);
+    c.setOutput("asset-name", asset.name);
+    c.setOutput("cache-size", fs.statSync(archive).size);
     c.summary("Cache Restore", {
       Status: cacheHit ? "HIT" : "FALLBACK",
       "Requested key": key,

@@ -36,6 +36,8 @@ const defaultManifestReferenceLimit = 100000;
 const defaultManifestWritesPerHour = 1000;
 const defaultLogicalKeyLength = 512;
 const defaultLogicalKeyComponents = 16;
+const githubApiTimeoutMs = 120000;
+const githubApiMaxRetries = 2;
 
 function input(name, defaultValue = "") {
   const variable = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
@@ -50,6 +52,16 @@ function hasInput(name) {
 function token() {
   // ACTIONS_RUNTIME_TOKEN is for the Actions service, not the GitHub REST API.
   return input("token") || process.env.GITHUB_TOKEN;
+}
+
+function setOutput(name, value) {
+  const stringValue = String(value ?? "");
+  if (!/^[A-Za-z0-9._:/-]*$/.test(stringValue)) {
+    throw new Error(`output ${name} contains unsupported characters`);
+  }
+  if (process.env.GITHUB_OUTPUT) {
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${stringValue}\n`);
+  }
 }
 
 function authorizationHeaders() {
@@ -139,7 +151,10 @@ function validateManifest(value) {
   ) {
     throw new Error("manifest references must be an object");
   }
-  for (const reference of Object.values(value.references)) {
+  for (const [key, reference] of Object.entries(value.references)) {
+    if (!isCompleteCacheKey(key)) {
+      throw new Error("manifest reference key is not a complete cache key");
+    }
     validateManifestReference(reference);
   }
   return value;
@@ -238,9 +253,24 @@ function baseRef() {
 }
 
 function isCompleteCacheKey(key) {
-  return /^(?:trusted\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[^/]+-[^/]+\/[^/]+\/v1|untrusted\/[^/]+\/[^/]+\/pr-[1-9]\d*\/[^/]+\/[^/]+-[^/]+\/[^/]+\/v1|shared\/[^/]+\/[^/]+\/[^/]+\/[^/]+-[^/]+\/[^/]+\/v1)$/.test(
-    key,
-  );
+  if (typeof key !== "string" || key.length > defaultLogicalKeyLength) return false;
+  const parts = key.split("/");
+  const safePart = (value) => /^[A-Za-z0-9._-]+$/.test(value);
+  if (parts.some((part) => !safePart(part))) return false;
+  if (!/^v\d+$/.test(parts.at(-1))) return false;
+  if (parts[0] === "trusted") {
+    return parts.length >= 8 && safePart(parts[1]) && safePart(parts[2]) &&
+      safePart(parts[3]) && safePart(parts[4]) && safePart(parts[5]) &&
+      parts.slice(6, -1).length <= defaultLogicalKeyComponents;
+  }
+  if (parts[0] === "untrusted") {
+    return parts.length >= 8 && safePart(parts[1]) && safePart(parts[2]) &&
+      /^pr-[1-9]\d*$/.test(parts[3]) && safePart(parts[4]) && safePart(parts[5]) &&
+      parts.slice(6, -1).length <= defaultLogicalKeyComponents;
+  }
+  return parts[0] === "shared" && parts.length >= 7 && safePart(parts[1]) &&
+    safePart(parts[2]) && safePart(parts[3]) && safePart(parts[4]) &&
+    parts.slice(5, -1).length <= defaultLogicalKeyComponents;
 }
 
 function cacheName() {
@@ -708,6 +738,7 @@ async function gh(url, options = {}) {
     try {
       const requestOptions = {
         ...options,
+        request: { ...(options.request || {}), timeout: githubApiTimeoutMs },
         headers: {
           Accept: "application/vnd.github+json",
           "X-GitHub-Api-Version": apiVersion,
@@ -745,15 +776,27 @@ async function gh(url, options = {}) {
       throw apiError;
     }
   }
-  const response = await fetch(`https://api.github.com${url}`, {
-    ...options,
-    headers: {
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": apiVersion,
-      ...authorizationHeaders(),
-      ...(options.headers || {}),
-    },
-  });
+  const method = String(options.method || "GET").toUpperCase();
+  let response;
+  for (let attempt = 0; ; attempt += 1) {
+    response = await fetch(`https://api.github.com${url}`, {
+      ...options,
+      signal: AbortSignal.timeout(githubApiTimeoutMs),
+      headers: {
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": apiVersion,
+        ...authorizationHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+    const retryable =
+      method === "GET" &&
+      [408, 429, 500, 502, 503, 504].includes(response.status) &&
+      attempt < githubApiMaxRetries;
+    if (!retryable) break;
+    if (response.body) await response.body.cancel();
+    await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
+  }
   const text = await response.text();
   let body;
   try {
@@ -778,6 +821,7 @@ async function upload(url, file, name, contentType) {
   const size = fs.statSync(file).size;
   const response = await fetch(url, {
     method: "POST",
+    signal: AbortSignal.timeout(githubApiTimeoutMs),
     headers: {
       ...authorizationHeaders(),
       "Content-Type": contentType,
@@ -1304,6 +1348,7 @@ function isSafeAsset(asset) {
   if (!asset || typeof asset.name !== "string") return false;
   if (
     asset.name.length > 255 ||
+    /[\r\n]/.test(asset.name) ||
     !/^[^/\\\0]+\.tar\.zst$/i.test(asset.name)
   )
     return false;
@@ -1647,6 +1692,7 @@ module.exports = {
   input,
   hasInput,
   token,
+  setOutput,
   eventName,
   repository,
   defaultBranch,
@@ -1656,6 +1702,7 @@ module.exports = {
   isPullRequestEvent,
   pullRequestSourceRepository,
   isForkPullRequest,
+  isSafeAsset,
   cacheName,
   cacheScope,
   runnerPlatform,
@@ -1683,7 +1730,6 @@ module.exports = {
   assetName,
   assetMatchesKeyCombination,
   hashFromAssetName,
-  isSafeAsset,
   validateCacheHash,
   validateManifestReference,
   validateManifest,

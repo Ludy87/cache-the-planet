@@ -48,21 +48,42 @@ test("positive limits accept safe integers and reject unsafe values", () => {
 
 test("cache hashes and manifest references are validated", () => {
   const hash = `sha256:${"a".repeat(64)}`;
+  const key = "trusted/owner/repo/main/npm/linux-x64/abcdef/v1";
   assert.equal(common.validateCacheHash(hash), hash);
   assert.throws(() => common.validateCacheHash("sha1:bad"), /sha256 hash/);
   assert.doesNotThrow(() =>
     common.validateManifest({
-      references: { key: { object: hash, size: 10 } },
+      references: { [key]: { object: hash, size: 10 } },
     }),
   );
   assert.throws(
-    () => common.validateManifest({ references: { key: { object: "bad" } } }),
+    () => common.validateManifest({ references: { key: { object: hash } } }),
+    /complete cache key/,
+  );
+  assert.throws(
+    () => common.validateManifest({ references: { [key]: { object: "bad" } } }),
     /sha256 hash/,
   );
   assert.throws(
     () => common.validateManifestReference({ object: hash, size: 0 }),
     /positive safe integer/,
   );
+});
+
+test("outputs and asset names reject control or unsupported characters", () => {
+  const output = path.join(os.tmpdir(), `cache-output-${process.pid}.txt`);
+  const previousOutput = process.env.GITHUB_OUTPUT;
+  try {
+    process.env.GITHUB_OUTPUT = output;
+    common.setOutput("matched-key", "trusted/owner/repo/main/npm/linux-x64/key/v1");
+    assert.match(fs.readFileSync(output, "utf8"), /matched-key=trusted\//);
+    assert.throws(() => common.setOutput("asset-name", "safe.tar.zst\nX=bad"));
+    assert.throws(() => common.setOutput("asset-name", "unsafe value"));
+  } finally {
+    if (previousOutput === undefined) delete process.env.GITHUB_OUTPUT;
+    else process.env.GITHUB_OUTPUT = previousOutput;
+    fs.rmSync(output, { force: true });
+  }
 });
 
 test("release assets are constrained before download", () => {
@@ -72,6 +93,10 @@ test("release assets are constrained before download", () => {
     browser_download_url: `https://github.com/owner/repo/releases/download/cache-v1/${hash}.tar.zst`,
   };
   assert.equal(common.isSafeAsset(safe), true);
+  assert.equal(
+    common.isSafeAsset({ ...safe, name: `safe--${hash}.tar.zst\nX=bad` }),
+    false,
+  );
   assert.equal(
     common.isSafeAsset({
       ...safe,
@@ -132,6 +157,31 @@ test("bounded downloads stream successfully and enforce the byte limit", async (
   } finally {
     global.fetch = originalFetch;
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("GitHub API GET requests have bounded retries", async () => {
+  const originalFetch = global.fetch;
+  const previousToken = process.env.GITHUB_TOKEN;
+  const previousInputToken = process.env.INPUT_TOKEN;
+  let calls = 0;
+  try {
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.INPUT_TOKEN;
+    global.fetch = async () => {
+      calls += 1;
+      if (calls < 3) return new Response("busy", { status: 503 });
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+    const result = await common.gh("/repos/owner/repo");
+    assert.deepEqual(result.body, { ok: true });
+    assert.equal(calls, 3);
+  } finally {
+    global.fetch = originalFetch;
+    if (previousToken === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = previousToken;
+    if (previousInputToken === undefined) delete process.env.INPUT_TOKEN;
+    else process.env.INPUT_TOKEN = previousInputToken;
   }
 });
 
@@ -336,12 +386,16 @@ test("workflow security invariants remain present", () => {
       content,
       /actions\/cache|enable-cache:\s*true|cache-image:\s*true|package-manager-cache:\s*true/,
     );
-    if (content.includes("actions/checkout@"))
+    if (content.includes("actions/checkout@")) {
+      const checkoutCount = (content.match(/actions\/checkout@/g) || []).length;
+      const expectedCredentialMode =
+        file === "release-please.yml" ? "true" : "false";
       assert.equal(
-        (content.match(/actions\/checkout@/g) || []).length,
-        (content.match(/persist-credentials:\s*false/g) || []).length,
-        `${file} has an unprotected checkout`,
+        checkoutCount,
+        (content.match(new RegExp(`persist-credentials:\\s*${expectedCredentialMode}`, "g")) || []).length,
+        `${file} has an unexpected checkout credential mode`,
       );
+    }
   }
   const publisherWorkflow = fs.readFileSync(
     path.join(workflowRoot, "publish-pr-cache-artifacts.yml"),
