@@ -8,6 +8,13 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.2.7](https://github.com/Ludy87/cache-the-planet/compare/v1.2.6...v1.2.7) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** use action for floating release tags ([#66](https://github.com/Ludy87/cache-the-planet/issues/66)) ([de6b11c](https://github.com/Ludy87/cache-the-planet/commit/de6b11c61913db4cc3d617087da178c38bbf62d7))
+
 ## [1.2.6](https://github.com/Ludy87/cache-the-planet/compare/v1.2.5...v1.2.6) (2026-09-05)
 
 
