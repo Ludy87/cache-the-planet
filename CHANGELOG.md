@@ -8,6 +8,40 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.2.0](https://github.com/Ludy87/cache-the-planet/compare/v1.1.0...v1.2.0) (2026-09-05)
+
+
+### Features
+
+* **cache:** add shared scopes and cache lifecycle controls ([#17](https://github.com/Ludy87/cache-the-planet/issues/17)) ([514737f](https://github.com/Ludy87/cache-the-planet/commit/514737f040491bea3f1dd6131107404cfeb9750c))
+
+
+### Bug Fixes
+
+* prevent workflows from blocking each other ([#14](https://github.com/Ludy87/cache-the-planet/issues/14)) ([6092f02](https://github.com/Ludy87/cache-the-planet/commit/6092f02dc503827e22ace4d0c15da0e08e88cb8b))
+* protect concurrent manifest updates ([#12](https://github.com/Ludy87/cache-the-planet/issues/12)) ([6811090](https://github.com/Ludy87/cache-the-planet/commit/6811090a6865f81dc2bc1a27dbab5192c521682e))
+* stabilize cache writes and platform tests ([#13](https://github.com/Ludy87/cache-the-planet/issues/13)) ([8bf4ef0](https://github.com/Ludy87/cache-the-planet/commit/8bf4ef002925db8cae7404f63840617be770a14b))
+* use valid action metadata YAML ([76121a2](https://github.com/Ludy87/cache-the-planet/commit/76121a28e240778e62f4406fa6f3f746117492af))
+* validate reusable cache workflows and Dependabot config ([#47](https://github.com/Ludy87/cache-the-planet/issues/47)) ([eac2322](https://github.com/Ludy87/cache-the-planet/commit/eac2322db231af8534bffcc33d27563bf1e1e05b))
+
+
+### Performance
+
+* reduce npm CI network overhead ([#45](https://github.com/Ludy87/cache-the-planet/issues/45)) ([988b432](https://github.com/Ludy87/cache-the-planet/commit/988b432acd6ea5ce441fb3f64f45b978eca5f7f9))
+
+
+### Documentation
+
+* correct README cache and release guidance ([029da62](https://github.com/Ludy87/cache-the-planet/commit/029da6270985f8e3f9fcd6d77c42794f4ba3b879))
+* document Node.js and dependency requirements ([140a693](https://github.com/Ludy87/cache-the-planet/commit/140a693d792f99d7060a5786a6b451f1f22a91d5))
+* update German cache documentation ([#8](https://github.com/Ludy87/cache-the-planet/issues/8)) ([71fba8d](https://github.com/Ludy87/cache-the-planet/commit/71fba8df8f162ec5bdfcf75db00e5c06004158cb))
+
+
+### Security
+
+* harden PR cache workflows and artifact handling ([#44](https://github.com/Ludy87/cache-the-planet/issues/44)) ([79472fd](https://github.com/Ludy87/cache-the-planet/commit/79472fdca6c1246b0a9c2a215d914dd0decb24c2))
+* **workflows:** default workflow contents permissions to read ([#4](https://github.com/Ludy87/cache-the-planet/issues/4)) ([72f220c](https://github.com/Ludy87/cache-the-planet/commit/72f220c69781be4c0e16e44da7701638f32ccd59))
+
 ## [1.1.0](https://github.com/Ludy87/cache-the-planet/compare/v1.0.0...v1.1.0) (2026-08-28)
 
 
