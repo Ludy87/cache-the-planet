@@ -38,6 +38,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run test
   build-dist-pr:
+    needs: [test]
     if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/build-dist.yml
     with:

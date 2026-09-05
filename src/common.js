@@ -267,24 +267,43 @@ function defaultBranch() {
 }
 
 function isCompleteCacheKey(key) {
-  if (typeof key !== "string" || key.length > defaultLogicalKeyLength) return false;
+  if (typeof key !== "string" || key.length > defaultLogicalKeyLength)
+    return false;
   const parts = key.split("/");
   const safePart = (value) => /^[A-Za-z0-9._-]+$/.test(value);
   if (parts.some((part) => !safePart(part))) return false;
   if (!/^v\d+$/.test(parts.at(-1))) return false;
   if (parts[0] === "trusted") {
-    return parts.length >= 8 && safePart(parts[1]) && safePart(parts[2]) &&
-      safePart(parts[3]) && safePart(parts[4]) && safePart(parts[5]) &&
-      parts.slice(6, -1).length <= defaultLogicalKeyComponents;
+    return (
+      parts.length >= 8 &&
+      safePart(parts[1]) &&
+      safePart(parts[2]) &&
+      safePart(parts[3]) &&
+      safePart(parts[4]) &&
+      safePart(parts[5]) &&
+      parts.slice(6, -1).length <= defaultLogicalKeyComponents
+    );
   }
   if (parts[0] === "untrusted") {
-    return parts.length >= 8 && safePart(parts[1]) && safePart(parts[2]) &&
-      /^pr-[1-9]\d*$/.test(parts[3]) && safePart(parts[4]) && safePart(parts[5]) &&
-      parts.slice(6, -1).length <= defaultLogicalKeyComponents;
+    return (
+      parts.length >= 8 &&
+      safePart(parts[1]) &&
+      safePart(parts[2]) &&
+      /^pr-[1-9]\d*$/.test(parts[3]) &&
+      safePart(parts[4]) &&
+      safePart(parts[5]) &&
+      parts.slice(6, -1).length <= defaultLogicalKeyComponents
+    );
   }
-  return parts[0] === "shared" && parts.length >= 7 && safePart(parts[1]) &&
-    safePart(parts[2]) && safePart(parts[3]) && safePart(parts[4]) &&
-    parts.slice(5, -1).length <= defaultLogicalKeyComponents;
+  return (
+    parts[0] === "shared" &&
+    parts.length >= 7 &&
+    safePart(parts[1]) &&
+    safePart(parts[2]) &&
+    safePart(parts[3]) &&
+    safePart(parts[4]) &&
+    parts.slice(5, -1).length <= defaultLogicalKeyComponents
+  );
 }
 
 function cacheName() {
@@ -501,9 +520,8 @@ function scopedKey(key) {
   const selectedScope =
     scope === "auto" ? (pullRequest ? "untrusted" : "trusted") : scope;
   if (selectedScope === "shared") {
-    if (pullRequest)
-      log("scope=shared is mapped to an isolated untrusted PR cache");
     if (pullRequest) {
+      log("scope=shared is mapped to an isolated untrusted PR cache");
       const number = pullRequestNumber();
       if (!number)
         throw new Error(

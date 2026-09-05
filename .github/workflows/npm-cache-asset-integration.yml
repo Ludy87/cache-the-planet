@@ -73,6 +73,14 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
+      - name: Restore npm cache asset
+        uses: ./
+        with:
+          cache-name: npm
+          key: ${{ needs.hash_pr.outputs.files_hash }}
+          path: .cache/npm
+          strict: false
+
       - name: Configure npm cache directory
         run: npm config set cache "$PWD/.cache/npm" --global
 
