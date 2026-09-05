@@ -2,7 +2,7 @@ const c = require("./common");
 
 (async () => {
   try {
-    const repository = process.env.CACHE_REPOSITORY || c.input("repository");
+    const repository = c.cacheRepository();
     const requestedMode = process.env.GC_MODE || c.input("mode");
     const mode = process.argv.includes("--all")
       ? "all"
@@ -143,7 +143,7 @@ const c = require("./common");
           },
         );
       }
-      if (mode === "all" && dryRun && Object.keys(references).length) {
+      if (dryRun && Object.keys(references).length) {
         console.log(
           `would clear ${Object.keys(references).length} manifest reference(s)`,
         );

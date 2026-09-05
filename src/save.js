@@ -72,7 +72,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
 (async () => {
   try {
-    const repository = c.input("repository");
+    const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
     const setOutput = c.setOutput;
     setOutput("is_fork", isFork ? "true" : "false");

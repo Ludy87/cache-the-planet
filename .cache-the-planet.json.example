@@ -1,4 +1,5 @@
 {
+  "manifest_branch": "cache-data",
   "monitoring": {
     "max_manifest_references": 100000,
     "max_manifest_writes_per_hour": 1000

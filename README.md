@@ -75,7 +75,9 @@ in [docs/security.md](docs/security.md).
 
 ## Inputs und Outputs
 
-Restore und Save benötigen `repository`, `cache-name`, `key` und `path`.
+Restore und Save benötigen `cache-name`, `key` und `path`. `repository` ist
+optional; ohne Angabe werden zuerst `CACHE_REPOSITORY` und anschließend das
+Repository des laufenden Workflows (`GITHUB_REPOSITORY`) verwendet.
 Weitere gemeinsame Inputs sind `scope`, `os`, `arch`, `version`, `token`,
 `encryption-key`, `strict`, `config-file` und `manifest-branch`.
 
@@ -111,11 +113,16 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 
 ```json
 {
+  "manifest_branch": "cache-data",
   "security": {
     "allowed_cache_names": ["npm", "uv", "docker"]
   }
 }
 ```
+
+`manifest_branch` legt den Branch für das Cache-Manifest fest. Ein gesetztes
+`CACHE_MANIFEST_BRANCH` oder der Action-Input `manifest-branch` überschreibt
+diesen Wert; ohne Konfiguration wird `cache-data` verwendet.
 
 `allowed_cache_names` ist eine optionale Allowlist. Fehlt sie oder ist sie
 leer, sind alle gültig formatierten Cache-Namen erlaubt. Der vertrauenswürdige

@@ -3,7 +3,7 @@ const c = require("./common");
 
 (async () => {
   try {
-    const repository = c.input("repository");
+    const repository = c.cacheRepository();
     const key = c.scopedKey(c.input("key"));
     const manifest = await c.refs(repository);
     const candidates = [];

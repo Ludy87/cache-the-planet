@@ -26,10 +26,17 @@ Standardmodus ist ein unverbindlicher Dry-Run.
 Das Manifest liegt im Cache-Repository unter
 `manifests/references-v1.json`:
 
-Im Repository dieses Projekts wird die Datei im Branch `cache-data` verwaltet;
-andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH` oder dem
-Input `manifest-branch` konfigurieren. Der Branch muss vor dem ersten Save
-einmalig angelegt werden.
+Im Repository dieses Projekts wird die Datei im Branch `cache-data` verwaltet.
+Andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH`, dem
+Input `manifest-branch` oder dem Feld `manifest_branch` in
+`.cache-the-planet.json` konfigurieren. Die Priorität ist
+Umgebungsvariable, Action-Input, JSON-Konfiguration und anschließend
+`cache-data`.
+Der Branch muss vor dem ersten Save einmalig angelegt werden.
+
+Das Cache-Repository wird über den Input `repository` oder
+`CACHE_REPOSITORY` gewählt. Fehlt beides, verwendet die Action
+`GITHUB_REPOSITORY`, also das Repository, in dem der Workflow läuft.
 
 ```json
 {

@@ -102,7 +102,9 @@ function main() {
   const expectedWorkflow =
     process.env.EXPECTED_WORKFLOW || "Cache integration save suite";
   if (!eventPath || !repository)
-    throw new Error("GITHUB_EVENT_PATH and CACHE_REPOSITORY are required");
+    throw new Error(
+      "GITHUB_EVENT_PATH and a cache repository (CACHE_REPOSITORY or GITHUB_REPOSITORY) are required",
+    );
   const configFile = process.env.CACHE_CONFIG_FILE || ".cache-the-planet.json";
   if (configFile !== ".cache-the-planet.json")
     throw new Error(

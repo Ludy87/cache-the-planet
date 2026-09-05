@@ -28,6 +28,37 @@ function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   return result;
 }
 
+function runManifestBranchWithConfig(config, extraEnv = {}) {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-branch-test-"));
+  const configPath = path.join(workspace, ".cache-the-planet.json");
+  fs.writeFileSync(configPath, JSON.stringify(config));
+  const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
+    const { manifestBranch } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+    process.stdout.write(manifestBranch());
+  `;
+  const env = { ...process.env, ...extraEnv };
+  const result = childProcess.spawnSync(process.execPath, ["-e", script], {
+    cwd: workspace,
+    env,
+    encoding: "utf8",
+  });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result;
+}
+
+function runCacheRepository(extraEnv = {}) {
+  const script = `
+    const { cacheRepository } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+    process.stdout.write(cacheRepository());
+  `;
+  return childProcess.spawnSync(process.execPath, ["-e", script], {
+    env: { ...process.env, ...extraEnv },
+    encoding: "utf8",
+  });
+}
+
 test("positive limits accept safe integers and reject unsafe values", () => {
   assert.equal(common.parsePositiveSafeInteger("12", "LIMIT"), 12);
   assert.equal(common.parsePositiveSafeInteger(undefined, "LIMIT", 7), 7);
@@ -325,6 +356,43 @@ test("cache configuration allows, rejects, and defaults allowlists safely", () =
     assert.equal(unrestricted.status, 0);
     assert.equal(unrestricted.stdout, "new-cache");
   }
+});
+
+test("manifest branch can be configured in JSON with environment override", () => {
+  const defaultBranch = runManifestBranchWithConfig({});
+  assert.equal(defaultBranch.status, 0);
+  assert.equal(defaultBranch.stdout, "cache-data");
+
+  const configured = runManifestBranchWithConfig({
+    manifest_branch: "cache-data",
+  });
+  assert.equal(configured.status, 0);
+  assert.equal(configured.stdout, "cache-data");
+
+  const overridden = runManifestBranchWithConfig(
+    { manifest_branch: "cache-data" },
+    { CACHE_MANIFEST_BRANCH: "env-cache-data" },
+  );
+  assert.equal(overridden.status, 0);
+  assert.equal(overridden.stdout, "env-cache-data");
+});
+
+test("cache repository defaults to the workflow repository", () => {
+  const workflowRepository = runCacheRepository({
+    GITHUB_REPOSITORY: "owner/workflow-repo",
+    CACHE_REPOSITORY: "",
+    "INPUT_REPOSITORY": "",
+  });
+  assert.equal(workflowRepository.status, 0);
+  assert.equal(workflowRepository.stdout, "owner/workflow-repo");
+
+  const configuredRepository = runCacheRepository({
+    GITHUB_REPOSITORY: "owner/workflow-repo",
+    CACHE_REPOSITORY: "owner/cache-repo",
+    "INPUT_REPOSITORY": "",
+  });
+  assert.equal(configuredRepository.status, 0);
+  assert.equal(configuredRepository.stdout, "owner/cache-repo");
 });
 
 test("cache configuration rejects malformed allowlists and paths outside the workspace", () => {

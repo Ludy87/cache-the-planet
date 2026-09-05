@@ -2,13 +2,13 @@ const c = require("./common");
 
 (async () => {
   try {
-    const repository = process.env.CACHE_REPOSITORY || c.input("repository");
+    const repository = c.cacheRepository();
     const sourceRepository =
       process.env.PR_REPOSITORY || c.input("pr-repository");
     const number = process.env.PR_NUMBER || c.input("pr-number");
     if (!repository || !sourceRepository || !number) {
       throw new Error(
-        "CACHE_REPOSITORY, PR_REPOSITORY and PR_NUMBER are required",
+        "cache repository, PR_REPOSITORY and PR_NUMBER are required",
       );
     }
     if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(sourceRepository)) {

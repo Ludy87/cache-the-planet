@@ -227,6 +227,10 @@ function repository() {
   return process.env.GITHUB_REPOSITORY || "";
 }
 
+function cacheRepository() {
+  return input("repository") || process.env.CACHE_REPOSITORY || repository();
+}
+
 function defaultBranch() {
   if (process.env.GITHUB_DEFAULT_BRANCH)
     return process.env.GITHUB_DEFAULT_BRANCH;
@@ -242,14 +246,6 @@ function defaultBranch() {
     }
   }
   return "";
-}
-
-function headRef() {
-  return process.env.GITHUB_HEAD_REF || "";
-}
-
-function baseRef() {
-  return process.env.GITHUB_BASE_REF || "";
 }
 
 function isCompleteCacheKey(key) {
@@ -415,6 +411,26 @@ function refName() {
   return process.env.GITHUB_REF_NAME || "";
 }
 
+function manifestBranch() {
+  const configuredBranch = configuration().manifest_branch;
+  const branch =
+    process.env.CACHE_MANIFEST_BRANCH ||
+    input("manifest-branch") ||
+    configuredBranch ||
+    "cache-data";
+  if (
+    typeof branch !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/.test(branch) ||
+    branch.includes("..") ||
+    branch.includes("//") ||
+    branch.endsWith("/") ||
+    branch.endsWith(".")
+  ) {
+    throw new Error("manifest branch is invalid");
+  }
+  return branch;
+}
+
 function pullRequestNumber() {
   const eventPath = process.env.GITHUB_EVENT_PATH;
   if (eventPath) {
@@ -479,10 +495,7 @@ function scopedKey(key) {
     }
     return `shared/${sourceRepository}/${logicalKey}`;
   }
-  if (
-    selectedScope === "untrusted" ||
-    (pullRequest && selectedScope === "untrusted")
-  ) {
+  if (selectedScope === "untrusted") {
     const number = pullRequestNumber();
     if (!sourceRepository || !number)
       throw new Error(
@@ -591,10 +604,7 @@ function scopedRestorePrefix(prefix) {
     }
     return `shared/${sourceRepository}/${logicalKey}`;
   }
-  if (
-    selectedScope === "untrusted" ||
-    (pullRequest && selectedScope === "untrusted")
-  ) {
+  if (selectedScope === "untrusted") {
     const number = pullRequestNumber();
     if (!number)
       throw new Error(
@@ -1394,17 +1404,7 @@ function hashFromAssetName(name) {
 }
 
 async function manifest(repository) {
-  const branch =
-    process.env.CACHE_MANIFEST_BRANCH || input("manifest-branch", "main");
-  if (
-    !/^[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/.test(branch) ||
-    branch.includes("..") ||
-    branch.includes("//") ||
-    branch.endsWith("/") ||
-    branch.endsWith(".")
-  ) {
-    throw new Error("manifest branch is invalid");
-  }
+  const branch = manifestBranch();
   const result = await gh(
     `/repos/${repository}/contents/manifests/references-v1.json?ref=${encodeURIComponent(branch)}`,
   );
@@ -1429,17 +1429,7 @@ async function refs(repository) {
 
 async function updateManifestUnlocked(repository, message, update) {
   const maxAttempts = 12;
-  const branch =
-    process.env.CACHE_MANIFEST_BRANCH || input("manifest-branch", "main");
-  if (
-    !/^[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/.test(branch) ||
-    branch.includes("..") ||
-    branch.includes("//") ||
-    branch.endsWith("/") ||
-    branch.endsWith(".")
-  ) {
-    throw new Error("manifest branch is invalid");
-  }
+  const branch = manifestBranch();
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const current = await refs(repository);
     if (!update(current.json)) return current.json;
@@ -1695,9 +1685,8 @@ module.exports = {
   setOutput,
   eventName,
   repository,
+  cacheRepository,
   defaultBranch,
-  headRef,
-  baseRef,
   pullRequestNumber,
   isPullRequestEvent,
   pullRequestSourceRepository,
@@ -1722,6 +1711,7 @@ module.exports = {
   entries,
   excludePatterns,
   refName,
+  manifestBranch,
   securityScan,
   makeArchive,
   inspectTar,

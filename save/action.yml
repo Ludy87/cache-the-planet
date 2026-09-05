@@ -3,7 +3,8 @@ description: Save an immutable content-addressed cache object
 inputs:
   repository:
     description: "owner/name of cache repository"
-    required: true
+    required: false
+    default: ""
   key:
     description: "Logical dependency key; namespace and platform are generated from scope, os, arch, and version"
     required: true
@@ -57,9 +58,9 @@ inputs:
     required: false
     default: ""
   manifest-branch:
-    description: "Branch containing the cache manifest; defaults to main"
+    description: "Branch containing the cache manifest; defaults to manifest_branch in config or cache-data"
     required: false
-    default: "main"
+    default: ""
   allow-pr-cache:
     description: "Allow saving an isolated untrusted cache for a pull request"
     required: false
