@@ -75,7 +75,7 @@ jobs:
           path: .cache/npm
           strict: false
           token: ${{ steps.bot-token.outputs.token }}
-          allow-pr-cache: false
+          allow-pr-cache: true
         continue-on-error: true
 
       - name: Commit generated dist
