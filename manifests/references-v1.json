@@ -63,10 +63,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 4347192
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-38/uv-python-3-13/linux-x64/bae9d8df1b16edf554b3832ffe0d2d7dd7c79918a241d5db2d2d0f117d7de244/v4": {
+      "object": "sha256:de4fd4ec9c6bec045903ee51e66f33cce52c28a631e4d3a477edb270c786084a",
+      "updated_at": "2026-09-05T22:32:09.826Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 39025373
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-05T22:32:05.549Z",
-    "writes": 1
+    "writes": 2
   }
 }
