@@ -8,6 +8,15 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.3.1](https://github.com/Ludy87/cache-the-planet/compare/v1.3.0...v1.3.1) (2026-09-05)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** avoid runtime dependency in PR cache publisher ([#77](https://github.com/Ludy87/cache-the-planet/issues/77)) ([1234ed4](https://github.com/Ludy87/cache-the-planet/commit/1234ed4f864bd366c7fceb4454f39cd247b07660))
+* **ci:** resolve missing pull request metadata in cache publisher ([#76](https://github.com/Ludy87/cache-the-planet/issues/76)) ([9c8614b](https://github.com/Ludy87/cache-the-planet/commit/9c8614be5af4e672c13c63112aa92b10d3c4ba17))
+* **publisher:** export configured cache names ([#74](https://github.com/Ludy87/cache-the-planet/issues/74)) ([2a54d74](https://github.com/Ludy87/cache-the-planet/commit/2a54d74f0c0fa32afbb11a26fb2011c868db4a13))
+
 ## [1.3.0](https://github.com/Ludy87/cache-the-planet/compare/v1.2.7...v1.3.0) (2026-09-05)
 
 

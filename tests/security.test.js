@@ -275,17 +275,21 @@ test("artifact publisher correlates workflow, repository, PR and head SHA", () =
 });
 
 test("artifact publisher resolves PR metadata when workflow_run omits pull_requests", async () => {
-  const originalGh = common.gh;
+  const originalFetch = global.fetch;
+  const previousToken = process.env.GITHUB_TOKEN;
   try {
-    common.gh = async (url) => {
-      assert.equal(url, "/repos/owner/cache/pulls/7");
-      return {
-        body: {
+    process.env.GITHUB_TOKEN = "test-token";
+    global.fetch = async (url, options) => {
+      assert.equal(url, "https://api.github.com/repos/owner/cache/pulls/7");
+      assert.equal(options.headers.Authorization, "Bearer test-token");
+      return new Response(
+        JSON.stringify({
           number: 7,
           head: { sha: "abc123" },
           base: { repo: { full_name: "owner/cache" } },
-        },
-      };
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
     };
     const run = publisher.validateWorkflowRunIdentity(
       {
@@ -310,7 +314,32 @@ test("artifact publisher resolves PR metadata when workflow_run omits pull_reque
     );
     assert.equal(pr.number, 7);
   } finally {
-    common.gh = originalGh;
+    global.fetch = originalFetch;
+    if (previousToken === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = previousToken;
+  }
+});
+
+test("artifact publisher rejects PR lookup without a token", async () => {
+  const previousToken = process.env.GITHUB_TOKEN;
+  const previousInputToken = process.env.INPUT_TOKEN;
+  try {
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.INPUT_TOKEN;
+    await assert.rejects(
+      publisher.resolveWorkflowPullRequest(
+        { head_sha: "abc123" },
+        "owner/cache",
+        "7",
+        "abc123",
+      ),
+      /GITHUB_TOKEN is required/,
+    );
+  } finally {
+    if (previousToken === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = previousToken;
+    if (previousInputToken === undefined) delete process.env.INPUT_TOKEN;
+    else process.env.INPUT_TOKEN = previousInputToken;
   }
 });
 
