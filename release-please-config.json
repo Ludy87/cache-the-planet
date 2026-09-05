@@ -7,12 +7,12 @@
     }
   },
   "changelog-sections": [
-    { "type": "feat", "section": "Features" },
-    { "type": "fix", "section": "Bug Fixes" },
-    { "type": "perf", "section": "Performance" },
-    { "type": "docs", "section": "Documentation" },
-    { "type": "security", "section": "Security" },
-    { "type": "chore", "section": "Maintenance", "hidden": true },
-    { "type": "test", "section": "Tests", "hidden": true }
+    { "type": "feat", "section": "🎉 Features" },
+    { "type": "fix", "section": "🐛 Bug Fixes" },
+    { "type": "perf", "section": "⚡ Performance" },
+    { "type": "docs", "section": "📚 Documentation" },
+    { "type": "security", "section": "🔒 Security" },
+    { "type": "chore", "section": "🛠 Maintenance", "hidden": true },
+    { "type": "test", "section": "🧪 Tests", "hidden": true }
   ]
 }
