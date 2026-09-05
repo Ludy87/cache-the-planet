@@ -274,6 +274,46 @@ test("artifact publisher correlates workflow, repository, PR and head SHA", () =
   );
 });
 
+test("artifact publisher resolves PR metadata when workflow_run omits pull_requests", async () => {
+  const originalGh = common.gh;
+  try {
+    common.gh = async (url) => {
+      assert.equal(url, "/repos/owner/cache/pulls/7");
+      return {
+        body: {
+          number: 7,
+          head: { sha: "abc123" },
+          base: { repo: { full_name: "owner/cache" } },
+        },
+      };
+    };
+    const run = publisher.validateWorkflowRunIdentity(
+      {
+        workflow_run: {
+          name: "Cache integration save suite",
+          conclusion: "success",
+          event: "pull_request",
+          head_sha: "abc123",
+          repository: { full_name: "owner/cache" },
+          pull_requests: [],
+        },
+      },
+      "owner/cache",
+      "Cache integration save suite",
+      { allowMissingPullRequest: true },
+    );
+    const pr = await publisher.resolveWorkflowPullRequest(
+      run,
+      "owner/cache",
+      "7",
+      "abc123",
+    );
+    assert.equal(pr.number, 7);
+  } finally {
+    common.gh = originalGh;
+  }
+});
+
 test("artifact names and contents are restricted", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "artifact-test-"));
   try {

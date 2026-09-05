@@ -16,6 +16,7 @@ function validateWorkflowRunIdentity(
   event,
   expectedRepository,
   expectedWorkflow,
+  { allowMissingPullRequest = false } = {},
 ) {
   const run = parseWorkflowRunEvent(event).workflow_run;
   if (run.conclusion !== "success")
@@ -25,6 +26,11 @@ function validateWorkflowRunIdentity(
   if (run.name !== expectedWorkflow) throw new Error("unexpected workflow run");
   if (run.repository?.full_name !== expectedRepository)
     throw new Error("workflow run repository does not match");
+  if (
+    (!Array.isArray(run.pull_requests) || run.pull_requests.length === 0) &&
+    allowMissingPullRequest
+  )
+    return run;
   if (!Array.isArray(run.pull_requests) || run.pull_requests.length !== 1)
     throw new Error("workflow run must identify exactly one pull request");
   return run;
@@ -38,6 +44,35 @@ function validatePullRequestIdentity(run, expectedNumber, expectedHeadSha) {
     throw new Error("pull request number does not match");
   if (expectedHeadSha && pr.head?.sha !== expectedHeadSha)
     throw new Error("pull request head SHA does not match");
+  return pr;
+}
+
+async function resolveWorkflowPullRequest(
+  run,
+  repository,
+  expectedNumber,
+  expectedHeadSha,
+) {
+  if (!/^\d+$/.test(String(expectedNumber)) || Number(expectedNumber) < 1)
+    throw new Error("expected PR number is invalid");
+  if (!expectedHeadSha)
+    throw new Error(
+      "workflow run does not include pull request metadata and its head SHA is unavailable",
+    );
+  const response = await common.gh(
+    `/repos/${repository}/pulls/${encodeURIComponent(expectedNumber)}`,
+  );
+  const pr = response.body;
+  if (!pr || typeof pr !== "object" || Array.isArray(pr))
+    throw new Error("GitHub returned an invalid pull request response");
+  if (Number(pr.number) !== Number(expectedNumber))
+    throw new Error("pull request number does not match");
+  if (pr.head?.sha !== expectedHeadSha)
+    throw new Error("pull request head SHA does not match");
+  if (pr.base?.repo?.full_name !== repository)
+    throw new Error("pull request base repository does not match");
+  if (run.head_sha && run.head_sha !== expectedHeadSha)
+    throw new Error("workflow run head SHA does not match");
   return pr;
 }
 
@@ -92,7 +127,7 @@ function validateArtifactManifest(directory) {
   return value;
 }
 
-function main() {
+async function main() {
   const root =
     process.env.PR_CACHE_ARTIFACTS_DIR ||
     path.join(process.cwd(), "pr-cache-artifacts");
@@ -111,17 +146,24 @@ function main() {
       "publisher must use .cache-the-planet.json from the default branch",
     );
   const allowedCacheNames = common.configuredCacheNames();
+  const expectedNumber = String(process.env.PR_NUMBER || "");
   const run = validateWorkflowRunIdentity(
     parseWorkflowRunEvent(JSON.parse(fs.readFileSync(eventPath, "utf8"))),
     repository,
     expectedWorkflow,
+    { allowMissingPullRequest: Boolean(expectedNumber) },
   );
-  const number = String(process.env.PR_NUMBER || run.pull_requests[0].number);
-  const pr = validatePullRequestIdentity(
-    run,
-    number,
-    process.env.EXPECTED_HEAD_SHA || "",
-  );
+  const number = expectedNumber || String(run.pull_requests[0].number);
+  const expectedHeadSha = process.env.EXPECTED_HEAD_SHA || "";
+  const pr =
+    Array.isArray(run.pull_requests) && run.pull_requests.length === 1
+      ? validatePullRequestIdentity(run, number, expectedHeadSha)
+      : await resolveWorkflowPullRequest(
+          run,
+          repository,
+          number,
+          expectedHeadSha,
+        );
   if (pr.base?.repo?.full_name && pr.base.repo.full_name !== repository)
     throw new Error("pull request base repository does not match");
   const artifacts = fs
@@ -190,9 +232,14 @@ module.exports = {
   parseWorkflowRunEvent,
   validateWorkflowRunIdentity,
   validatePullRequestIdentity,
+  resolveWorkflowPullRequest,
   validateArtifactName,
   validateArtifactContents,
   validateArtifactManifest,
   main,
 };
-if (require.main === module) main();
+if (require.main === module)
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
