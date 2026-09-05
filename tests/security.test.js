@@ -388,8 +388,7 @@ test("workflow security invariants remain present", () => {
     );
     if (content.includes("actions/checkout@")) {
       const checkoutCount = (content.match(/actions\/checkout@/g) || []).length;
-      const expectedCredentialMode =
-        file === "release-please.yml" ? "true" : "false";
+      const expectedCredentialMode = "false";
       assert.equal(
         checkoutCount,
         (content.match(new RegExp(`persist-credentials:\\s*${expectedCredentialMode}`, "g")) || []).length,
