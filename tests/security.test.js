@@ -441,6 +441,7 @@ test("cache configuration rejects malformed allowlists and paths outside the wor
 });
 
 test("an absent or empty cache allowlist permits valid cache names", () => {
+  assert.equal(typeof common.configuredCacheNames, "function");
   assert.doesNotThrow(() =>
     publisher.validateArtifactName(
       "cache-the-planet-pr-7-new-cache-abcdef12-v1",

@@ -1704,6 +1704,7 @@ module.exports = {
   eventName,
   repository,
   cacheRepository,
+  configuredCacheNames,
   defaultBranch,
   pullRequestNumber,
   isPullRequestEvent,
