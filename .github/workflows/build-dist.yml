@@ -59,10 +59,10 @@ jobs:
         uses: ./
         with:
           cache-name: npm
-          scope: shared
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm
           strict: false
+          allow-shared-restore: true
         continue-on-error: true
 
       - run: npm ci --no-audit --no-fund ${{ inputs.dry-run && '--dry-run' || '' }}
