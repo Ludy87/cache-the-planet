@@ -19,10 +19,6 @@ on:
         required: false
   workflow_dispatch:
 
-env:
-  CACHE_REPOSITORY: Ludy87/cache-the-planet
-  CACHE_MANIFEST_BRANCH: cache-data
-
 permissions:
   contents: read
 
@@ -62,7 +58,6 @@ jobs:
         id: npm-cache
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: npm
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm
@@ -75,7 +70,6 @@ jobs:
         if: ${{ !inputs.dry-run && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && success() && steps.npm-cache.outputs.cache-hit != 'true' }}
         uses: ./save
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: npm
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm

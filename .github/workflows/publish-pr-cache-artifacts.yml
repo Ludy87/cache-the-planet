@@ -62,8 +62,6 @@ jobs:
       - name: Publish isolated PR caches
         if: ${{ steps.pr.outputs.number != '' }}
         env:
-          CACHE_REPOSITORY: Ludy87/cache-the-planet
-          CACHE_MANIFEST_BRANCH: cache-data
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
