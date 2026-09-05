@@ -59,6 +59,7 @@ jobs:
         uses: ./
         with:
           cache-name: npm
+          scope: shared
           key: ${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}/
