@@ -18,8 +18,6 @@ on:
         required: false
 
 env:
-  CACHE_REPOSITORY: Ludy87/cache-the-planet
-  CACHE_MANIFEST_BRANCH: cache-data
   GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle
   FILES_TO_HASH: |
     examples/gradle-cache/build.gradle
@@ -88,10 +86,9 @@ jobs:
         id: save
         uses: ./save
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: shared
-          token: ${{ steps.bot-token.outputs.token || github.token }}
+          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/gradle
           strict: false
@@ -129,7 +126,6 @@ jobs:
         id: cache-auto
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -181,7 +177,6 @@ jobs:
         id: cache-auto-restore-keys
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -193,7 +188,6 @@ jobs:
         id: cache-trusted
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -218,7 +212,6 @@ jobs:
         id: cache-shared
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -243,7 +236,6 @@ jobs:
         id: cache-untrusted
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: gradle-java17
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}

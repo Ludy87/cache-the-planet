@@ -18,8 +18,6 @@ on:
         required: false
 
 env:
-  CACHE_REPOSITORY: Ludy87/cache-the-planet
-  CACHE_MANIFEST_BRANCH: cache-data
   FILES_TO_HASH: |
     examples/docker-cache/Dockerfile
     examples/docker-cache/hello.txt
@@ -83,7 +81,6 @@ jobs:
       - name: Restore Docker cache
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           scope: auto
           token: ${{ steps.bot-token.outputs.token || github.token }}
@@ -121,13 +118,12 @@ jobs:
         id: save
         uses: ./save
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           # auto saves an isolated PR cache on pull requests and a trusted
           # default-branch cache on main; the action creates the shared alias
           # only from the default branch when appropriate.
           scope: shared
-          token: ${{ steps.bot-token.outputs.token || github.token }}
+          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           path: examples/docker-cache/.cache/docker-buildx
@@ -162,7 +158,6 @@ jobs:
         id: cache-auto
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -214,7 +209,6 @@ jobs:
         id: cache-trusted
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -240,7 +234,6 @@ jobs:
         id: cache-shared
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -266,7 +259,6 @@ jobs:
         id: cache-untrusted
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: docker
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}

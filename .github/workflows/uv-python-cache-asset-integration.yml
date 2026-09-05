@@ -18,8 +18,6 @@ on:
         required: false
 
 env:
-  CACHE_REPOSITORY: Ludy87/cache-the-planet
-  CACHE_MANIFEST_BRANCH: cache-data
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
   UV_PYTHON_CACHE_DIR: ${{ github.workspace }}/.cache/uv/python
   UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python
@@ -92,10 +90,9 @@ jobs:
         id: save
         uses: ./save
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: uv-python-3-13
           scope: shared
-          token: ${{ steps.bot-token.outputs.token || github.token }}
+          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 4
           path: .cache/uv
@@ -137,7 +134,6 @@ jobs:
         id: cache-auto
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: uv-python-3-13
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -190,7 +186,6 @@ jobs:
         id: cache-trusted
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: uv-python-3-13
           token: ${{ github.token }}
           scope: trusted
@@ -217,7 +212,6 @@ jobs:
         id: cache-shared
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: uv-python-3-13
           token: ${{ github.token }}
           scope: shared
@@ -244,7 +238,6 @@ jobs:
         id: cache-untrusted
         uses: ./
         with:
-          repository: ${{ env.CACHE_REPOSITORY }}
           cache-name: uv-python-3-13
           token: ${{ github.token }}
           scope: untrusted
