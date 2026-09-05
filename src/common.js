@@ -8,6 +8,11 @@ const { pipeline } = require("stream/promises");
 
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
+let githubClientPromise;
+let configurationCache;
+const releaseCache = new Map();
+const assetsCache = new Map();
+const manifestLocks = new Map();
 
 function parsePositiveSafeInteger(value, name, fallback) {
   if (value === undefined || value === "") return fallback;
@@ -18,19 +23,30 @@ function parsePositiveSafeInteger(value, name, fallback) {
   return parsed;
 }
 
-function positiveEnvironmentLimit(name, fallback) {
-  return parsePositiveSafeInteger(process.env[name], name, fallback);
+function positiveEnvironmentLimit(name, fallback, configName) {
+  const configuredValue = configuration().security?.[configName];
+  return parsePositiveSafeInteger(
+    process.env[name] ?? configuredValue,
+    name,
+    fallback,
+  );
 }
 
 const maxCompressedBytes = positiveEnvironmentLimit(
   "CACHE_MAX_COMPRESSED_BYTES",
   2 * 1024 ** 3,
+  "max_compressed_bytes",
 );
 const maxTarBytes = positiveEnvironmentLimit(
   "CACHE_MAX_TAR_BYTES",
   8 * 1024 ** 3,
+  "max_tar_bytes",
 );
-const maxArchiveEntries = positiveEnvironmentLimit("CACHE_MAX_ENTRIES", 200000);
+const maxArchiveEntries = positiveEnvironmentLimit(
+  "CACHE_MAX_ENTRIES",
+  200000,
+  "max_entries",
+);
 const maxArchivePathLength = 4096;
 const defaultManifestReferenceLimit = 100000;
 const defaultManifestWritesPerHour = 1000;
@@ -68,12 +84,6 @@ function authorizationHeaders() {
   const value = token();
   return value ? { Authorization: `Bearer ${value}` } : {};
 }
-
-let githubClientPromise;
-let configurationCache;
-const releaseCache = new Map();
-const assetsCache = new Map();
-const manifestLocks = new Map();
 
 function configuration() {
   if (configurationCache) return configurationCache;
@@ -228,7 +238,15 @@ function repository() {
 }
 
 function cacheRepository() {
-  return input("repository") || process.env.CACHE_REPOSITORY || repository();
+  const value =
+    input("repository") ||
+    process.env.CACHE_REPOSITORY ||
+    configuration().cache_repository ||
+    repository();
+  if (value && !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(value)) {
+    throw new Error("cache repository must be an owner/name repository");
+  }
+  return value;
 }
 
 function defaultBranch() {

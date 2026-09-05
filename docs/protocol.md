@@ -34,8 +34,8 @@ Umgebungsvariable, Action-Input, JSON-Konfiguration und anschließend
 `cache-data`.
 Der Branch muss vor dem ersten Save einmalig angelegt werden.
 
-Das Cache-Repository wird über den Input `repository` oder
-`CACHE_REPOSITORY` gewählt. Fehlt beides, verwendet die Action
+Das Cache-Repository wird über den Input `repository`, `CACHE_REPOSITORY` oder
+das JSON-Feld `cache_repository` gewählt. Fehlt alles, verwendet die Action
 `GITHUB_REPOSITORY`, also das Repository, in dem der Workflow läuft.
 
 ```json

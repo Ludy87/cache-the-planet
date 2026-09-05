@@ -113,14 +113,19 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 
 ```json
 {
+  "cache_repository": "owner/cache-repository",
   "manifest_branch": "cache-data",
   "security": {
+    "max_compressed_bytes": 2147483648,
+    "max_tar_bytes": 8589934592,
+    "max_entries": 200000,
     "allowed_cache_names": ["npm", "uv", "docker"]
   }
 }
 ```
 
-`manifest_branch` legt den Branch für das Cache-Manifest fest. Ein gesetztes
+`cache_repository` legt das Ziel-Repository fest. `manifest_branch` legt den
+Branch für das Cache-Manifest fest. Ein gesetztes
 `CACHE_MANIFEST_BRANCH` oder der Action-Input `manifest-branch` überschreibt
 diesen Wert; ohne Konfiguration wird `cache-data` verwendet.
 

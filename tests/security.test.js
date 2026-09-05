@@ -48,15 +48,26 @@ function runManifestBranchWithConfig(config, extraEnv = {}) {
   return result;
 }
 
-function runCacheRepository(extraEnv = {}) {
+function runCacheRepository(config = null, extraEnv = {}) {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-repository-test-"));
+  if (config) {
+    fs.writeFileSync(
+      path.join(workspace, ".cache-the-planet.json"),
+      JSON.stringify(config),
+    );
+  }
   const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env["INPUT_CONFIG-FILE"] = ${JSON.stringify(config ? ".cache-the-planet.json" : "")};
     const { cacheRepository } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
     process.stdout.write(cacheRepository());
   `;
-  return childProcess.spawnSync(process.execPath, ["-e", script], {
+  const result = childProcess.spawnSync(process.execPath, ["-e", script], {
     env: { ...process.env, ...extraEnv },
     encoding: "utf8",
   });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result;
 }
 
 test("positive limits accept safe integers and reject unsafe values", () => {
@@ -379,14 +390,16 @@ test("manifest branch can be configured in JSON with environment override", () =
 
 test("cache repository defaults to the workflow repository", () => {
   const workflowRepository = runCacheRepository({
+    cache_repository: "owner/configured-repo",
+  }, {
     GITHUB_REPOSITORY: "owner/workflow-repo",
     CACHE_REPOSITORY: "",
     "INPUT_REPOSITORY": "",
   });
   assert.equal(workflowRepository.status, 0);
-  assert.equal(workflowRepository.stdout, "owner/workflow-repo");
+  assert.equal(workflowRepository.stdout, "owner/configured-repo");
 
-  const configuredRepository = runCacheRepository({
+  const configuredRepository = runCacheRepository(null, {
     GITHUB_REPOSITORY: "owner/workflow-repo",
     CACHE_REPOSITORY: "owner/cache-repo",
     "INPUT_REPOSITORY": "",
