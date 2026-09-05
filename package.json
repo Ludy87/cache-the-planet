@@ -1,7 +1,7 @@
 {
   "name": "cache-the-planet",
   "private": true,
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Content-addressed GitHub Actions cache",
   "author": "Ludy87",
   "repository": {

@@ -8,6 +8,19 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.2.4](https://github.com/Ludy87/cache-the-planet/compare/v1.2.3...v1.2.4) (2026-09-05)
+
+
+### Documentation
+
+* add issue report templates ([#57](https://github.com/Ludy87/cache-the-planet/issues/57)) ([acc6e89](https://github.com/Ludy87/cache-the-planet/commit/acc6e89053cbf2f976c388512ecbdd70eb5beef4))
+* add pull request template ([#56](https://github.com/Ludy87/cache-the-planet/issues/56)) ([d96c3a9](https://github.com/Ludy87/cache-the-planet/commit/d96c3a95efe1784e78e99a7565206892fce9bbd7))
+
+
+### Security
+
+* harden cache assets and streaming ([#58](https://github.com/Ludy87/cache-the-planet/issues/58)) ([29024e6](https://github.com/Ludy87/cache-the-planet/commit/29024e65ec701d6b6627f67d16194149c7f23b39))
+
 ## [1.2.3](https://github.com/Ludy87/cache-the-planet/compare/v1.2.2...v1.2.3) (2026-09-05)
 
 
