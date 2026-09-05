@@ -121,7 +121,11 @@ test("fuzzed compressed archives are rejected without extraction", async () => {
       fs.writeFileSync(file, bytes);
       await assert.rejects(common.validateArchiveFile(file), Error);
       assert.deepEqual(
-        fs.readdirSync(root).sort(),
+        fs.readdirSync(root).sort((a, b) => {
+          const indexOf = (value) =>
+            Number(value.match(/mutated-(\d+)\.tar\.zst/)[1]);
+          return indexOf(a) - indexOf(b);
+        }),
         Array.from(
           { length: index + 1 },
           (_, current) => `mutated-${current}.tar.zst`,
