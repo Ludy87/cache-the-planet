@@ -28,20 +28,27 @@ async function replaceOlderReferences(repository, key) {
     return { manifest: null, hashes: [] };
   }
   const parts = key.split("/");
-  const combination = parts.slice(0, key.startsWith("shared/") ? 5 : 6).join("/");
+  const combination = parts
+    .slice(0, key.startsWith("shared/") ? 5 : 6)
+    .join("/");
   const removedHashes = new Set();
-  const manifest = await c.updateManifest(repository, `cache: replace cache references for ${combination}`, (next) => {
-    removedHashes.clear();
-    let changed = false;
-    for (const referenceKey of Object.keys(next.references || {})) {
-      if (referenceKey === key || !referenceKey.startsWith(`${combination}/`)) continue;
-      const hash = next.references[referenceKey]?.object;
-      if (hash) removedHashes.add(hash);
-      delete next.references[referenceKey];
-      changed = true;
-    }
-    return changed;
-  });
+  const manifest = await c.updateManifest(
+    repository,
+    `cache: replace cache references for ${combination}`,
+    (next) => {
+      removedHashes.clear();
+      let changed = false;
+      for (const referenceKey of Object.keys(next.references || {})) {
+        if (referenceKey === key || !referenceKey.startsWith(`${combination}/`))
+          continue;
+        const hash = next.references[referenceKey]?.object;
+        if (hash) removedHashes.add(hash);
+        delete next.references[referenceKey];
+        changed = true;
+      }
+      return changed;
+    },
+  );
   return { manifest, hashes: [...removedHashes] };
 }
 
@@ -205,9 +212,18 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         if (sharedKey || trustedKey) {
           const replacement = await replaceOlderReferences(repository, key);
           updated = replacement.manifest;
-          await deleteUnreferencedObjects(repository, replacement.hashes, updated);
+          await deleteUnreferencedObjects(
+            repository,
+            replacement.hashes,
+            updated,
+          );
         }
-        await cleanupDuplicateAssets(repository, key, existingReference.object, updated);
+        await cleanupDuplicateAssets(
+          repository,
+          key,
+          existingReference.object,
+          updated,
+        );
         return;
       }
     }
@@ -291,9 +307,18 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         if (sharedKey || trustedKey) {
           const replacement = await replaceOlderReferences(repository, key);
           updated = replacement.manifest;
-          await deleteUnreferencedObjects(repository, replacement.hashes, updated);
+          await deleteUnreferencedObjects(
+            repository,
+            replacement.hashes,
+            updated,
+          );
         }
-        await cleanupDuplicateAssets(repository, key, relatedReference.object, updated);
+        await cleanupDuplicateAssets(
+          repository,
+          key,
+          relatedReference.object,
+          updated,
+        );
         c.log(
           `linked existing cache reference: key=${key}; source=${relatedKey}`,
         );
@@ -346,10 +371,18 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         size: fs.statSync(archive.file).size,
         source: `linked-from:${key}`,
       });
-      const replacement = await replaceOlderReferences(repository, sharedCounterpart);
+      const replacement = await replaceOlderReferences(
+        repository,
+        sharedCounterpart,
+      );
       updated = replacement.manifest;
       await deleteUnreferencedObjects(repository, replacement.hashes, updated);
-      await cleanupDuplicateAssets(repository, sharedCounterpart, hash, updated);
+      await cleanupDuplicateAssets(
+        repository,
+        sharedCounterpart,
+        hash,
+        updated,
+      );
       c.log(
         `linked shared cache reference: key=${sharedCounterpart}; source=${key}`,
       );
