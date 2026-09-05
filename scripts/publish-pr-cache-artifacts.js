@@ -59,10 +59,39 @@ async function resolveWorkflowPullRequest(
     throw new Error(
       "workflow run does not include pull request metadata and its head SHA is unavailable",
     );
-  const response = await common.gh(
-    `/repos/${repository}/pulls/${encodeURIComponent(expectedNumber)}`,
+  const repositoryParts = String(repository).split("/");
+  if (
+    repositoryParts.length !== 2 ||
+    repositoryParts.some((part) => !/^[A-Za-z0-9_.-]+$/.test(part))
+  )
+    throw new Error("cache repository must be an owner/name repository");
+  const token = process.env.GITHUB_TOKEN || process.env.INPUT_TOKEN || "";
+  if (!token) throw new Error("GITHUB_TOKEN is required for pull request lookup");
+  const response = await fetch(
+    `https://api.github.com/repos/${repositoryParts
+      .map((part) => encodeURIComponent(part))
+      .join("/")}/pulls/${encodeURIComponent(expectedNumber)}`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      signal: AbortSignal.timeout(30000),
+    },
   );
-  const pr = response.body;
+  const responseText = await response.text();
+  let body;
+  try {
+    body = JSON.parse(responseText);
+  } catch {
+    body = responseText;
+  }
+  if (!response.ok)
+    throw new Error(
+      `pull request lookup failed: ${response.status} ${body?.message || responseText}`,
+    );
+  const pr = body;
   if (!pr || typeof pr !== "object" || Array.isArray(pr))
     throw new Error("GitHub returned an invalid pull request response");
   if (Number(pr.number) !== Number(expectedNumber))
