@@ -4,20 +4,17 @@ Native Caches von GitHub- oder Setup-Actions bleiben deaktiviert. Die
 jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 über `cache-the-planet` gespeichert.
 
-| Ökosystem | `cache-name` | Typischer Pfad |
-|---|---|---|
-| npm | `npm` | `.cache/npm` |
-| uv | `uv` | `.cache/uv` |
-| uv-managed Python | `uv-python-3-13` | `.cache/uv` |
-| Maven | `maven-java17` | `.cache/m2` |
-| Gradle | `gradle-java17` | `.cache/gradle` |
-| Task | `task` | `.cache/task` |
-| Docker/BuildKit | `docker` | `.cache/buildx` |
+| Ökosystem | `cache-name` | Typischer Pfad | Native Cache-Option deaktivieren |
+|---|---|---|---|
+| npm | `npm` | `.cache/npm` | `actions/setup-node`: `package-manager-cache: false` |
+| uv | `uv` | `.cache/uv` | `astral-sh/setup-uv`: `enable-cache: false` |
+| uv-managed Python | `uv-python-3-13` | `.cache/uv` | `astral-sh/setup-uv`: `enable-cache: false` |
+| Maven | `maven-java17` | `.cache/m2` | `actions/setup-java`: `cache` nicht setzen |
+| Gradle | `gradle-java17` | `.cache/gradle` | `actions/setup-java`: `cache` nicht setzen |
+| Task | `task` | `.cache/task` | Keine native Cache-Option vorhanden |
+| Docker/BuildKit | `docker` | `.cache/buildx` | `docker/setup-qemu-action`: `cache-image: false`; BuildKit-Cache separat konfigurieren |
 
-Deaktiviere bei Setup-Actions deren native Cache-Optionen, zum Beispiel
-`package-manager-cache: false`, `enable-cache: false` oder
-`cache-image: false`. Die genauen End-to-End-Beispiele liegen in
-`.github/workflows/`.
+Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
 
 Neue Cache-Namen können in `.cache-the-planet.json` unter
 `security.allowed_cache_names` freigeschaltet werden. Fehlt die Liste oder ist
