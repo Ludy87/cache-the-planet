@@ -72,6 +72,7 @@ jobs:
         with:
           cache-name: npm
           key: ${{ hashFiles('package-lock.json') }}
+          scope: shared
           path: .cache/npm
           strict: false
           token: ${{ steps.bot-token.outputs.token }}
