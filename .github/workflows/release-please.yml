@@ -52,6 +52,7 @@ jobs:
         env:
           RELEASE_MAJOR: ${{ steps.release.outputs.major }}
           RELEASE_MINOR: ${{ steps.release.outputs.minor }}
+          RELEASE_TOKEN: ${{ steps.bot-token.outputs.token || github.token }}
         run: |
           set -euo pipefail
 
@@ -59,9 +60,9 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git tag -d "v$RELEASE_MAJOR" || true
           git tag -d "v$RELEASE_MAJOR.$RELEASE_MINOR" || true
-          git push origin ":v$RELEASE_MAJOR" || true
-          git push origin ":v$RELEASE_MAJOR.$RELEASE_MINOR" || true
+          git -c http.extraheader="AUTHORIZATION: bearer $RELEASE_TOKEN" push origin ":v$RELEASE_MAJOR" || true
+          git -c http.extraheader="AUTHORIZATION: bearer $RELEASE_TOKEN" push origin ":v$RELEASE_MAJOR.$RELEASE_MINOR" || true
           git tag -a "v$RELEASE_MAJOR" -m "Release v$RELEASE_MAJOR"
           git tag -a "v$RELEASE_MAJOR.$RELEASE_MINOR" -m "Release v$RELEASE_MAJOR.$RELEASE_MINOR"
-          git push origin "v$RELEASE_MAJOR"
-          git push origin "v$RELEASE_MAJOR.$RELEASE_MINOR"
+          git -c http.extraheader="AUTHORIZATION: bearer $RELEASE_TOKEN" push origin "v$RELEASE_MAJOR"
+          git -c http.extraheader="AUTHORIZATION: bearer $RELEASE_TOKEN" push origin "v$RELEASE_MAJOR.$RELEASE_MINOR"
