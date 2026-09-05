@@ -43,31 +43,11 @@ jobs:
           manifest-file: .release-please-manifest.json
           token: ${{ steps.bot-token.outputs.token || github.token }}
 
-      - name: Check out release commit
-        if: steps.release.outputs.release_created == 'true'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ steps.release.outputs.sha }}
-          token: ${{ steps.bot-token.outputs.token || github.token }}
-          persist-credentials: false
-
       - name: Update floating major and minor tags
         if: steps.release.outputs.release_created == 'true'
-        env:
-          RELEASE_MAJOR: ${{ steps.release.outputs.major }}
-          RELEASE_MINOR: ${{ steps.release.outputs.minor }}
-          TOKEN: ${{ steps.bot-token.outputs.token || github.token }}
-        run: |
-          set -euo pipefail
-
-          git config user.name "AstraGermany-Bot[bot]"
-          git config user.email "AstraGermany-Bot[bot]@users.noreply.github.com"
-          git remote add gh-token "https://$TOKEN@github.com/Ludy87/cache-the-planet.git"
-          git tag -d "v$RELEASE_MAJOR" || true
-          git tag -d "v$RELEASE_MAJOR.$RELEASE_MINOR" || true
-          git push origin ":v$RELEASE_MAJOR" || true
-          git push origin ":v$RELEASE_MAJOR.$RELEASE_MINOR" || true
-          git tag -a "v$RELEASE_MAJOR" -m "Release v$RELEASE_MAJOR"
-          git tag -a "v$RELEASE_MAJOR.$RELEASE_MINOR" -m "Release v$RELEASE_MAJOR.$RELEASE_MINOR"
-          git push origin "v$RELEASE_MAJOR"
-          git push origin "v$RELEASE_MAJOR.$RELEASE_MINOR"
+        uses: jimeh/update-tags-action@98d6d448de7488acb52bd8db115673541d019521 # v2
+        with:
+          derive_from: ${{ steps.release.outputs.tag_name }}
+          ref: ${{ steps.release.outputs.sha }}
+          annotation: Release ${{ steps.release.outputs.tag_name }}
+          github_token: ${{ steps.bot-token.outputs.token || github.token }}
