@@ -60,6 +60,9 @@ jobs:
         with:
           cache-name: npm
           key: ${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}/
+            ${{ runner.os }}-
           path: .cache/npm
           strict: false
         continue-on-error: true
