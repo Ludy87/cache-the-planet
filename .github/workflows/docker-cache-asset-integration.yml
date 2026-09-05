@@ -123,7 +123,6 @@ jobs:
           # default-branch cache on main; the action creates the shared alias
           # only from the default branch when appropriate.
           scope: shared
-          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           path: examples/docker-cache/.cache/docker-buildx

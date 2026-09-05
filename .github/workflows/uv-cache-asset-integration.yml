@@ -111,7 +111,6 @@ jobs:
           cache-name: uv
           version: 2
           scope: shared
-          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/uv
           strict: true

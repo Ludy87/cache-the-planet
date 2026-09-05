@@ -92,7 +92,6 @@ jobs:
         with:
           cache-name: maven-java17
           scope: shared
-          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/m2
           strict: false

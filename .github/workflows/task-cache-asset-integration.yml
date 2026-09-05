@@ -94,7 +94,6 @@ jobs:
         with:
           cache-name: task
           scope: shared
-          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
             examples/task-cache/.cache/task

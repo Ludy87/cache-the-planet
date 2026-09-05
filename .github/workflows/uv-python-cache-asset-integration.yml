@@ -92,7 +92,6 @@ jobs:
         with:
           cache-name: uv-python-3-13
           scope: shared
-          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 4
           path: .cache/uv

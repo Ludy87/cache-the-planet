@@ -86,7 +86,6 @@ jobs:
         with:
           cache-name: npm
           scope: shared
-          # token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/npm
           strict: false
