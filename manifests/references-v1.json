@@ -70,13 +70,6 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 7001829
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-83/demo/linux-x64/cache-action-demo-v1/v1": {
-      "object": "sha256:a1d3207981dc84fb7daf9097c7f08159697633ddddb2d27b7923095c71d4165c",
-      "updated_at": "2026-09-06T09:02:38.319Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 159
     }
   },
   "monitoring": {
