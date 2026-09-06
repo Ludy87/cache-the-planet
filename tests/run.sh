@@ -166,7 +166,7 @@ try {
     throw new Error('fork save was not skipped before API access');
   }
   const forkOutputs = fs.readFileSync(forkOutput, 'utf8');
-  if (!forkOutputs.includes('is_fork=true\n') || !forkOutputs.includes('read_only=true\n')) {
+  if (!forkOutputs.includes('is-fork=true\n') || !forkOutputs.includes('read-only=true\n')) {
     throw new Error('fork save outputs were not generated correctly');
   }
   fs.writeFileSync(eventFile, JSON.stringify({

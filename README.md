@@ -86,7 +86,7 @@ Restore unterstützt zusätzlich `restore-keys` und
 `exclude`, `exclude-path` und `allow-pr-cache`.
 
 Restore-Outputs sind `cache-hit`, `matched-key`, `content-hash`, `asset-name`
-und `cache-size`. Save liefert `is_fork`, `read_only`, `content-hash`,
+und `cache-size`. Save liefert `is-fork`, `read-only`, `content-hash`,
 `asset-name` und `cache-size`.
 
 `cache-size` bezeichnet die Größe der tatsächlich gespeicherten Objektdatei.

@@ -84,8 +84,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
     const setOutput = c.setOutput;
-    setOutput("is_fork", isFork ? "true" : "false");
-    setOutput("read_only", isFork ? "true" : "false");
+    setOutput("is-fork", isFork ? "true" : "false");
+    setOutput("read-only", isFork ? "true" : "false");
     const key = c.scopedKey(c.input("key"));
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input("scope", "auto").trim().toLowerCase();
@@ -431,7 +431,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       (error.status === 401 || error.status === 403)
     ) {
       if (process.env.GITHUB_OUTPUT) {
-        c.setOutput("read_only", "true");
+        c.setOutput("read-only", "true");
       }
       saveSummary("SKIPPED", {
         Reason: `Repository access denied (${error.status})`,

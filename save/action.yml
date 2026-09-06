@@ -66,9 +66,9 @@ inputs:
     required: false
     default: "true"
 outputs:
-  is_fork:
+  is-fork:
     description: "true when the save runs for a pull request whose source repository is a fork"
-  read_only:
+  read-only:
     description: "true when the action will not write a cache because the pull request is from a fork"
   content-hash:
     description: "sha256 digest of the object"
