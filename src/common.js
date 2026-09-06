@@ -48,7 +48,11 @@ const maxArchiveEntries = positiveEnvironmentLimit(
   200000,
   "max_entries",
 );
-const maxArchivePathLength = 4096;
+const maxArchivePathLength = positiveEnvironmentLimit(
+  "CACHE_MAX_ARCHIVE_PATH_LENGTH",
+  4096,
+  "max_archive_path_length",
+);
 const defaultManifestReferenceLimit = 100000;
 const defaultManifestWritesPerHour = 1000;
 const defaultLogicalKeyLength = 512;
@@ -325,9 +329,12 @@ function cacheName() {
 
 function cacheScope(inputName = "scope", fallbackInputName = null) {
   const configured = input(inputName).trim();
+  const configuredScope = String(configuration().scope ?? "").trim();
   const value = (
     configured ||
-    (fallbackInputName ? input(fallbackInputName, "auto") : "auto")
+    (fallbackInputName
+      ? input(fallbackInputName) || configuredScope || "auto"
+      : configuredScope || "auto")
   )
     .trim()
     .toLowerCase();
@@ -400,7 +407,10 @@ function logicalCacheKey(value, name, includeVersion = true) {
     throw new Error(`cache key must not exceed ${maxLength} characters`);
   }
   if (!includeVersion) return withPlatform;
-  const version = input("version", "1").trim() || "1";
+  const version =
+    input("version").trim() ||
+    String(configuration().version ?? "").trim() ||
+    "1";
   if (!/^\d+$/.test(version))
     throw new Error("version must contain numbers only");
   const complete = /\/v[A-Za-z0-9._-]+$/.test(withPlatform)

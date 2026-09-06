@@ -64,6 +64,11 @@ env:
   CACHE_ALLOWED_CACHE_NAMES: npm,uv,gradle-java17,docker
 ```
 
+Die maximale Länge eines einzelnen Archivpfads beträgt standardmäßig `4096`
+Zeichen und kann mit `security.max_archive_path_length` beziehungsweise
+`CACHE_MAX_ARCHIVE_PATH_LENGTH` angepasst werden. Der Wert muss eine positive
+sichere Ganzzahl sein.
+
 ## Cache-Scope
 
 ### Administrative Actions

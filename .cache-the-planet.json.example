@@ -1,6 +1,8 @@
 {
   "cache_repository": "owner/cache-repository",
   "manifest_branch": "cache-data",
+  "scope": "auto",
+  "version": "1",
   "compression_level": 3,
   "monitoring": {
     "max_manifest_references": 100000,
@@ -10,6 +12,7 @@
     "max_compressed_bytes": 2147483648,
     "max_tar_bytes": 8589934592,
     "max_entries": 200000,
+    "max_archive_path_length": 4096,
     "max_logical_key_length": 512,
     "max_logical_key_components": 16,
     "allowed_cache_names": [

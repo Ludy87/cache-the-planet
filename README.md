@@ -124,11 +124,14 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 {
   "cache_repository": "owner/cache-repository",
   "manifest_branch": "cache-data",
+  "scope": "auto",
+  "version": "1",
   "compression_level": 3,
   "security": {
     "max_compressed_bytes": 2147483648,
     "max_tar_bytes": 8589934592,
     "max_entries": 200000,
+    "max_archive_path_length": 4096,
     "allowed_cache_names": ["npm", "uv", "docker"]
   }
 }
@@ -138,6 +141,9 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 Branch für das Cache-Manifest fest. Ein gesetztes
 `CACHE_MANIFEST_BRANCH` oder der Action-Input `manifest-branch` überschreibt
 diesen Wert; ohne Konfiguration wird `cache-data` verwendet.
+`scope` und `version` definieren die Standardwerte für die gleichnamigen
+Inputs. Explizite Inputs haben Vorrang; ohne `scope` wird `auto`, ohne
+`version` wird `1` verwendet.
 `compression_level` legt die zstd-Kompressionsstufe fest. Der Action-Input
 `compression-level` und `CACHE_COMPRESSION_LEVEL` überschreiben diesen Wert;
 der Default ist `3`.

@@ -15,6 +15,8 @@ function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const script = `
     process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
     process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
+    process.env.RUNNER_OS = "Linux";
+    process.env.RUNNER_ARCH = "X64";
     process.env["INPUT_CACHE-NAME"] = ${JSON.stringify(cacheName)};
     const { cacheName } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
     process.stdout.write(cacheName());
@@ -59,6 +61,33 @@ function runCompressionLevelWithConfig(config, extraEnv = {}) {
     process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
     const { compressionLevel } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
     process.stdout.write(compressionLevel());
+  `;
+  const result = childProcess.spawnSync(process.execPath, ["-e", script], {
+    cwd: workspace,
+    env: { ...process.env, ...extraEnv },
+    encoding: "utf8",
+  });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result;
+}
+
+function runConfiguredDefaults(config, extraEnv = {}) {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-defaults-test-"));
+  fs.writeFileSync(
+    path.join(workspace, ".cache-the-planet.json"),
+    JSON.stringify(config),
+  );
+  const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
+    process.env.RUNNER_OS = "Linux";
+    process.env.RUNNER_ARCH = "X64";
+    process.env["INPUT_CACHE-NAME"] = "npm";
+    process.env.GITHUB_REPOSITORY = "owner/repo";
+    process.env.GITHUB_DEFAULT_BRANCH = "main";
+    process.env.GITHUB_REF = "refs/heads/main";
+    const common = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+    process.stdout.write(common.cacheScope() + "|" + common.scopedKey("hash"));
   `;
   const result = childProcess.spawnSync(process.execPath, ["-e", script], {
     cwd: workspace,
@@ -130,6 +159,28 @@ test("compression level uses the documented configuration precedence", () => {
   );
   assert.notEqual(
     runCompressionLevelWithConfig({ compression_level: "invalid" }).status,
+    0,
+  );
+});
+
+test("scope and version use JSON defaults without overriding explicit inputs", () => {
+  assert.equal(
+    runConfiguredDefaults({ scope: "shared", version: "7" }).stdout,
+    "shared|shared/owner/repo/npm/linux-x64/hash/v7",
+  );
+  assert.equal(
+    runConfiguredDefaults(
+      { scope: "shared", version: "7" },
+      { INPUT_SCOPE: "trusted", INPUT_VERSION: "9" },
+    ).stdout,
+    "trusted|trusted/owner/repo/main/npm/linux-x64/hash/v9",
+  );
+  assert.notEqual(
+    runConfiguredDefaults({ scope: "invalid", version: "7" }).status,
+    0,
+  );
+  assert.notEqual(
+    runConfiguredDefaults({ scope: "shared", version: "v7" }).status,
     0,
   );
 });

@@ -38,10 +38,19 @@ Das Cache-Repository wird über den Input `repository`, `CACHE_REPOSITORY` oder
 das JSON-Feld `cache_repository` gewählt. Fehlt alles, verwendet die Action
 `GITHUB_REPOSITORY`, also das Repository, in dem der Workflow läuft.
 
+Die JSON-Felder `scope` und `version` können als Standardwerte für die
+gleichnamigen Inputs verwendet werden. Explizite Action-Inputs haben Vorrang;
+ohne Konfiguration gelten `auto` und `1`.
+
 Die zstd-Kompressionsstufe kann über `compression-level`,
 `CACHE_COMPRESSION_LEVEL` oder das JSON-Feld `compression_level` konfiguriert
 werden. Die Priorität ist Action-Input, Umgebungsvariable, JSON-Konfiguration;
 ohne Angabe wird die Stufe `3` verwendet.
+
+Das Sicherheitsfeld `security.max_archive_path_length` begrenzt die maximale
+Länge eines einzelnen Archivpfads. Der Standardwert ist `4096`; die
+Umgebungsvariable `CACHE_MAX_ARCHIVE_PATH_LENGTH` überschreibt die JSON-
+Konfiguration.
 
 ```json
 {

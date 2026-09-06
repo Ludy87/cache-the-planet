@@ -12,9 +12,9 @@ inputs:
     description: "Cache name using only letters, numbers, hyphens, or underscores"
     required: true
   scope:
-    description: "Cache scope: auto, shared, trusted, or untrusted"
+    description: "Cache scope; defaults to scope in config or auto"
     required: false
-    default: auto
+    default: ""
   save-scope:
     description: "Scope for saving; defaults to scope"
     required: false
@@ -28,9 +28,9 @@ inputs:
     required: false
     default: "__runner__"
   version:
-    description: "Numeric cache format version, for example 1 or 2"
+    description: "Numeric cache format version; defaults to version in config or 1"
     required: false
-    default: "1"
+    default: ""
   path:
     description: "Newline separated files or directories to cache"
     required: true
