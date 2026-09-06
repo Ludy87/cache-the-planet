@@ -250,8 +250,6 @@ jobs:
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 5
-          restore-keys: |
-            linux-x64/
           path: .cache/uv
           strict: false
 
