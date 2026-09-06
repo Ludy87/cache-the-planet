@@ -9,9 +9,11 @@ SHA-256-Objekten zu.
 
 ## Funktionsweise
 
-Restore und Save sind getrennte Actions. Restore prüft Hash, Archiv und Pfade
-vor der Extraktion. Save erzeugt deterministische `tar.zst`-Archive, erkennt
-potenzielle Credentials und lädt jedes Objekt nur einmal hoch.
+Die Root-Action stellt den Cache wieder her und speichert ihn nach einem
+erfolgreichen Job automatisch im Post-Schritt. Restore prüft Hash, Archiv und
+Pfade vor der Extraktion. Save erzeugt deterministische `tar.zst`-Archive,
+erkennt potenzielle Credentials und lädt jedes Objekt nur einmal hoch.
+Für getrennte Abläufe stehen `restore/action.yml` und `save/action.yml` bereit.
 
 Ein Cache-Key besteht aus einem logischen Key sowie automatisch ergänzten
 Namespace-, Plattform- und Versionskomponenten. Die Scopes sind:
@@ -55,6 +57,10 @@ Ein Shared-Restore in Pull Requests muss ausdrücklich mit
 Action-Schnittstelle ist. Die aktuelle Restore-Action extrahiert das geprüfte
 Archiv vollständig in `GITHUB_WORKSPACE`; `path` ist kein nachträglicher
 Filter für einzelne Archivdateien.
+
+Die Root-Action kann mit `restore-only: true` auf reines Restore beschränkt
+werden. Mit `save-scope` lässt sich der Scope des Post-Save-Schritts unabhängig
+von `scope` konfigurieren; ohne Angabe übernimmt er `scope`.
 
 ## Authentifizierung
 

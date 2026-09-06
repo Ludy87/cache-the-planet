@@ -90,6 +90,10 @@ werden. Der Nutzer-Key kann dadurch ausschließlich aus dem Abhängigkeits-Hash
 bestehen.
 `version` ist numerisch und wird als `v<version>` im vollständigen Key
 gespeichert.
+Beim kombinierten Root-Aufruf bestimmt `scope` den Restore-Namespace.
+Der optionale Input `save-scope` bestimmt unabhängig davon den Namespace des
+Post-Save-Schritts; fehlt er, wird `scope` übernommen. Die Werte und
+Sicherheitsregeln sind identisch: `auto`, `shared`, `trusted` und `untrusted`.
 Wird `scope: shared` in einem Pull Request verwendet, wird der Save-Schritt mit
 einem Hinweis in den isolierten `untrusted/pr-<number>/...`-Namespace abgebildet.
 Der Shared-Key bleibt unverändert; auf `main` kann derselbe logische Key als

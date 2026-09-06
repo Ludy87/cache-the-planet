@@ -15,6 +15,11 @@ Referenzen:
 
 ## Speichern
 
+Die Root-Action führt das Speichern nach einem erfolgreichen Restore-Job im
+Post-Schritt aus. Mit `restore-only: true` wird dieser Post-Save übersprungen.
+Der Save-Scope kann über `save-scope` unabhängig vom Restore-Scope `scope`
+gewählt werden; ohne Angabe übernimmt er `scope`.
+
 Beim Speichern werden die angegebenen Pfade geprüft und deterministisch mit
 `tar` archiviert. Das Archiv wird mit `zstd` komprimiert und optional mit
 AES-256-GCM verschlüsselt. Anschließend wird der SHA-256-Hash der gespeicherten
