@@ -95,8 +95,6 @@ outputs:
     description: "Compressed object size in bytes"
   is_fork:
     description: "true when the automatic post-step save runs for a fork pull request"
-  read_only:
-    description: "Legacy output: true when the automatic post-step save cannot write a cache"
   restore-only:
     description: "true when restore-only mode disables the automatic post-step save"
 runs:
