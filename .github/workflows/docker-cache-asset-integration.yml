@@ -80,7 +80,7 @@ jobs:
           echo "Dockerfile and context hash: $FILES_HASH"
 
       - name: Restore Docker cache
-        id: restore
+        id: cache
         uses: ./
         with:
           cache-name: docker
@@ -114,7 +114,7 @@ jobs:
           mv examples/docker-cache/.cache/docker-buildx-new examples/docker-cache/.cache/docker-buildx
 
       - name: Upload Docker cache artifact for trusted publisher
-        if: ${{ (steps.restore.outputs.is-fork == 'true' || steps.restore.outputs.read-only == 'true') && success() }}
+        if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-docker-${{ needs.hash_pr.outputs.files_hash }}-v2

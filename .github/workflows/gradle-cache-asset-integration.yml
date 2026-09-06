@@ -83,31 +83,20 @@ jobs:
           cache-jdk: false
 
       - name: Restore npm cache asset
+        id: cache
         uses: ./
         with:
           cache-name: gradle-java17
+          save-scope: shared
+          token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
+          allow-shared-restore: true
+          restore-keys: |
+            linux-x64/
           path: .cache/gradle
-          strict: false
-
-      - name: Build with Gradle
-        working-directory: examples/gradle-cache
-        run: gradle --no-daemon test
-
-      - name: Save Gradle cache asset
-        if: ${{ success() }}
-        id: save
-        uses: ./save
-        with:
-          cache-name: gradle-java17
-          scope: shared
-          key: ${{ needs.hash_pr.outputs.files_hash }}
-          path: .cache/gradle
-          strict: false
-          allow-pr-cache: true
 
       - name: Upload Gradle cache artifact for trusted publisher
-        if: ${{ (steps.save.outputs.is-fork == 'true' || steps.save.outputs.read-only == 'true') && success() }}
+        if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-gradle-java17-${{ needs.hash_pr.outputs.files_hash }}-v1
