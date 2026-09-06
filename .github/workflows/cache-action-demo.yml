@@ -14,9 +14,21 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Create AstraGermany-Bot token for trusted save
+        if: ${{ github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+
       - name: Check out the action
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
       - name: Start with an empty demo directory
@@ -30,7 +42,10 @@ jobs:
           cache-name: demo
           key: cache-action-demo-v1
           path: .cache/demo
-          token: ${{ github.token }}
+          scope: auto
+          allow-shared-restore: true
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          strict: false
 
       - name: Create demo content after restore
         if: steps.cache.outputs.cache-hit != 'true'
