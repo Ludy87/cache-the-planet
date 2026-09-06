@@ -14,6 +14,10 @@ inputs:
   pr-number:
     description: Numeric pull request number
     required: true
+branding:
+  icon: archive
+  color: blue
+
 runs:
   using: node24
   main: ../dist/pr-cleanup.js

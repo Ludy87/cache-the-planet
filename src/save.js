@@ -81,6 +81,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
 (async () => {
   try {
+    if (String(c.input("restore-only")).toLowerCase() === "true") {
+      c.log("post-save skipped because restore-only is enabled");
+      return;
+    }
     const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
     const setOutput = c.setOutput;

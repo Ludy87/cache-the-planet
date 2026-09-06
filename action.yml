@@ -58,6 +58,26 @@ inputs:
     description: "Allow pull requests to restore explicitly selected shared caches"
     required: false
     default: "false"
+  restore-only:
+    description: "Only restore the cache; reserved for post-save behavior"
+    required: false
+    default: "false"
+  compression-level:
+    description: "zstd compression level for post-save"
+    required: false
+    default: "3"
+  exclude:
+    description: "Newline separated exclusions for post-save"
+    required: false
+    default: ""
+  exclude-path:
+    description: "Newline separated workspace-relative files containing exclusion patterns for post-save"
+    required: false
+    default: ""
+  allow-pr-cache:
+    description: "Allow saving an isolated untrusted cache for a pull request during post-save"
+    required: false
+    default: "true"
 outputs:
   cache-hit:
     description: "true when an exact key was restored"
@@ -69,6 +89,12 @@ outputs:
     description: "Release asset filename for the cached object"
   cache-size:
     description: "Compressed object size in bytes"
+branding:
+  icon: archive
+  color: blue
+
 runs:
   using: node24
   main: dist/restore.js
+  post: dist/save.js
+  post-if: "success()"

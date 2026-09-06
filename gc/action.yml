@@ -35,6 +35,10 @@ inputs:
     description: Permit shared cleanup only for an explicit manual expired run
     required: false
     default: "false"
+branding:
+  icon: archive
+  color: blue
+
 runs:
   using: node24
   main: ../dist/gc.js
