@@ -91,9 +91,8 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: .cache/gradle
+          strict: true
 
       - name: Upload Gradle cache artifact for trusted publisher
         if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
@@ -133,8 +132,6 @@ jobs:
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: .cache/gradle
           strict: true
 
@@ -184,8 +181,7 @@ jobs:
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/gradle
-          restore-keys: |
-            linux-x64/
+          strict: true
 
       - name: Restore Gradle cache asset - trusted
         id: cache-trusted
@@ -194,10 +190,8 @@ jobs:
           cache-name: gradle-java17
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/gradle
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
@@ -218,10 +212,8 @@ jobs:
           cache-name: gradle-java17
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/gradle
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
@@ -242,10 +234,8 @@ jobs:
           cache-name: gradle-java17
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/gradle
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}

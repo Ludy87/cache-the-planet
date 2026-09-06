@@ -89,9 +89,8 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: examples/docker-cache/.cache/docker-buildx
+          strict: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
@@ -146,8 +145,6 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: examples/docker-cache/.cache/docker-buildx
           strict: true
 
@@ -196,10 +193,8 @@ jobs:
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
-          restore-keys: |
-            linux-x64/
           path: examples/docker-cache/.cache/docker-buildx
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
@@ -221,10 +216,8 @@ jobs:
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
-          restore-keys: |
-            linux-x64/
           path: examples/docker-cache/.cache/docker-buildx
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
@@ -246,10 +239,8 @@ jobs:
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
-          restore-keys: |
-            linux-x64/
           path: examples/docker-cache/.cache/docker-buildx
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}

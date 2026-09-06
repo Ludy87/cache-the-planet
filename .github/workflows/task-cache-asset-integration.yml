@@ -87,11 +87,10 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: |
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
+          strict: true
 
       - name: Run task build
         run: task --taskfile examples/task-cache/Taskfile.yml build
@@ -134,8 +133,6 @@ jobs:
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: |
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
@@ -185,12 +182,10 @@ jobs:
           cache-name: task
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: |
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
@@ -211,12 +206,10 @@ jobs:
           cache-name: task
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: |
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
@@ -237,12 +230,10 @@ jobs:
           cache-name: task
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: |
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}

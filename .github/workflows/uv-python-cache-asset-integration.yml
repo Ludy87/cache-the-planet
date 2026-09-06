@@ -91,11 +91,7 @@ jobs:
           allow-shared-restore: true
           version: 5
           path: .cache/uv
-
-      - run: |
-          echo "Cache hit: ${{ steps.cache.outputs['cache-hit'] }}"
-          echo "Is fork: ${{ steps.cache.outputs['is-fork'] }}"
-          echo "Is read-only: ${{ steps.cache.outputs['read-only'] }}"
+          strict: true
 
       - name: Install managed Python
         run: |
@@ -149,8 +145,6 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 4
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: |
             .cache/uv
           strict: true
@@ -201,10 +195,8 @@ jobs:
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 5
-          restore-keys: |
-            linux-x64/
           path: .cache/uv
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
@@ -227,10 +219,8 @@ jobs:
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 5
-          restore-keys: |
-            linux-x64/
           path: .cache/uv
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
@@ -254,7 +244,7 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 5
           path: .cache/uv
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}

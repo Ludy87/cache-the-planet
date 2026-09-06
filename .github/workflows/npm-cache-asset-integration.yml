@@ -86,9 +86,8 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: .cache/npm
+          strict: true
 
       - name: Configure npm cache directory
         run: npm config set cache "$PWD/.cache/npm" --global
@@ -135,8 +134,6 @@ jobs:
           cache-name: npm
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/npm
           allow-shared-restore: true
           strict: true
@@ -175,8 +172,6 @@ jobs:
           cache-name: npm
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/npm
           allow-shared-restore: true
           strict: true
@@ -201,10 +196,8 @@ jobs:
           cache-name: npm
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/npm
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
@@ -225,10 +218,8 @@ jobs:
           cache-name: npm
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/npm
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
@@ -249,10 +240,8 @@ jobs:
           cache-name: npm
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/npm
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}

@@ -99,6 +99,7 @@ jobs:
           allow-shared-restore: true
           version: 3
           path: .cache/uv
+          strict: true
 
       - name: Populate uv cache
         run: uv pip install --python .venv/bin/python -r examples/uv-cache/requirements.txt
@@ -156,8 +157,6 @@ jobs:
           scope: auto
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           path: .cache/uv
           strict: true
 
@@ -206,10 +205,8 @@ jobs:
           version: 3
           scope: trusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/uv
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - trusted
         if: ${{ steps.cache-trusted.outputs.matched-key != '' && startsWith(steps.cache-trusted.outputs.matched-key, 'trusted/') }}
@@ -231,10 +228,8 @@ jobs:
           version: 3
           scope: shared
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          restore-keys: |
-            linux-x64/
           path: .cache/uv
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - shared
         if: ${{ steps.cache-shared.outputs.matched-key != '' && startsWith(steps.cache-shared.outputs.matched-key, 'shared/') }}
@@ -257,7 +252,7 @@ jobs:
           scope: untrusted
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/uv
-          strict: false
+          strict: true
 
       - name: Assert exact asset cache hit - untrusted
         if: ${{ steps.cache-untrusted.outputs.matched-key != '' && startsWith(steps.cache-untrusted.outputs.matched-key, 'untrusted/') }}
