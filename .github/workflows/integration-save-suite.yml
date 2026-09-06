@@ -42,6 +42,13 @@ jobs:
           set +e
           npm run test 2>&1 | tee npm-test-output.log
           test_status=${PIPESTATUS[0]}
+          tests_count=$(awk '$2 == "tests" { print $3; exit }' npm-test-output.log)
+          suites_count=$(awk '$2 == "suites" { print $3; exit }' npm-test-output.log)
+          pass_count=$(awk '$2 == "pass" { print $3; exit }' npm-test-output.log)
+          fail_count=$(awk '$2 == "fail" { print $3; exit }' npm-test-output.log)
+          cancelled_count=$(awk '$2 == "cancelled" { print $3; exit }' npm-test-output.log)
+          skipped_count=$(awk '$2 == "skipped" { print $3; exit }' npm-test-output.log)
+          todo_count=$(awk '$2 == "todo" { print $3; exit }' npm-test-output.log)
           {
             echo '### npm run test'
             echo
@@ -53,15 +60,13 @@ jobs:
               echo '| Status | FAIL |'
             fi
             echo '| Exit-Code | '"$test_status"' |'
-            echo
-            echo '<details>'
-            echo '<summary>Testausgabe</summary>'
-            echo
-            echo '```text'
-            cat npm-test-output.log
-            echo '```'
-            echo
-            echo '</details>'
+            echo '| Tests | '"${tests_count:-—}"' |'
+            echo '| Suites | '"${suites_count:-—}"' |'
+            echo '| Bestanden | '"${pass_count:-—}"' |'
+            echo '| Fehlgeschlagen | '"${fail_count:-—}"' |'
+            echo '| Abgebrochen | '"${cancelled_count:-—}"' |'
+            echo '| Übersprungen | '"${skipped_count:-—}"' |'
+            echo '| Todo | '"${todo_count:-—}"' |'
             echo
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$test_status"
