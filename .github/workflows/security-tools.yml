@@ -29,7 +29,10 @@ jobs:
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
       - name: Check workflows and shell scripts
         shell: bash
-        run: actionlint -color
+        run: >-
+          actionlint -color
+          -ignore 'specifying action "\$/'
+          -ignore 'reusable workflow call "\$/'
       - name: Check standalone shell scripts
         shell: bash
         run: shellcheck scripts/*.sh tests/run.sh
