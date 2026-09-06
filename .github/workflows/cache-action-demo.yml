@@ -76,3 +76,32 @@ jobs:
           echo "matched-key=${MATCHED_KEY}"
           test -f .cache/demo/message.txt
           cat .cache/demo/message.txt
+
+  restore-only-failed:
+    name: Restore-only failed sub-action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Restore with ./restore
+        id: restore
+        uses: ./restore
+        with:
+          repository: ${{ github.repository }}
+          cache-name: demo-failed
+          key: cache-action-demo-v1
+          path: .cache/demo-failed
+          token: ${{ github.token }}
+
+      - name: Show restore-only result
+        env:
+          CACHE_HIT: ${{ steps.restore.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.restore.outputs.matched-key }}
+        run: |
+          echo "cache-hit=${CACHE_HIT}"
+          echo "matched-key=${MATCHED_KEY}"
+          test -f .cache/demo-failed/message.txt
+          cat .cache/demo-failed/message.txt
