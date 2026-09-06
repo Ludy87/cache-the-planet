@@ -9,9 +9,11 @@ SHA-256-Objekten zu.
 
 ## Funktionsweise
 
-Restore und Save sind getrennte Actions. Restore prüft Hash, Archiv und Pfade
-vor der Extraktion. Save erzeugt deterministische `tar.zst`-Archive, erkennt
-potenzielle Credentials und lädt jedes Objekt nur einmal hoch.
+`./` führt Restore sofort und Save automatisch im Post-Schritt aus. Restore
+prüft Hash, Archiv und Pfade vor der Extraktion. Save erzeugt deterministische
+`tar.zst`-Archive, erkennt potenzielle Credentials und lädt jedes Objekt nur
+einmal hoch. Für getrennte Abläufe stehen `./restore` (nur Restore) und
+`./save` (nur Save) zur Verfügung — analog zu [actions/cache](https://github.com/actions/cache).
 
 Ein Cache-Key besteht aus einem logischen Key sowie automatisch ergänzten
 Namespace-, Plattform- und Versionskomponenten. Die Scopes sind:
@@ -28,7 +30,7 @@ Ein Shared-Restore in Pull Requests muss ausdrücklich mit
 ## Nutzung
 
 ```yaml
-- name: Restore cache
+- name: Restore and save cache
   uses: Ludy87/cache-the-planet@v1
   with:
     repository: Ludy87/cache-the-planet
@@ -40,16 +42,14 @@ Ein Shared-Restore in Pull Requests muss ausdrücklich mit
 - name: Build
   run: npm ci --no-audit --no-fund
 
-- name: Save cache
-  if: ${{ success() }}
-  uses: Ludy87/cache-the-planet/save@v1
-  with:
-    repository: Ludy87/cache-the-planet
-    cache-name: npm
-    key: ${{ hashFiles('package-lock.json') }}
-    path: .cache/npm
-    token: ${{ secrets.CACHE_APP_TOKEN }}
 ```
+
+Für ausschließliches Restore kann `Ludy87/cache-the-planet/restore@v1`
+verwendet werden. Ein separater Save-Schritt verwendet weiterhin
+`Ludy87/cache-the-planet/save@v1`.
+
+Mit `read-only: true` wird das automatische Speichern der Root-Action
+deaktiviert, während der Restore weiterhin ausgeführt wird.
 
 `path` muss beim Restore angegeben werden, weil es Bestandteil der
 Action-Schnittstelle ist. Die aktuelle Restore-Action extrahiert das geprüfte

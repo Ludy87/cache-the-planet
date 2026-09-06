@@ -15,6 +15,7 @@ const assetsCache = new Map();
 const manifestCache = new Map();
 const manifestLocks = new Map();
 
+/** Parses a value as an integer of at least one, or returns the supplied fallback when omitted. */
 function parsePositiveSafeInteger(value, name, fallback) {
   if (value === undefined || value === "") return fallback;
   const parsed = Number(value);
@@ -24,6 +25,7 @@ function parsePositiveSafeInteger(value, name, fallback) {
   return parsed;
 }
 
+/** Reads and validates a positive security limit from the environment or configuration. */
 function positiveEnvironmentLimit(name, fallback, configName) {
   const configuredValue = configuration().security?.[configName];
   return parsePositiveSafeInteger(
@@ -56,21 +58,25 @@ const defaultLogicalKeyComponents = 16;
 const githubApiTimeoutMs = 120000;
 const githubApiMaxRetries = 2;
 
+/** Reads one GitHub Action input from its INPUT_* environment variable. */
 function input(name, defaultValue = "") {
   const variable = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
   return process.env[variable] ?? defaultValue;
 }
 
+/** Reports whether an Action input was explicitly provided by the runner. */
 function hasInput(name) {
   const variable = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
   return Object.prototype.hasOwnProperty.call(process.env, variable);
 }
 
+/** Returns the configured GitHub REST token, preferring the action input. */
 function token() {
   // ACTIONS_RUNTIME_TOKEN is for the Actions service, not the GitHub REST API.
   return input("token") || process.env.GITHUB_TOKEN;
 }
 
+/** Writes a validated scalar value to the GitHub Actions output file. */
 function setOutput(name, value) {
   const stringValue = String(value ?? "");
   if (!/^[A-Za-z0-9._:/-]*$/.test(stringValue)) {
@@ -81,11 +87,13 @@ function setOutput(name, value) {
   }
 }
 
+/** Builds the Authorization header set for GitHub API requests. */
 function authorizationHeaders() {
   const value = token();
   return value ? { Authorization: `Bearer ${value}` } : {};
 }
 
+/** Loads, validates, and memoizes the optional workspace-local JSON configuration. */
 function configuration() {
   if (configurationCache) return configurationCache;
   const configuredFile = input("config-file") || process.env.CACHE_CONFIG_FILE;
@@ -115,6 +123,7 @@ function configuration() {
   return configurationCache;
 }
 
+/** Resolves a positive monitoring or security limit from environment, config, or default. */
 function configuredLimit(
   environmentName,
   configName,
@@ -127,6 +136,7 @@ function configuredLimit(
   return parsePositiveSafeInteger(value, environmentName, fallback);
 }
 
+/** Validates and normalizes a content-addressed SHA-256 object identifier. */
 function validateCacheHash(hash) {
   if (typeof hash !== "string" || !/^sha256:[a-f0-9]{64}$/i.test(hash)) {
     throw new Error("cache object must be a sha256 hash");
@@ -134,6 +144,7 @@ function validateCacheHash(hash) {
   return hash.toLowerCase();
 }
 
+/** Validates one manifest reference and its optional metadata fields. */
 function validateManifestReference(reference) {
   if (!reference || typeof reference !== "object" || Array.isArray(reference)) {
     throw new Error("manifest reference must be an object");
@@ -151,6 +162,7 @@ function validateManifestReference(reference) {
   return reference;
 }
 
+/** Validates the complete manifest structure and every referenced cache key/object. */
 function validateManifest(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("manifest must be an object");
@@ -171,6 +183,7 @@ function validateManifest(value) {
   return value;
 }
 
+/** Creates a stream transform that rejects data after the configured byte limit. */
 function createBoundedTransform(limit, errorMessage) {
   const maxBytes = parsePositiveSafeInteger(limit, "stream limit");
   let total = 0;
@@ -186,6 +199,7 @@ function createBoundedTransform(limit, errorMessage) {
   });
 }
 
+/** Removes a temporary file or directory and deliberately ignores cleanup failures. */
 function removeTemporaryFile(file) {
   if (!file) return;
   try {
@@ -193,6 +207,7 @@ function removeTemporaryFile(file) {
   } catch {}
 }
 
+/** Returns the configured cache-name allowlist, or null when no allowlist exists. */
 function configuredCacheNames() {
   const environmentValue = process.env.CACHE_ALLOWED_CACHE_NAMES;
   const configValue = configuration().security?.allowed_cache_names;
@@ -219,6 +234,7 @@ function configuredCacheNames() {
   return names;
 }
 
+/** Creates and memoizes the authenticated Octokit client used by GitHub API calls. */
 async function githubClient() {
   const value = token();
   if (!value) return null;
@@ -230,14 +246,17 @@ async function githubClient() {
   return githubClientPromise;
 }
 
+/** Returns the current GitHub event name. */
 function eventName() {
   return process.env.GITHUB_EVENT_NAME || "";
 }
 
+/** Returns the source repository in owner/name form from the runner environment. */
 function repository() {
   return process.env.GITHUB_REPOSITORY || "";
 }
 
+/** Resolves and validates the repository that stores cache assets and the manifest. */
 function cacheRepository() {
   const value =
     input("repository") ||
@@ -250,6 +269,7 @@ function cacheRepository() {
   return value;
 }
 
+/** Determines the repository default branch from the runner or event payload. */
 function defaultBranch() {
   if (process.env.GITHUB_DEFAULT_BRANCH)
     return process.env.GITHUB_DEFAULT_BRANCH;
@@ -267,10 +287,12 @@ function defaultBranch() {
   return "";
 }
 
+/** Checks whether a key conforms to the complete trusted, untrusted, or shared schema. */
 function isCompleteCacheKey(key) {
   if (typeof key !== "string" || key.length > defaultLogicalKeyLength)
     return false;
   const parts = key.split("/");
+  /** Checks one cache-key segment for the allowed filename-safe characters. */
   const safePart = (value) => /^[A-Za-z0-9._-]+$/.test(value);
   if (parts.some((part) => !safePart(part))) return false;
   if (!/^v\d+$/.test(parts.at(-1))) return false;
@@ -307,6 +329,7 @@ function isCompleteCacheKey(key) {
   );
 }
 
+/** Reads, validates, and allowlist-checks the logical cache name. */
 function cacheName() {
   const value = input("cache-name").trim();
   if (!/^[A-Za-z0-9_-]{1,32}$/.test(value)) {
@@ -323,6 +346,7 @@ function cacheName() {
   return value;
 }
 
+/** Reads and validates the requested cache namespace scope. */
 function cacheScope() {
   const value = input("scope", "auto").trim().toLowerCase();
   if (!["auto", "shared", "trusted", "untrusted"].includes(value)) {
@@ -331,6 +355,7 @@ function cacheScope() {
   return value;
 }
 
+/** Returns the sanitized OS/architecture identifier used in cache keys. */
 function runnerPlatform() {
   // GitHub exposes optional action inputs as INPUT_* even when omitted. The
   // metadata default distinguishes omission from an explicitly empty value.
@@ -350,10 +375,12 @@ function runnerPlatform() {
         : process.env.RUNNER_ARCH;
   const osName = (osValue || "unknown").trim() || "unknown";
   const architecture = (archValue || "unknown").trim() || "unknown";
+  /** Converts a runner platform component into a stable asset-name segment. */
   const safe = (value) => value.replace(/[^A-Za-z0-9._-]/g, "-").toLowerCase();
   return `${safe(osName)}-${safe(architecture)}`;
 }
 
+/** Normalizes a logical key, adds cache name/platform, and optionally appends its version. */
 function logicalCacheKey(value, name, includeVersion = true) {
   const maxLength = configuredLimit(
     "CACHE_MAX_LOGICAL_KEY_LENGTH",
@@ -406,6 +433,7 @@ function logicalCacheKey(value, name, includeVersion = true) {
   return complete;
 }
 
+/** Reports whether the current workflow context represents a pull request. */
 function isPullRequestEvent() {
   return (
     eventName() === "pull_request" ||
@@ -414,8 +442,10 @@ function isPullRequestEvent() {
   );
 }
 
+/** Validates a fully scoped restore prefix without permitting traversal or unsafe namespaces. */
 function validateRestorePrefix(key) {
   const parts = key.replace(/\/$/, "").split("/");
+  /** Checks one restore-prefix segment and rejects traversal markers. */
   const validPart = (part) =>
     /^[A-Za-z0-9._-]+$/.test(part) && part !== ".." && part !== ".";
   const validNamespace =
@@ -445,10 +475,12 @@ function validateRestorePrefix(key) {
   return key;
 }
 
+/** Returns the short Git reference name supplied by GitHub. */
 function refName() {
   return process.env.GITHUB_REF_NAME || "";
 }
 
+/** Resolves and validates the branch used to store the cache manifest. */
 function manifestBranch() {
   const configuredBranch = configuration().manifest_branch;
   const branch =
@@ -469,6 +501,7 @@ function manifestBranch() {
   return branch;
 }
 
+/** Extracts the positive pull request number from the event payload or merge ref. */
 function pullRequestNumber() {
   const eventPath = process.env.GITHUB_EVENT_PATH;
   if (eventPath) {
@@ -486,6 +519,7 @@ function pullRequestNumber() {
   return match ? Number(match[1]) : null;
 }
 
+/** Returns the head repository of the current pull request, if available. */
 function pullRequestSourceRepository() {
   const eventPath = process.env.GITHUB_EVENT_PATH;
   if (!eventPath) return "";
@@ -499,11 +533,13 @@ function pullRequestSourceRepository() {
   }
 }
 
+/** Reports whether the current pull request originates in a different repository. */
 function isForkPullRequest() {
   const source = pullRequestSourceRepository();
   return isPullRequestEvent() && Boolean(source) && source !== repository();
 }
 
+/** Converts a logical key into its trusted, untrusted, or shared namespace key. */
 function scopedKey(key) {
   if (!key) return key;
   const name = cacheName();
@@ -550,6 +586,7 @@ function scopedKey(key) {
   return `trusted/${sourceRepository}/${branch}/${logicalKey}`;
 }
 
+/** Returns the trusted/shared counterpart key when running on the default branch. */
 function scopeCounterpartKey(key) {
   const branch = defaultBranch();
   const sourceRepository = repository();
@@ -565,6 +602,7 @@ function scopeCounterpartKey(key) {
   return null;
 }
 
+/** Converts an untrusted PR key into its reusable cache combination identifier. */
 function pullRequestCacheCombination(key) {
   if (!key.startsWith("untrusted/")) return null;
   const parts = key.split("/");
@@ -578,6 +616,7 @@ function pullRequestCacheCombination(key) {
   return `${parts.slice(0, 6).join("/")}/${parts[parts.length - 1]}`;
 }
 
+/** Converts an untrusted PR key to the equivalent shared key, when structurally valid. */
 function sharedEquivalentKey(key) {
   if (!key.startsWith("untrusted/")) return null;
   const parts = key.split("/");
@@ -585,6 +624,7 @@ function sharedEquivalentKey(key) {
   return `shared/${parts[1]}/${parts[2]}/${parts.slice(4).join("/")}`;
 }
 
+/** Selects untrusted manifest references older than the configured TTL. */
 function expiredUntrustedReferences(
   references,
   now = Date.now(),
@@ -597,6 +637,7 @@ function expiredUntrustedReferences(
   });
 }
 
+/** Resolves a logical restore prefix into the permitted current namespace. */
 function scopedRestorePrefix(prefix) {
   const value = prefix.trim();
   if (!value) return value;
@@ -657,6 +698,7 @@ function scopedRestorePrefix(prefix) {
   return `trusted/${sourceRepository}/${branch}/${logicalKey}`;
 }
 
+/** Resolves a logical restore prefix explicitly into the shared namespace. */
 function sharedRestorePrefix(prefix) {
   const value = prefix.trim();
   if (!value) return value;
@@ -683,6 +725,7 @@ function sharedRestorePrefix(prefix) {
   return `shared/${sourceRepository}/${logicalKey}`;
 }
 
+/** Rejects restore candidates whose namespace is unsafe for the current event. */
 function assertTrustedRestoreAllowed(keys) {
   const isPullRequest =
     eventName() === "pull_request" ||
@@ -706,14 +749,17 @@ function assertTrustedRestoreAllowed(keys) {
 
 const loggedMessages = new Set();
 
+/** Emits a de-duplicated informational message without exposing secrets. */
 function log(message) {
   if (loggedMessages.has(message)) return;
   loggedMessages.add(message);
   console.log(`::notice::${message}`);
 }
 
+/** Writes a Markdown job summary table containing the supplied operation fields. */
 function summary(title, fields) {
   if (!process.env.GITHUB_STEP_SUMMARY) return;
+  /** Escapes Markdown table control characters in a summary value. */
   const escape = (value) =>
     String(value ?? "—")
       .replace(/\\/g, "\\\\")
@@ -728,6 +774,7 @@ function summary(title, fields) {
   );
 }
 
+/** Reports an error through the Action interface and terminates the current operation. */
 function fail(error) {
   const message = error?.message || String(error);
   const debug =
@@ -744,12 +791,14 @@ function fail(error) {
   return false;
 }
 
+/** Reads one HTTP header case-insensitively from a response header collection. */
 function headerValue(headers, name) {
   if (!headers) return "";
   if (typeof headers.get === "function") return headers.get(name) || "";
   return headers[name] || headers[name.toLowerCase()] || "";
 }
 
+/** Creates an Error carrying GitHub API status, headers, and retry metadata. */
 function githubApiError(status, message, headers) {
   if (status === 401) {
     return new Error(
@@ -779,6 +828,7 @@ function githubApiError(status, message, headers) {
   return new Error(`${status} ${message}`);
 }
 
+/** Performs a bounded, retried GitHub REST request and parses its response. */
 async function gh(url, options = {}) {
   const client = await githubClient();
   if (client) {
@@ -864,6 +914,7 @@ async function gh(url, options = {}) {
   return { body, headers: response.headers };
 }
 
+/** Streams a local archive file to a GitHub release-asset upload endpoint. */
 async function upload(url, file, name, contentType) {
   const size = fs.statSync(file).size;
   const response = await fetch(url, {
@@ -891,10 +942,12 @@ async function upload(url, file, name, contentType) {
   throw error;
 }
 
+/** Runs a fixed external command and returns its standard output. */
 function run(command, args) {
   return cp.execFileSync(command, args, { stdio: ["ignore", "pipe", "pipe"] });
 }
 
+/** Checks whether an external executable is available on PATH. */
 function have(command) {
   try {
     run(command, ["--version"]);
@@ -904,6 +957,7 @@ function have(command) {
   }
 }
 
+/** Parses and validates the configured archive input paths. */
 function entries() {
   return input("path")
     .split(/\r?\n/)
@@ -911,6 +965,7 @@ function entries() {
     .filter(Boolean);
 }
 
+/** Parses and validates archive exclusion patterns from inputs and configuration. */
 function excludePatterns() {
   const patterns = input("exclude")
     .split(/\r?\n/)
@@ -965,6 +1020,7 @@ function excludePatterns() {
   return patterns;
 }
 
+/** Decodes and validates the AES-256-GCM key used for optional archive encryption. */
 function encryptionKey() {
   const value = input("encryption-key");
   if (!value) return null;
@@ -972,10 +1028,12 @@ function encryptionKey() {
   return crypto.createHash("sha256").update(value, "utf8").digest();
 }
 
+/** Reports whether archive encryption has been enabled by configuration. */
 function encryptionEnabled() {
   return Boolean(encryptionKey());
 }
 
+/** Encrypts an archive in place using AES-256-GCM and a random nonce. */
 function encryptFile(file) {
   const key = encryptionKey();
   if (!key) return file;
@@ -1004,6 +1062,7 @@ function encryptFile(file) {
   return file;
 }
 
+/** Decrypts an encrypted archive in place after validating its framing and tag. */
 function decryptFile(file) {
   const input = fs.openSync(file, "r");
   const header = Buffer.alloc(encryptionMagic.length + 12 + 16);
@@ -1066,7 +1125,9 @@ const knownTokenContent =
 const credentialAssignment =
   /(?:password|passwd|secret|api[_-]?key)\s*[:=]\s*(?:"[^"\r\n]{8,}"|'[^'\r\n]{8,}'|[A-Za-z0-9_+/=.-]{20,})/i;
 
+/** Recursively rejects sensitive files, secrets, unsafe links, and special files. */
 function securityScan(root) {
+  /** Walks one filesystem path and applies all cache-content security checks. */
   const walk = (file) => {
     const stat = fs.lstatSync(file);
     if (stat.isSymbolicLink()) {
@@ -1131,6 +1192,7 @@ function securityScan(root) {
   walk(root);
 }
 
+/** Creates a deterministic, security-scanned tar.zst archive of the requested entries. */
 async function makeArchive() {
   if (!have("tar") || !have("zstd"))
     throw new Error("tar and zstd are required on the runner");
@@ -1211,6 +1273,7 @@ async function makeArchive() {
   return { file: output, dir: directory };
 }
 
+/** Decompresses a zstd stream into a bounded output file. */
 async function decompressZstd(inputFile, outputFile, maxBytes) {
   const zstd = cp.spawn("zstd", ["-q", "-d", "-c", inputFile], {
     stdio: ["ignore", "pipe", "inherit"],
@@ -1234,6 +1297,7 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
   }
 }
 
+/** Decompresses and validates an archive before it can be extracted. */
 async function validateArchiveFile(file) {
   const tarFile = path.join(path.dirname(file), "validation.tar");
   try {
@@ -1249,6 +1313,7 @@ async function validateArchiveFile(file) {
 
 const validateArchive = validateArchiveFile;
 
+/** Inspects tar metadata and rejects traversal, links, special files, and oversized archives. */
 function inspectTar(tarFile) {
   const tarSize = fs.statSync(tarFile).size;
   if (tarSize > maxTarBytes)
@@ -1290,6 +1355,7 @@ function inspectTar(tarFile) {
   return names;
 }
 
+/** Applies a byte transform to a file while preserving the specified stream position. */
 function transformFile(input, output, transform, position = 0) {
   const buffer = Buffer.allocUnsafe(1024 * 1024);
   let offset = position;
@@ -1304,6 +1370,7 @@ function transformFile(input, output, transform, position = 0) {
   } while (bytesRead);
 }
 
+/** Computes the SHA-256 digest of a file and returns it as raw bytes. */
 function digestBytes(file) {
   const hash = crypto.createHash("sha256");
   const input = fs.openSync(file, "r");
@@ -1324,10 +1391,12 @@ function digestBytes(file) {
   return hash.digest();
 }
 
+/** Computes the content-addressed SHA-256 identifier for a stored file. */
 function digest(file) {
   return `sha256:${digestBytes(file).toString("hex")}`;
 }
 
+/** Fetches and memoizes the cache release metadata for a repository. */
 async function release(repository) {
   if (releaseCache.has(repository)) return releaseCache.get(repository);
   const pending = (async () => {
@@ -1357,6 +1426,7 @@ async function release(repository) {
   }
 }
 
+/** Fetches and memoizes the cache release assets for a repository. */
 async function assets(repository) {
   if (assetsCache.has(repository)) return assetsCache.get(repository);
   const pending = (async () => {
@@ -1379,11 +1449,13 @@ async function assets(repository) {
   }
 }
 
+/** Clears cached release and asset metadata after a repository mutation. */
 function invalidateRepositoryCache(repository) {
   assetsCache.delete(repository);
   releaseCache.delete(repository);
 }
 
+/** Finds a safe release asset matching a validated object hash. */
 async function object(repository, hash) {
   validateCacheHash(hash);
   const result = await assets(repository);
@@ -1395,6 +1467,7 @@ async function object(repository, hash) {
   );
 }
 
+/** Verifies that a release asset has the expected safe cache-asset shape. */
 function isSafeAsset(asset) {
   if (!asset || typeof asset.name !== "string") return false;
   if (
@@ -1411,6 +1484,7 @@ function isSafeAsset(asset) {
   }
 }
 
+/** Converts a complete cache key into the readable prefix used for asset names. */
 function assetNamePrefix(key) {
   const slug = key
     .replace(/[^A-Za-z0-9._-]+/g, "-")
@@ -1419,10 +1493,12 @@ function assetNamePrefix(key) {
   return `${slug}--`;
 }
 
+/** Builds the physical release-asset filename for a cache key and object hash. */
 function assetName(key, hash) {
   return `${assetNamePrefix(key)}${hash.slice(7)}.tar.zst`;
 }
 
+/** Tests whether an asset filename belongs to the same logical key combination. */
 function assetMatchesKeyCombination(name, key) {
   const parts = key.split("/");
   const isShared = key.startsWith("shared/");
@@ -1439,11 +1515,13 @@ function assetMatchesKeyCombination(name, key) {
   return isShared || name.includes(`-${version}--`);
 }
 
+/** Extracts and validates the content hash suffix from a cache asset filename. */
 function hashFromAssetName(name) {
   const match = name.match(/(?:^|--)([a-f0-9]{64})\.tar\.zst$/i);
   return match ? `sha256:${match[1]}` : null;
 }
 
+/** Downloads and validates the manifest blob for a repository. */
 async function manifest(repository) {
   const branch = manifestBranch();
   const result = await gh(
@@ -1459,6 +1537,7 @@ async function manifest(repository) {
   };
 }
 
+/** Returns the manifest with optional cache bypass for concurrent-update handling. */
 async function refs(repository, { fresh = false } = {}) {
   if (!fresh && manifestCache.has(repository)) {
     return manifestCache.get(repository);
@@ -1481,10 +1560,12 @@ async function refs(repository, { fresh = false } = {}) {
   }
 }
 
+/** Removes the memoized manifest response for a repository. */
 function invalidateManifestCache(repository) {
   manifestCache.delete(repository);
 }
 
+/** Applies one manifest mutation with compare-and-swap retries, without local locking. */
 async function updateManifestUnlocked(repository, message, update) {
   const maxAttempts = 12;
   const branch = manifestBranch();
@@ -1528,6 +1609,7 @@ async function updateManifestUnlocked(repository, message, update) {
   throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
 }
 
+/** Serializes manifest mutations per repository before invoking the CAS updater. */
 async function updateManifest(repository, message, update) {
   const previous = manifestLocks.get(repository) || Promise.resolve();
   const current = previous
@@ -1542,6 +1624,7 @@ async function updateManifest(repository, message, update) {
   }
 }
 
+/** Enforces manifest size, key-count, and write-rate limits before saving changes. */
 function manifestWriteGuard(manifest, replacingKey = null) {
   const now = Date.now();
   const maxReferences = configuredLimit(
@@ -1592,6 +1675,7 @@ function manifestWriteGuard(manifest, replacingKey = null) {
   return true;
 }
 
+/** Creates or updates one manifest key to point at a validated object hash. */
 async function setRef(repository, key, hash, metadata = {}) {
   let locked = false;
   return updateManifest(repository, `cache: update ${key}`, (manifest) => {
@@ -1617,6 +1701,7 @@ async function setRef(repository, key, hash, metadata = {}) {
   });
 }
 
+/** Atomically points one key at an object and removes a superseded key. */
 async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
   let locked = false;
   const result = await updateManifest(
@@ -1646,6 +1731,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
   return result;
 }
 
+/** Deletes the release asset for an object hash, optionally clearing metadata caches. */
 async function deleteObject(repository, hash, invalidate = true) {
   const asset = await object(repository, hash);
   if (!asset) return false;
@@ -1656,6 +1742,7 @@ async function deleteObject(repository, hash, invalidate = true) {
   return true;
 }
 
+/** Downloads and hash-verifies an object into a temporary local archive file. */
 async function download(repository, hash) {
   validateCacheHash(hash);
   const asset = await object(repository, hash);
@@ -1677,6 +1764,7 @@ async function download(repository, hash) {
   }
 }
 
+/** Streams an HTTP response to a bounded local file and returns its byte count. */
 async function downloadToFile(url, output, options = {}) {
   const maxBytes = parsePositiveSafeInteger(
     options.maxBytes ?? maxCompressedBytes,
@@ -1711,6 +1799,7 @@ async function downloadToFile(url, output, options = {}) {
   return output;
 }
 
+/** Validates, decrypts if enabled, and safely extracts an archive into the workspace. */
 async function extract(file) {
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   if (fs.statSync(file).size > maxCompressedBytes) {

@@ -1,5 +1,6 @@
 const c = require("./common");
 
+/** Executes garbage collection according to the selected mode and dry-run policy. */
 (async () => {
   try {
     const repository = c.cacheRepository();
@@ -35,6 +36,7 @@ const c = require("./common");
     let removedReferences = 0;
     c.setOutput("mode", mode);
     c.setOutput("dry-run", dryRun ? "true" : "false");
+    /** Publishes the number of deletions and reference removals as Action outputs. */
     const report = () => {
       c.setOutput("deleted-assets", deletedAssets);
       c.setOutput("removed-references", removedReferences);
@@ -51,6 +53,7 @@ const c = require("./common");
     );
 
     if (mode === "expired") {
+      /** Identifies namespaces eligible for explicit expiration. */
       const isDeletableKey = (key) =>
         key.startsWith("untrusted/") ||
         (deleteShared && key.startsWith("shared/"));

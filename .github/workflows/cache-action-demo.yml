@@ -1,0 +1,72 @@
+name: Cache action demo
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  restore-and-save:
+    name: Restore and automatic post-save
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Start with an empty demo directory
+        run: rm -rf .cache/demo
+
+      - name: Restore and save with the root action
+        id: cache
+        uses: ./
+        with:
+          repository: ${{ github.repository }}
+          cache-name: demo
+          key: cache-action-demo-v1
+          path: .cache/demo
+          token: ${{ github.token }}
+
+      - name: Create demo content after restore
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p .cache/demo
+          printf 'Created after the restore step; saved by the automatic post step.\n' > .cache/demo/message.txt
+
+      - name: Show root action result
+        run: |
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "matched-key=${{ steps.cache.outputs.matched-key }}"
+          cat .cache/demo/message.txt
+
+  restore-only:
+    name: Restore-only sub-action
+    needs: restore-and-save
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Restore with ./restore
+        id: restore
+        uses: ./restore
+        with:
+          repository: ${{ github.repository }}
+          cache-name: demo
+          key: cache-action-demo-v1
+          path: .cache/demo
+          token: ${{ github.token }}
+
+      - name: Show restore-only result
+        run: |
+          echo "cache-hit=${{ steps.restore.outputs.cache-hit }}"
+          echo "matched-key=${{ steps.restore.outputs.matched-key }}"
+          test -f .cache/demo/message.txt
+          cat .cache/demo/message.txt

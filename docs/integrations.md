@@ -25,7 +25,7 @@ Cache zunächst in ein temporäres Verzeichnis. Danach wird das temporäre
 Verzeichnis anschließend als neuer Cache verwendet:
 
 ```yaml
-- name: Restore BuildKit cache
+- name: Restore and save BuildKit cache
   uses: Ludy87/cache-the-planet@v1
   with:
     repository: Ludy87/cache-the-planet
@@ -58,22 +58,15 @@ Verzeichnis anschließend als neuer Cache verwendet:
     rm -rf .cache/buildx
     mv .cache/buildx-new .cache/buildx
 
-- name: Save BuildKit cache
-  if: ${{ success() }}
-  uses: Ludy87/cache-the-planet/save@v1
-  with:
-    repository: Ludy87/cache-the-planet
-    cache-name: docker
-    key: ${{ hashFiles('Dockerfile', 'docker/**', 'package-lock.json') }}
-    path: .cache/buildx
-    token: ${{ secrets.CACHE_APP_TOKEN }}
 ```
 
 `cache-from` liest den restaurierten Cache, während `cache-to` den neuen
 BuildKit-Stand schreibt. Das temporäre Ziel verhindert, dass ein laufender
-Build den zuvor restaurierten Cache beschädigt. Bei einem Pull Request muss
-der Save-Schritt in einem vertrauenswürdigen, korrelierten `workflow_run`-Job
-mit dem passenden PR-Namespace laufen.
+Build den zuvor restaurierten Cache beschädigt. Die Root-Action speichert den
+neuen Stand automatisch im Post-Schritt. Für Restore-only kann stattdessen
+`Ludy87/cache-the-planet/restore@v1` verwendet werden. Bei einem Pull Request
+muss der Save-Schritt in einem vertrauenswürdigen, korrelierten
+`workflow_run`-Job mit dem passenden PR-Namespace laufen.
 
 Neue Cache-Namen können in `.cache-the-planet.json` unter
 `security.allowed_cache_names` freigeschaltet werden. Fehlt die Liste oder ist

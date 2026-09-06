@@ -104,8 +104,8 @@ test("fuzzed restore prefixes never escape the namespace schema", () => {
 
 test("fuzzed compressed archives are rejected without extraction", async () => {
   if (
-    childProcess.spawnSync("zstd", ["--version"], { stdio: "ignore" }).status !==
-    0
+    childProcess.spawnSync("zstd", ["--version"], { stdio: "ignore" })
+      .status !== 0
   ) {
     return;
   }

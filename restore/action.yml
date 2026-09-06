@@ -1,5 +1,6 @@
-name: Content-addressed GitHub cache (save)
-description: Save an immutable content-addressed cache object
+name: Content-addressed GitHub cache (restore only)
+description: Restore immutable, deduplicated cache objects stored as GitHub Release assets
+author: cache-the-planet
 inputs:
   repository:
     description: "owner/name of cache repository"
@@ -27,26 +28,18 @@ inputs:
     description: "Numeric cache format version, for example 1 or 2"
     required: false
     default: "1"
-  path:
-    description: "Newline separated files or directories to cache"
-    required: true
-  compression-level:
-    description: "zstd compression level"
+  restore-keys:
+    description: "Newline separated fallback prefixes"
     required: false
-    default: "3"
+    default: ""
+  path:
+    description: "Newline separated files or directories to restore"
+    required: true
   token:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
   encryption-key:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
-    required: false
-    default: ""
-  exclude:
-    description: "Newline separated exclusions"
-    required: false
-    default: ""
-  exclude-path:
-    description: "Newline separated workspace-relative files containing exclusion patterns"
     required: false
     default: ""
   strict:
@@ -61,19 +54,15 @@ inputs:
     description: "Branch containing the cache manifest; defaults to manifest_branch in config or cache-data"
     required: false
     default: ""
-  allow-pr-cache:
-    description: "Allow saving an isolated untrusted cache for a pull request"
-    required: false
-    default: "true"
-  read-only:
-    description: "Skip saving the cache"
+  allow-shared-restore:
+    description: "Allow pull requests to restore explicitly selected shared caches"
     required: false
     default: "false"
 outputs:
-  is_fork:
-    description: "true when the save runs for a pull request whose source repository is a fork"
-  read_only:
-    description: "true when the action will not write a cache because the pull request is from a fork"
+  cache-hit:
+    description: "true when an exact key was restored"
+  matched-key:
+    description: "Reference key used for restore"
   content-hash:
     description: "sha256 digest of the object"
   asset-name:
@@ -82,4 +71,4 @@ outputs:
     description: "Compressed object size in bytes"
 runs:
   using: node24
-  main: ../dist/save.js
+  main: ../dist/restore.js

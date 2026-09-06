@@ -1,6 +1,7 @@
 const fs = require("fs");
 const c = require("./common");
 
+/** Executes the restore action: resolve a key, verify its object, and extract it safely. */
 (async () => {
   try {
     const repository = c.cacheRepository();
@@ -83,6 +84,7 @@ const c = require("./common");
 
     const archive = await c.download(repository, found[1].object);
     await c.extract(archive);
+    /** Removes namespace-specific segments so shared fallback hits compare logically. */
     const cacheIdentity = (value) => {
       const parts = value.split("/");
       if (parts[0] === "shared") return parts.slice(3).join("/");

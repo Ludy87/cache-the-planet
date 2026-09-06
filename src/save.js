@@ -1,6 +1,7 @@
 const fs = require("fs");
 const c = require("./common");
 
+/** Writes the standardized summary for a save attempt and its result fields. */
 function saveSummary(status, fields = {}) {
   c.summary("Cache Save", {
     Status: status,
@@ -8,6 +9,7 @@ function saveSummary(status, fields = {}) {
   });
 }
 
+/** Deletes duplicate assets for a key while retaining the object referenced by keepHash. */
 async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
   if (!key.startsWith("shared/") && !key.startsWith("trusted/")) return;
   const liveHashes = new Set(
@@ -32,6 +34,7 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
   if (deleted) c.invalidateRepositoryCache(repository);
 }
 
+/** Replaces older references for the same logical cache combination with the newest key. */
 async function replaceOlderReferences(repository, key) {
   if (!key.startsWith("shared/") && !key.startsWith("trusted/")) {
     return { manifest: null, hashes: [] };
@@ -61,6 +64,7 @@ async function replaceOlderReferences(repository, key) {
   return { manifest, hashes: [...removedHashes] };
 }
 
+/** Deletes candidate objects that are no longer referenced by the current manifest. */
 async function deleteUnreferencedObjects(repository, hashes, manifest) {
   const liveHashes = new Set(
     Object.values(manifest.references || {})
@@ -79,16 +83,23 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
   c.invalidateRepositoryCache(repository);
 }
 
+/** Executes the save action: archive, deduplicate/upload, and publish the manifest reference. */
 (async () => {
   try {
     const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
+    const readOnly = String(c.input("read-only")).toLowerCase() === "true";
     const setOutput = c.setOutput;
     setOutput("is_fork", isFork ? "true" : "false");
-    setOutput("read_only", isFork ? "true" : "false");
+    setOutput("read_only", isFork || readOnly ? "true" : "false");
     const key = c.scopedKey(c.input("key"));
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input("scope", "auto").trim().toLowerCase();
+    if (readOnly) {
+      saveSummary("SKIPPED", { Reason: "read-only is enabled" });
+      c.log("cache save skipped because read-only is enabled");
+      return;
+    }
     if (isFork) {
       c.summary("Cache Save", {
         Status: "SKIPPED",
@@ -173,7 +184,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `shared cache already exists; isolated PR cache publish skipped: key=${sharedEquivalent}`,
         );
         if (process.env.GITHUB_OUTPUT) {
-          setOutput("content-hash", current.json.references[sharedEquivalent].object);
+          setOutput(
+            "content-hash",
+            current.json.references[sharedEquivalent].object,
+          );
           setOutput("asset-name", sharedAsset.name);
         }
         return;

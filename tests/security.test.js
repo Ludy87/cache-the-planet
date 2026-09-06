@@ -9,7 +9,9 @@ const common = require("../src/common");
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-config-test-"),
+  );
   const configPath = path.join(workspace, ".cache-the-planet.json");
   fs.writeFileSync(configPath, JSON.stringify(config));
   const script = `
@@ -29,7 +31,9 @@ function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
 }
 
 function runManifestBranchWithConfig(config, extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-branch-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-branch-test-"),
+  );
   const configPath = path.join(workspace, ".cache-the-planet.json");
   fs.writeFileSync(configPath, JSON.stringify(config));
   const script = `
@@ -49,7 +53,9 @@ function runManifestBranchWithConfig(config, extraEnv = {}) {
 }
 
 function runCacheRepository(config = null, extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-repository-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-repository-test-"),
+  );
   if (config) {
     fs.writeFileSync(
       path.join(workspace, ".cache-the-planet.json"),
@@ -117,7 +123,10 @@ test("outputs and asset names reject control or unsupported characters", () => {
   const previousOutput = process.env.GITHUB_OUTPUT;
   try {
     process.env.GITHUB_OUTPUT = output;
-    common.setOutput("matched-key", "trusted/owner/repo/main/npm/linux-x64/key/v1");
+    common.setOutput(
+      "matched-key",
+      "trusted/owner/repo/main/npm/linux-x64/key/v1",
+    );
     assert.match(fs.readFileSync(output, "utf8"), /matched-key=trusted\//);
     assert.throws(() => common.setOutput("asset-name", "safe.tar.zst\nX=bad"));
     assert.throws(() => common.setOutput("asset-name", "unsafe value"));
@@ -459,7 +468,10 @@ test("cache configuration allows, rejects, and defaults allowlists safely", () =
     "uv",
   );
   assert.notEqual(rejected.status, 0);
-  assert.match(rejected.stderr, /not allowed by the configured cache-name allowlist/);
+  assert.match(
+    rejected.stderr,
+    /not allowed by the configured cache-name allowlist/,
+  );
 
   for (const config of [
     {},
@@ -492,20 +504,23 @@ test("manifest branch can be configured in JSON with environment override", () =
 });
 
 test("cache repository defaults to the workflow repository", () => {
-  const workflowRepository = runCacheRepository({
-    cache_repository: "owner/configured-repo",
-  }, {
-    GITHUB_REPOSITORY: "owner/workflow-repo",
-    CACHE_REPOSITORY: "",
-    "INPUT_REPOSITORY": "",
-  });
+  const workflowRepository = runCacheRepository(
+    {
+      cache_repository: "owner/configured-repo",
+    },
+    {
+      GITHUB_REPOSITORY: "owner/workflow-repo",
+      CACHE_REPOSITORY: "",
+      INPUT_REPOSITORY: "",
+    },
+  );
   assert.equal(workflowRepository.status, 0);
   assert.equal(workflowRepository.stdout, "owner/configured-repo");
 
   const configuredRepository = runCacheRepository(null, {
     GITHUB_REPOSITORY: "owner/workflow-repo",
     CACHE_REPOSITORY: "owner/cache-repo",
-    "INPUT_REPOSITORY": "",
+    INPUT_REPOSITORY: "",
   });
   assert.equal(configuredRepository.status, 0);
   assert.equal(configuredRepository.stdout, "owner/cache-repo");
@@ -519,10 +534,15 @@ test("cache configuration rejects malformed allowlists and paths outside the wor
   ]) {
     const invalid = runCacheNameWithConfig(config);
     assert.notEqual(invalid.status, 0);
-    assert.match(invalid.stderr, /allowed_cache_names must be a non-empty list/);
+    assert.match(
+      invalid.stderr,
+      /allowed_cache_names must be a non-empty list/,
+    );
   }
 
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-path-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-config-path-"),
+  );
   try {
     const script = `
       process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
@@ -537,7 +557,10 @@ test("cache configuration rejects malformed allowlists and paths outside the wor
       encoding: "utf8",
     });
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /config-file must be inside the GitHub workspace/);
+    assert.match(
+      result.stderr,
+      /config-file must be inside the GitHub workspace/,
+    );
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
@@ -576,7 +599,14 @@ test("workflow security invariants remain present", () => {
       const expectedCredentialMode = "false";
       assert.equal(
         checkoutCount,
-        (content.match(new RegExp(`persist-credentials:\\s*${expectedCredentialMode}`, "g")) || []).length,
+        (
+          content.match(
+            new RegExp(
+              `persist-credentials:\\s*${expectedCredentialMode}`,
+              "g",
+            ),
+          ) || []
+        ).length,
         `${file} has an unexpected checkout credential mode`,
       );
     }

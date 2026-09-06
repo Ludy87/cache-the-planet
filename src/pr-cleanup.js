@@ -1,5 +1,6 @@
 const c = require("./common");
 
+/** Removes all untrusted cache references and orphaned assets for a closed PR. */
 (async () => {
   try {
     const repository = c.cacheRepository();
