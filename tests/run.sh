@@ -201,6 +201,12 @@ try {
     throw new Error('automatic cache namespace was not generated correctly');
   }
   const sharedKey = 'shared/example/project/npm/Linux-X64/hash/v1';
+  process.env['INPUT_SCOPE'] = 'trusted';
+  process.env['INPUT_SAVE-SCOPE'] = 'shared';
+  if (scopedKey('Linux-X64/hash/v1', 'save-scope', 'scope') !== sharedKey) {
+    throw new Error('save-scope did not override the restore scope');
+  }
+  delete process.env['INPUT_SAVE-SCOPE'];
   process.env['INPUT_SCOPE'] = 'shared';
   process.env.GITHUB_REF = 'refs/heads/main';
   if (scopedKey('Linux-X64/hash/v1') !== sharedKey) {

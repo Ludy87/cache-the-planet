@@ -323,8 +323,14 @@ function cacheName() {
   return value;
 }
 
-function cacheScope() {
-  const value = input("scope", "auto").trim().toLowerCase();
+function cacheScope(inputName = "scope", fallbackInputName = null) {
+  const configured = input(inputName).trim();
+  const value = (
+    configured ||
+    (fallbackInputName ? input(fallbackInputName, "auto") : "auto")
+  )
+    .trim()
+    .toLowerCase();
   if (!["auto", "shared", "trusted", "untrusted"].includes(value)) {
     throw new Error("scope must be auto, shared, trusted, or untrusted");
   }
@@ -504,10 +510,10 @@ function isForkPullRequest() {
   return isPullRequestEvent() && Boolean(source) && source !== repository();
 }
 
-function scopedKey(key) {
+function scopedKey(key, scopeInputName = "scope", fallbackScopeInputName = null) {
   if (!key) return key;
   const name = cacheName();
-  const scope = cacheScope();
+  const scope = cacheScope(scopeInputName, fallbackScopeInputName);
   if (/^(?:trusted|untrusted|shared)\//.test(key)) {
     throw new Error(
       "key must not contain a trusted/, untrusted/, or shared/ prefix; use scope",

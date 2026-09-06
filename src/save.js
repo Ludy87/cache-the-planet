@@ -90,9 +90,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const setOutput = c.setOutput;
     setOutput("is-fork", isFork ? "true" : "false");
     setOutput("read-only", isFork ? "true" : "false");
-    const key = c.scopedKey(c.input("key"));
+    const key = c.scopedKey(c.input("key"), "save-scope", "scope");
     const isPullRequest = c.isPullRequestEvent();
-    const requestedScope = c.input("scope", "auto").trim().toLowerCase();
+    const requestedScope = c.cacheScope("save-scope", "scope");
     if (isFork) {
       c.summary("Cache Save", {
         Status: "SKIPPED",

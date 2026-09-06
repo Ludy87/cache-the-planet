@@ -81,6 +81,9 @@ Repository des laufenden Workflows (`GITHUB_REPOSITORY`) verwendet.
 Weitere gemeinsame Inputs sind `scope`, `os`, `arch`, `version`, `token`,
 `encryption-key`, `strict`, `config-file` und `manifest-branch`.
 
+Mit `save-scope` kann der Post-Save einen abweichenden Scope verwenden; ohne
+Angabe wird der Wert von `scope` übernommen.
+
 Restore unterstützt zusätzlich `restore-keys` und
 `allow-shared-restore`. Save unterstützt zusätzlich `compression-level`,
 `exclude`, `exclude-path` und `allow-pr-cache`.
