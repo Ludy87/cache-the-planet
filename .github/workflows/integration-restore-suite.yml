@@ -17,9 +17,11 @@ permissions:
 jobs:
   node-restore-cache:
     if: >-
-      github.event.workflow_run.name == 'Publish PR cache artifacts' &&
       github.event.workflow_run.repository.full_name == github.repository &&
-      github.event.workflow_run.conclusion == 'success'
+      (
+        github.event.workflow_run.conclusion == 'success' ||
+        github.event.workflow_run.conclusion == 'skipped'
+      )
     uses: ./.github/workflows/npm-cache-asset-integration.yml
     with:
       restore-cache: true
