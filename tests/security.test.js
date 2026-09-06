@@ -127,6 +127,38 @@ function runCommonExpression(config, expression) {
   return result;
 }
 
+function runRestoreOutput(event, eventName = "pull_request") {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-restore-output-test-"));
+  const eventPath = path.join(workspace, "event.json");
+  const outputPath = path.join(workspace, "output.txt");
+  fs.writeFileSync(eventPath, JSON.stringify(event));
+  const result = childProcess.spawnSync(
+    process.execPath,
+    [path.join(__dirname, "..", "src", "restore.js")],
+    {
+      cwd: workspace,
+      env: {
+        ...process.env,
+        GITHUB_WORKSPACE: workspace,
+        GITHUB_EVENT_NAME: eventName,
+        GITHUB_EVENT_PATH: eventPath,
+        GITHUB_REF: eventName === "pull_request" ? "refs/pull/7/merge" : "refs/heads/main",
+        GITHUB_REPOSITORY: "owner/repo",
+        GITHUB_OUTPUT: outputPath,
+        GITHUB_TOKEN: "",
+        INPUT_REPOSITORY: "owner/repo",
+        INPUT_KEY: "hash",
+        "INPUT_CACHE-NAME": "npm",
+        INPUT_SCOPE: "auto",
+      },
+      encoding: "utf8",
+    },
+  );
+  const output = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, "utf8") : "";
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return { result, output };
+}
+
 function runCacheRepository(config = null, extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-repository-test-"));
   if (config) {
@@ -258,6 +290,25 @@ test("all max_* JSON limits reject invalid values", () => {
       `${name} accepted zero`,
     );
   }
+});
+
+test("root restore action exposes fork and read-only outputs before restore", () => {
+  const fork = runRestoreOutput({
+    repository: { full_name: "owner/repo" },
+    pull_request: {
+      number: 7,
+      head: { repo: { full_name: "contributor/repo" } },
+    },
+  });
+  assert.match(fork.output, /is-fork=true\n/);
+  assert.match(fork.output, /read-only=true\n/);
+
+  const push = runRestoreOutput(
+    { repository: { full_name: "owner/repo", default_branch: "main" } },
+    "push",
+  );
+  assert.match(push.output, /is-fork=false\n/);
+  assert.match(push.output, /read-only=false\n/);
 });
 
 test("cache hashes and manifest references are validated", () => {

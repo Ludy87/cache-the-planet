@@ -3,6 +3,9 @@ const c = require("./common");
 
 (async () => {
   try {
+    const isFork = c.isForkPullRequest();
+    c.setOutput("is-fork", isFork ? "true" : "false");
+    c.setOutput("read-only", isFork ? "true" : "false");
     const repository = c.cacheRepository();
     const key = c.scopedKey(c.input("key"));
     const manifest = await c.refs(repository);
