@@ -4,6 +4,10 @@ const c = require("./common");
 /** Executes the restore action: resolve a key, verify its object, and extract it safely. */
 (async () => {
   try {
+    c.setOutput(
+      "restore-only",
+      String(c.input("restore-only")).toLowerCase() === "true" ? "true" : "false",
+    );
     const repository = c.cacheRepository();
     const key = c.scopedKey(c.input("key"));
     const manifest = await c.refs(repository);

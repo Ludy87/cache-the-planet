@@ -96,7 +96,9 @@ outputs:
   is_fork:
     description: "true when the automatic post-step save runs for a fork pull request"
   read_only:
-    description: "true when the automatic post-step save cannot write a cache"
+    description: "Legacy output: true when the automatic post-step save cannot write a cache"
+  restore-only:
+    description: "true when restore-only mode disables the automatic post-step save"
 runs:
   using: node24
   post: dist/save.js

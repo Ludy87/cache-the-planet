@@ -74,6 +74,8 @@ outputs:
     description: "true when the save runs for a pull request whose source repository is a fork"
   read_only:
     description: "true when the action will not write a cache because the pull request is from a fork"
+  restore-only:
+    description: "true when restore-only mode disables saving"
   content-hash:
     description: "sha256 digest of the object"
   asset-name:

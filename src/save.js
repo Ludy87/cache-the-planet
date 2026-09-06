@@ -94,6 +94,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const setOutput = c.setOutput;
     setOutput("is_fork", isFork ? "true" : "false");
     setOutput("read_only", isFork || readOnly ? "true" : "false");
+    setOutput("restore-only", readOnly ? "true" : "false");
     const key = c.scopedKey(c.input("key"));
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input("scope", "auto").trim().toLowerCase();
