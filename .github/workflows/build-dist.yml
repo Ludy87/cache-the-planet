@@ -58,7 +58,7 @@ jobs:
 
       - name: Restore npm cache asset
         id: npm-cache
-        uses: ./
+        uses: $/
         with:
           cache-name: npm
           key: ${{ hashFiles('package-lock.json') }}
