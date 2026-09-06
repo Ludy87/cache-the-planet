@@ -39,9 +39,12 @@ jobs:
           printf 'Created after the restore step; saved by the automatic post step.\n' > .cache/demo/message.txt
 
       - name: Show root action result
+        env:
+          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.cache.outputs.matched-key }}
         run: |
-          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
-          echo "matched-key=${{ steps.cache.outputs.matched-key }}"
+          echo "cache-hit=${CACHE_HIT}"
+          echo "matched-key=${MATCHED_KEY}"
           cat .cache/demo/message.txt
 
   restore-only:
@@ -65,8 +68,11 @@ jobs:
           token: ${{ github.token }}
 
       - name: Show restore-only result
+        env:
+          CACHE_HIT: ${{ steps.restore.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.restore.outputs.matched-key }}
         run: |
-          echo "cache-hit=${{ steps.restore.outputs.cache-hit }}"
-          echo "matched-key=${{ steps.restore.outputs.matched-key }}"
+          echo "cache-hit=${CACHE_HIT}"
+          echo "matched-key=${MATCHED_KEY}"
           test -f .cache/demo/message.txt
           cat .cache/demo/message.txt
