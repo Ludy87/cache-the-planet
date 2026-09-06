@@ -88,15 +88,16 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
   try {
     const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
-    const readOnly = String(c.input("restore-only")).toLowerCase() === "true";
+    const restoreOnly =
+      String(c.input("restore-only")).toLowerCase() === "true";
     const setOutput = c.setOutput;
     setOutput("is_fork", isFork ? "true" : "false");
-    setOutput("read_only", isFork || readOnly ? "true" : "false");
-    setOutput("restore-only", readOnly ? "true" : "false");
+    setOutput("read_only", isFork || restoreOnly ? "true" : "false");
+    setOutput("restore-only", restoreOnly ? "true" : "false");
     const key = c.scopedKey(c.input("key"));
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input("scope", "auto").trim().toLowerCase();
-    if (readOnly) {
+    if (restoreOnly) {
       saveSummary("SKIPPED", { Reason: "restore-only is enabled" });
       c.log("cache save skipped because restore-only is enabled");
       return;
