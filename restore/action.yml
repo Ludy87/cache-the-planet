@@ -1,0 +1,74 @@
+name: Content-addressed GitHub cache (restore)
+description: Restore immutable, deduplicated cache objects stored as GitHub Release assets
+author: cache-the-planet
+inputs:
+  repository:
+    description: "owner/name of cache repository"
+    required: false
+    default: ""
+  key:
+    description: "Logical dependency key; namespace and platform are generated from scope, os, arch, and version"
+    required: true
+  cache-name:
+    description: "Cache name using only letters, numbers, hyphens, or underscores"
+    required: true
+  scope:
+    description: "Cache scope: auto, shared, trusted, or untrusted"
+    required: false
+    default: auto
+  os:
+    description: "Operating system component of the cache key; defaults to RUNNER_OS"
+    required: false
+    default: "__runner__"
+  arch:
+    description: "Architecture component of the cache key; defaults to RUNNER_ARCH"
+    required: false
+    default: "__runner__"
+  version:
+    description: "Numeric cache format version, for example 1 or 2"
+    required: false
+    default: "1"
+  restore-keys:
+    description: "Newline separated fallback prefixes"
+    required: false
+    default: ""
+  path:
+    description: "Newline separated files or directories to restore"
+    required: true
+  token:
+    description: "GitHub token; defaults to GITHUB_TOKEN"
+    required: false
+  encryption-key:
+    description: "Optional AES-256 encryption key or passphrase for cache contents"
+    required: false
+    default: ""
+  strict:
+    description: "Fail the step on cache errors"
+    required: false
+    default: "false"
+  config-file:
+    description: "Optional JSON configuration file; environment variables override its values"
+    required: false
+    default: ""
+  manifest-branch:
+    description: "Branch containing the cache manifest; defaults to manifest_branch in config or cache-data"
+    required: false
+    default: ""
+  allow-shared-restore:
+    description: "Allow pull requests to restore explicitly selected shared caches"
+    required: false
+    default: "false"
+outputs:
+  cache-hit:
+    description: "true when an exact key was restored"
+  matched-key:
+    description: "Reference key used for restore"
+  content-hash:
+    description: "sha256 digest of the object"
+  asset-name:
+    description: "Release asset filename for the cached object"
+  cache-size:
+    description: "Compressed object size in bytes"
+runs:
+  using: node24
+  main: ../dist/restore.js
