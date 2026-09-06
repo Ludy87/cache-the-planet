@@ -8,6 +8,26 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.4.0](https://github.com/Ludy87/cache-the-planet/compare/v1.3.2...v1.4.0) (2026-09-06)
+
+
+### 🎉 Features
+
+* **action:** add automatic post-save caching ([#88](https://github.com/Ludy87/cache-the-planet/issues/88)) ([e1465e8](https://github.com/Ludy87/cache-the-planet/commit/e1465e834611cda5751c63f47dc49b90de131033))
+* **action:** add restore sub-action metadata ([#87](https://github.com/Ludy87/cache-the-planet/issues/87)) ([0290141](https://github.com/Ludy87/cache-the-planet/commit/0290141f6d288106a7ee01e90c3f7bc739056bbf))
+* **ci:** unify cache post-save and workflow safeguards ([#90](https://github.com/Ludy87/cache-the-planet/issues/90)) ([3e4ff7f](https://github.com/Ludy87/cache-the-planet/commit/3e4ff7fb1f2e73eaa79ca210e3ebc04042a3c567))
+* **config:** allow compression level in config ([#89](https://github.com/Ludy87/cache-the-planet/issues/89)) ([bcee523](https://github.com/Ludy87/cache-the-planet/commit/bcee523a3e65093faf9ed82fc8ba105006105f5a))
+
+
+### 🐛 Bug Fixes
+
+* **action:** expose status outputs during restore ([#93](https://github.com/Ludy87/cache-the-planet/issues/93)) ([ba23430](https://github.com/Ludy87/cache-the-planet/commit/ba23430c229f7eb85dbaf75475ac20719f45c27d))
+* **action:** standardize save output names ([#86](https://github.com/Ludy87/cache-the-planet/issues/86)) ([48d6144](https://github.com/Ludy87/cache-the-planet/commit/48d6144e086833dd7de94185f72034ce554a90dd))
+* **ci:** avoid broad uv cache restore fallback ([#91](https://github.com/Ludy87/cache-the-planet/issues/91)) ([fdca9f4](https://github.com/Ludy87/cache-the-planet/commit/fdca9f489a7fce833430ad899ae6ae485078cfe7))
+* **ci:** enforce strict cache workflow restores ([#94](https://github.com/Ludy87/cache-the-planet/issues/94)) ([4c32e6c](https://github.com/Ludy87/cache-the-planet/commit/4c32e6c75c3363be52d150b6b87fa24ad93ba2fc))
+* **ci:** restrict shared uv cache restore ([#92](https://github.com/Ludy87/cache-the-planet/issues/92)) ([20d92ff](https://github.com/Ludy87/cache-the-planet/commit/20d92ff599441f50f3d9c8e52479fca7f7d03b12))
+* **restore:** validate archive paths against input ([#84](https://github.com/Ludy87/cache-the-planet/issues/84)) ([36fc9c5](https://github.com/Ludy87/cache-the-planet/commit/36fc9c5796baf789493f38771cc716771192e070))
+
 ## [1.3.2](https://github.com/Ludy87/cache-the-planet/compare/v1.3.1...v1.3.2) (2026-09-06)
 
 
