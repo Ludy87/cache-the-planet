@@ -84,7 +84,7 @@ jobs:
 
       - name: Restore npm cache asset
         id: cache
-        uses: ./
+        uses: $/
         with:
           cache-name: gradle-java17
           save-scope: shared
@@ -137,7 +137,7 @@ jobs:
 
       - name: Restore Gradle cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
-        uses: ./
+        uses: $/
         with:
           cache-name: gradle-java17
           scope: ${{ matrix.scope-matrix.scope }}

@@ -80,7 +80,7 @@ jobs:
   build-dist-pr:
     needs: [test]
     if: ${{ github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/build-dist.yml
+    uses: $/.github/workflows/build-dist.yml
     with:
       dry-run: true
     permissions:
@@ -89,7 +89,7 @@ jobs:
   build-dist-trusted:
     needs: [test]
     if: ${{ github.event_name != 'pull_request' }}
-    uses: ./.github/workflows/build-dist.yml
+    uses: $/.github/workflows/build-dist.yml
     with:
       dry-run: false
     permissions:
@@ -101,7 +101,7 @@ jobs:
   node-save-cache:
     needs: [build-dist-pr, build-dist-trusted]
     if: ${{ !cancelled() && (needs.build-dist-pr.result == 'success' || needs.build-dist-pr.result == 'skipped') && (needs.build-dist-trusted.result == 'success' || needs.build-dist-trusted.result == 'skipped') }}
-    uses: ./.github/workflows/npm-cache-asset-integration.yml
+    uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
@@ -113,7 +113,7 @@ jobs:
   uv-save-cache:
     needs: [node-save-cache]
     if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
-    uses: ./.github/workflows/uv-cache-asset-integration.yml
+    uses: $/.github/workflows/uv-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
@@ -125,7 +125,7 @@ jobs:
   uv-python-save-cache:
     needs: [uv-save-cache]
     if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
-    uses: ./.github/workflows/uv-python-cache-asset-integration.yml
+    uses: $/.github/workflows/uv-python-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
@@ -137,7 +137,7 @@ jobs:
   task-save-cache:
     needs: [uv-python-save-cache]
     if: ${{ !cancelled() && needs.uv-python-save-cache.result == 'success' }}
-    uses: ./.github/workflows/task-cache-asset-integration.yml
+    uses: $/.github/workflows/task-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
@@ -149,7 +149,7 @@ jobs:
   java-save-cache:
     needs: [task-save-cache]
     if: ${{ !cancelled() && needs.task-save-cache.result == 'success' }}
-    uses: ./.github/workflows/maven-cache-asset-integration.yml
+    uses: $/.github/workflows/maven-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
@@ -161,7 +161,7 @@ jobs:
   gradle-save-cache:
     needs: [java-save-cache]
     if: ${{ !cancelled() && needs.java-save-cache.result == 'success' }}
-    uses: ./.github/workflows/gradle-cache-asset-integration.yml
+    uses: $/.github/workflows/gradle-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
@@ -173,7 +173,7 @@ jobs:
   docker-save-cache:
     needs: [gradle-save-cache]
     if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
-    uses: ./.github/workflows/docker-cache-asset-integration.yml
+    uses: $/.github/workflows/docker-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:

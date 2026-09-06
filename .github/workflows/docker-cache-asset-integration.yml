@@ -82,7 +82,7 @@ jobs:
 
       - name: Restore Docker cache
         id: cache
-        uses: ./
+        uses: $/
         with:
           cache-name: docker
           save-scope: shared
@@ -150,7 +150,7 @@ jobs:
 
       - name: Restore Docker cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
-        uses: ./
+        uses: $/
         with:
           cache-name: docker
           scope: ${{ matrix.scope-matrix.scope }}
