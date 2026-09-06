@@ -16,6 +16,82 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
 
+## Scope-Muster für Integrationen
+
+Der Cache-Key, `cache-name` und `path` müssen beim Restore und Save zum selben
+Cache gehören. Der Scope bestimmt, in welchem Namespace die Referenz gesucht
+bzw. gespeichert wird. Für einen normalen Workflow ist `auto` die passende
+Wahl:
+
+```yaml
+- name: Restore and save tool cache
+  uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: tools
+    key: ${{ hashFiles('tools.lock') }}
+    path: .cache/tools
+    scope: auto
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+Die Root-Action speichert nach einem erfolgreichen Job automatisch. Auf dem
+Default-Branch und bei Tags wird `trusted` verwendet, in Pull Requests
+`untrusted`.
+
+Für einen Cache, der von mehreren Workflows gelesen werden soll, kann der
+Restore explizit `shared` verwenden. Das Lesen aus einem Pull Request muss
+zusätzlich erlaubt werden. Der Save sollte nur aus einem vertrauenswürdigen
+Default-Branch-Job erfolgen:
+
+```yaml
+- name: Restore shared tool cache
+  uses: Ludy87/cache-the-planet/restore@v1
+  with:
+    cache-name: tools
+    key: ${{ hashFiles('tools.lock') }}
+    path: .cache/tools
+    scope: shared
+    allow-shared-restore: true
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+
+- name: Build
+  run: ./build.sh
+
+- name: Save shared tool cache
+  if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && success() }}
+  uses: Ludy87/cache-the-planet/save@v1
+  with:
+    cache-name: tools
+    key: ${{ hashFiles('tools.lock') }}
+    path: .cache/tools
+    scope: shared
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+Wenn Restore und Save absichtlich getrennt behandelt werden sollen, stehen
+`restore/action.yml` und `save/action.yml` zur Verfügung. Bei der Root-Action
+kann alternativ `save-scope` gesetzt werden; dieser Input ändert nur den
+Post-Save-Scope und nicht den Restore-Scope:
+
+```yaml
+- name: Restore shared cache, save trusted result
+  uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: tools
+    key: ${{ hashFiles('tools.lock') }}
+    path: .cache/tools
+    scope: shared
+    allow-shared-restore: true
+    save-scope: trusted
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+`untrusted` ist für isolierte Pull-Request-Caches vorgesehen. Der Input
+`allow-pr-cache: true` erlaubt dabei den Save nur in den dafür vorgesehenen PR-Kontexten; ein
+Fork-Pull-Request darf weiterhin keine Schreib-Secrets erhalten. Für reine
+Restore-Jobs verhindert `restore-only: true` an der Root-Action den
+automatischen Post-Save.
+
 ### Docker/BuildKit vollständig einrichten
 
 Der BuildKit-Cache wird als lokales Verzeichnis mit `cache-the-planet`

@@ -62,6 +62,129 @@ Die Root-Action kann mit `restore-only: true` auf reines Restore beschränkt
 werden. Mit `save-scope` lässt sich der Scope des Post-Save-Schritts unabhängig
 von `scope` konfigurieren; ohne Angabe übernimmt er `scope`.
 
+## Beispiele für Scopes
+
+### Automatisches Restore und Post-Save
+
+Für die meisten Workflows reicht die Root-Action. Sie restauriert den Cache am
+Anfang und speichert ihn nach einem erfolgreichen Job automatisch im
+Post-Schritt. `auto` verwendet auf dem Default-Branch beziehungsweise einem
+Tag `trusted` und in Pull Requests einen isolierten `untrusted`-Namespace:
+
+```yaml
+- name: Restore and save npm cache
+  uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: npm
+    key: ${{ hashFiles('package-lock.json') }}
+    path: .cache/npm
+    scope: auto
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+### Shared-Cache wiederherstellen und getrennt speichern
+
+Ein von mehreren Workflows nutzbarer Cache kann in Pull Requests gelesen
+werden, wenn dies ausdrücklich erlaubt wird. Der Schreibschritt gehört auf den
+Default-Branch; dadurch können Pull Requests keinen gemeinsamen Cache
+überschreiben:
+
+```yaml
+- name: Restore shared npm cache
+  uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: npm
+    key: ${{ hashFiles('package-lock.json') }}
+    path: .cache/npm
+    scope: shared
+    allow-shared-restore: true
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+
+- name: Install dependencies
+  run: npm ci --no-audit --no-fund
+
+- name: Save shared npm cache
+  if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && success() }}
+  uses: Ludy87/cache-the-planet/save@v1
+  with:
+    cache-name: npm
+    key: ${{ hashFiles('package-lock.json') }}
+    path: .cache/npm
+    scope: shared
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+### Unterschiedliche Restore- und Save-Scopes
+
+Bei der Root-Action kann `save-scope` vom Restore-Scope abweichen. Das ist
+beispielsweise nützlich, wenn ein Workflow aus einem gemeinsamen Cache liest,
+seine Ergebnisse aber nur als `trusted` speichern soll. `save-scope` verändert
+nicht, wonach der Restore sucht:
+
+```yaml
+- name: Restore shared tools
+  uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: tools
+    key: ${{ hashFiles('tools.lock') }}
+    path: .cache/tools
+    scope: shared
+    allow-shared-restore: true
+    save-scope: trusted
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+Dieses Muster darf nur in einem vertrauenswürdigen Workflow auf dem
+Default-Branch oder einem Tag verwendet werden. Für getrennte Restore- und
+Save-Bedingungen sind die eigenständigen Actions aus dem vorherigen Beispiel
+übersichtlicher.
+
+### Isolierter Cache für interne Pull Requests
+
+Ein interner Pull Request kann einen eigenen Cache schreiben, ohne den
+Trusted- oder Shared-Namespace zu verändern. Dafür müssen `untrusted` und
+`allow-pr-cache` gesetzt werden:
+
+```yaml
+- name: Save PR-specific cache
+  if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && success() }}
+  uses: Ludy87/cache-the-planet/save@v1
+  with:
+    cache-name: npm
+    key: ${{ hashFiles('package-lock.json') }}
+    path: .cache/npm
+    scope: untrusted
+    allow-pr-cache: true
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+Fork-Pull-Requests dürfen keine Schreib-Secrets erhalten. In solchen Jobs
+bleibt der Save-Schritt aus; ein Shared-Restore muss weiterhin explizit über
+`allow-shared-restore: true` freigeschaltet werden.
+
+### Nur wiederherstellen
+
+Wenn ein Workflow niemals speichern soll, verhindert `restore-only: true` den
+automatischen Post-Save-Schritt der Root-Action:
+
+```yaml
+- name: Restore dependency cache only
+  id: cache
+  uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: npm
+    key: ${{ hashFiles('package-lock.json') }}
+    path: .cache/npm
+    scope: auto
+    restore-only: true
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+
+- name: Show cache result
+  run: |
+    echo "Cache hit: ${{ steps.cache.outputs['cache-hit'] }}"
+    echo "Matched key: ${{ steps.cache.outputs['matched-key'] }}"
+```
+
 ## Authentifizierung
 
 Für ein separates Cache-Repository benötigt das Token mindestens passende
