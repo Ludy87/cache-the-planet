@@ -124,6 +124,7 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 {
   "cache_repository": "owner/cache-repository",
   "manifest_branch": "cache-data",
+  "compression_level": 3,
   "security": {
     "max_compressed_bytes": 2147483648,
     "max_tar_bytes": 8589934592,
@@ -137,6 +138,9 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 Branch für das Cache-Manifest fest. Ein gesetztes
 `CACHE_MANIFEST_BRANCH` oder der Action-Input `manifest-branch` überschreibt
 diesen Wert; ohne Konfiguration wird `cache-data` verwendet.
+`compression_level` legt die zstd-Kompressionsstufe fest. Der Action-Input
+`compression-level` und `CACHE_COMPRESSION_LEVEL` überschreiben diesen Wert;
+der Default ist `3`.
 
 `allowed_cache_names` ist eine optionale Allowlist. Fehlt sie oder ist sie
 leer, sind alle gültig formatierten Cache-Namen erlaubt. Der vertrauenswürdige

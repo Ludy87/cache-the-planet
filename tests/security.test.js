@@ -48,6 +48,27 @@ function runManifestBranchWithConfig(config, extraEnv = {}) {
   return result;
 }
 
+function runCompressionLevelWithConfig(config, extraEnv = {}) {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-compression-test-"));
+  fs.writeFileSync(
+    path.join(workspace, ".cache-the-planet.json"),
+    JSON.stringify(config),
+  );
+  const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
+    const { compressionLevel } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+    process.stdout.write(compressionLevel());
+  `;
+  const result = childProcess.spawnSync(process.execPath, ["-e", script], {
+    cwd: workspace,
+    env: { ...process.env, ...extraEnv },
+    encoding: "utf8",
+  });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result;
+}
+
 function runCacheRepository(config = null, extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-repository-test-"));
   if (config) {
@@ -86,6 +107,31 @@ test("positive limits accept safe integers and reject unsafe values", () => {
       /positive safe integer/,
     );
   }
+});
+
+test("compression level uses the documented configuration precedence", () => {
+  assert.equal(
+    runCompressionLevelWithConfig({ compression_level: 7 }).stdout,
+    "7",
+  );
+  assert.equal(
+    runCompressionLevelWithConfig(
+      { compression_level: 7 },
+      { CACHE_COMPRESSION_LEVEL: "9" },
+    ).stdout,
+    "9",
+  );
+  assert.equal(
+    runCompressionLevelWithConfig(
+      { compression_level: 7 },
+      { CACHE_COMPRESSION_LEVEL: "9", "INPUT_COMPRESSION-LEVEL": "11" },
+    ).stdout,
+    "11",
+  );
+  assert.notEqual(
+    runCompressionLevelWithConfig({ compression_level: "invalid" }).status,
+    0,
+  );
 });
 
 test("cache hashes and manifest references are validated", () => {

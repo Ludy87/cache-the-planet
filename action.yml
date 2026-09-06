@@ -67,9 +67,9 @@ inputs:
     required: false
     default: "false"
   compression-level:
-    description: "zstd compression level for post-save"
+    description: "zstd compression level; defaults to compression_level in config"
     required: false
-    default: "3"
+    default: ""
   exclude:
     description: "Newline separated exclusions for post-save"
     required: false

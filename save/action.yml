@@ -35,9 +35,9 @@ inputs:
     description: "Newline separated files or directories to cache"
     required: true
   compression-level:
-    description: "zstd compression level"
+    description: "zstd compression level; defaults to compression_level in config"
     required: false
-    default: "3"
+    default: ""
   token:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false

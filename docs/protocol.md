@@ -38,6 +38,11 @@ Das Cache-Repository wird über den Input `repository`, `CACHE_REPOSITORY` oder
 das JSON-Feld `cache_repository` gewählt. Fehlt alles, verwendet die Action
 `GITHUB_REPOSITORY`, also das Repository, in dem der Workflow läuft.
 
+Die zstd-Kompressionsstufe kann über `compression-level`,
+`CACHE_COMPRESSION_LEVEL` oder das JSON-Feld `compression_level` konfiguriert
+werden. Die Priorität ist Action-Input, Umgebungsvariable, JSON-Konfiguration;
+ohne Angabe wird die Stufe `3` verwendet.
+
 ```json
 {
     "schema_version":1,

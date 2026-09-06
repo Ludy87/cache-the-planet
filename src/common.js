@@ -982,6 +982,19 @@ function encryptionEnabled() {
   return Boolean(encryptionKey());
 }
 
+function compressionLevel() {
+  const configured =
+    input("compression-level") ||
+    process.env.CACHE_COMPRESSION_LEVEL ||
+    configuration().compression_level ||
+    "3";
+  const value = String(configured).trim();
+  if (!/^-?\d+$/.test(value) || !Number.isSafeInteger(Number(value))) {
+    throw new Error("compression-level must be an integer");
+  }
+  return value;
+}
+
 function encryptFile(file) {
   const key = encryptionKey();
   if (!key) return file;
@@ -1192,7 +1205,7 @@ async function makeArchive() {
   );
   const zstd = cp.spawn(
     "zstd",
-    ["-q", `-${input("compression-level", "3")}`, "-o", output],
+    ["-q", `-${compressionLevel()}`, "-o", output],
     {
       stdio: ["pipe", "inherit", "inherit"],
     },
@@ -1833,6 +1846,7 @@ module.exports = {
   validateArchiveFile,
   removeTemporaryFile,
   encryptionEnabled,
+  compressionLevel,
   encryptFile,
   decryptFile,
   release,

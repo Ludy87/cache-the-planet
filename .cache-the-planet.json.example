@@ -1,6 +1,7 @@
 {
   "cache_repository": "owner/cache-repository",
   "manifest_branch": "cache-data",
+  "compression_level": 3,
   "monitoring": {
     "max_manifest_references": 100000,
     "max_manifest_writes_per_hour": 1000
