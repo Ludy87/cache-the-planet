@@ -1711,7 +1711,40 @@ async function downloadToFile(url, output, options = {}) {
   return output;
 }
 
-async function extract(file) {
+function restorePaths() {
+  const values = entries().map((value) => {
+    const normalized = value.replace(/\\/g, "/").replace(/^\.\//, "");
+    if (!normalized || normalized === ".") return ".";
+    if (normalized.startsWith("/") || normalized.split("/").includes("..")) {
+      throw new Error(`cache path must be inside the workspace: ${value}`);
+    }
+    return normalized.replace(/\/$/, "");
+  });
+  if (!values.length) throw new Error("no cache paths specified");
+  return values;
+}
+
+function assertArchiveMatchesRestorePaths(names, paths) {
+  if (paths.includes(".")) return;
+  const normalizedNames = names.map((name) =>
+    name.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/$/, ""),
+  );
+  if (
+    normalizedNames.some(
+      (name) =>
+        !paths.some(
+          (root) =>
+            name === root ||
+            name.startsWith(`${root}/`) ||
+            root.startsWith(`${name}/`),
+        ),
+    )
+  ) {
+    throw new Error("cache archive contains files outside the configured path");
+  }
+}
+
+async function extract(file, paths = restorePaths()) {
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   if (fs.statSync(file).size > maxCompressedBytes) {
     throw new Error("cache archive exceeds the compressed size limit");
@@ -1720,7 +1753,8 @@ async function extract(file) {
   const tarFile = path.join(path.dirname(decrypted), "object.tar");
   try {
     await decompressZstd(decrypted, tarFile, maxTarBytes);
-    inspectTar(tarFile);
+    const names = inspectTar(tarFile);
+    assertArchiveMatchesRestorePaths(names, paths);
     const extraction = cp.spawnSync(
       "tar",
       [
