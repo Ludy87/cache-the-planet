@@ -87,6 +87,10 @@ outputs:
     description: "true when an exact key was restored"
   matched-key:
     description: "Reference key used for restore"
+  is-fork:
+    description: "true when the save runs for a pull request whose source repository is a fork"
+  read-only:
+    description: "true when the save will not write a cache because the pull request is from a fork"
   content-hash:
     description: "sha256 digest of the object"
   asset-name:
