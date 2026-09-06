@@ -61,7 +61,35 @@ jobs:
 
       - run: npm ci --no-audit --no-fund
 
-      - run: npm run test
+      - name: Run npm tests and publish summary
+        shell: bash
+        run: |
+          set +e
+          npm run test 2>&1 | tee npm-test-output.log
+          test_status=${PIPESTATUS[0]}
+          {
+            echo '### npm run test'
+            echo
+            echo '| Feld | Wert |'
+            echo '| --- | --- |'
+            if [[ "$test_status" == "0" ]]; then
+              echo '| Status | PASS |'
+            else
+              echo '| Status | FAIL |'
+            fi
+            echo '| Exit-Code | '"$test_status"' |'
+            echo
+            echo '<details>'
+            echo '<summary>Testausgabe</summary>'
+            echo
+            echo '```text'
+            cat npm-test-output.log
+            echo '```'
+            echo
+            echo '</details>'
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$test_status"
 
       - run: bash tests/run.sh
 
