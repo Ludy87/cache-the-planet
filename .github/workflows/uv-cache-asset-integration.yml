@@ -91,7 +91,7 @@ jobs:
 
       - name: Restore uv cache asset
         id: cache
-        uses: $/
+        uses: ./
         with:
           cache-name: uv
           save-scope: shared
@@ -162,7 +162,7 @@ jobs:
 
       - name: Restore uv cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
-        uses: $/
+        uses: ./
         with:
           cache-name: uv
           version: ${{ env.VERSION }}

@@ -80,7 +80,7 @@ jobs:
 
       - name: Restore task build cache asset
         id: cache
-        uses: $/
+        uses: ./
         with:
           cache-name: task
           save-scope: shared
@@ -138,7 +138,7 @@ jobs:
 
       - name: Restore task build cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
-        uses: $/
+        uses: ./
         with:
           cache-name: task
           scope: ${{ matrix.scope-matrix.scope }}

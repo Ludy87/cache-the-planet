@@ -22,7 +22,7 @@ jobs:
         github.event.workflow_run.conclusion == 'success' ||
         github.event.workflow_run.conclusion == 'skipped'
       )
-    uses: $/.github/workflows/npm-cache-asset-integration.yml
+    uses: ./.github/workflows/npm-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:
@@ -31,7 +31,7 @@ jobs:
   uv-restore-cache:
     needs: [node-restore-cache]
     if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}
-    uses: $/.github/workflows/uv-cache-asset-integration.yml
+    uses: ./.github/workflows/uv-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:
@@ -40,7 +40,7 @@ jobs:
   uv-python-restore-cache:
     needs: [uv-restore-cache]
     if: ${{ !cancelled() && needs.uv-restore-cache.result == 'success' }}
-    uses: $/.github/workflows/uv-python-cache-asset-integration.yml
+    uses: ./.github/workflows/uv-python-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:
@@ -49,7 +49,7 @@ jobs:
   task-restore-cache:
     needs: [uv-python-restore-cache]
     if: ${{ !cancelled() && needs.uv-python-restore-cache.result == 'success' }}
-    uses: $/.github/workflows/task-cache-asset-integration.yml
+    uses: ./.github/workflows/task-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:
@@ -58,7 +58,7 @@ jobs:
   java-restore-cache:
     needs: [task-restore-cache]
     if: ${{ !cancelled() && needs.task-restore-cache.result == 'success' }}
-    uses: $/.github/workflows/maven-cache-asset-integration.yml
+    uses: ./.github/workflows/maven-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:
@@ -67,7 +67,7 @@ jobs:
   gradle-restore-cache:
     needs: [java-restore-cache]
     if: ${{ !cancelled() && needs.java-restore-cache.result == 'success' }}
-    uses: $/.github/workflows/gradle-cache-asset-integration.yml
+    uses: ./.github/workflows/gradle-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:
@@ -76,7 +76,7 @@ jobs:
   docker-restore-cache:
     needs: [gradle-restore-cache]
     if: ${{ !cancelled() && needs.gradle-restore-cache.result == 'success' }}
-    uses: $/.github/workflows/docker-cache-asset-integration.yml
+    uses: ./.github/workflows/docker-cache-asset-integration.yml
     with:
       restore-cache: true
     permissions:

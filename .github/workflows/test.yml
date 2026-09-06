@@ -54,7 +54,7 @@ jobs:
 
       - name: Restore cache
         if: ${{ github.event_name != 'pull_request' }}
-        uses: $/
+        uses: ./
         with:
           cache-name: npm
           scope: shared
@@ -105,7 +105,7 @@ jobs:
       - name: Save cache
         if: ${{ success() }}
         id: save
-        uses: $/save
+        uses: ./save
         with:
           cache-name: npm
           scope: shared

@@ -79,7 +79,7 @@ jobs:
 
       - name: Restore npm cache asset
         id: cache
-        uses: $/
+        uses: ./
         with:
           cache-name: npm
           save-scope: shared
@@ -140,7 +140,7 @@ jobs:
 
       - name: Restore npm cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
-        uses: $/
+        uses: ./
         with:
           cache-name: npm
           scope: ${{ matrix.scope-matrix.scope }}
