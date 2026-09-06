@@ -49,8 +49,7 @@ verwendet werden. Ein separater Save-Schritt verwendet weiterhin
 `Ludy87/cache-the-planet/save@v1`.
 
 Mit `restore-only: true` wird das automatische Speichern der Root-Action
-deaktiviert, während der Restore weiterhin ausgeführt wird. `read-only: true`
-bleibt als kompatibler Alias verfügbar.
+deaktiviert, während der Restore weiterhin ausgeführt wird.
 
 `path` muss beim Restore angegeben werden, weil es Bestandteil der
 Action-Schnittstelle ist. Die aktuelle Restore-Action extrahiert das geprüfte

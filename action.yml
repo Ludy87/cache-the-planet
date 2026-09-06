@@ -74,10 +74,6 @@ inputs:
     description: "Allow saving an isolated untrusted cache for a pull request"
     required: false
     default: "true"
-  read-only:
-    description: "Restore without saving in the automatic post-step"
-    required: false
-    default: "false"
   restore-only:
     description: "Restore the cache without saving in the automatic post-step"
     required: false

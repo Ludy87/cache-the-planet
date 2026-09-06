@@ -65,7 +65,7 @@ inputs:
     description: "Allow saving an isolated untrusted cache for a pull request"
     required: false
     default: "true"
-  read-only:
+  restore-only:
     description: "Skip saving the cache"
     required: false
     default: "false"
