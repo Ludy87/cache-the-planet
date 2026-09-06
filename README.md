@@ -147,6 +147,15 @@ Verfügung. Garbage Collection startet standardmäßig als Dry-Run:
     dry-run: true
 ```
 
+`gc` unterstützt die Modi `orphan`, `expired`, `object` und `all`. Der
+geplante Cleanup-Workflow verwendet `expired`, entfernt nach 24 Stunden
+abgelaufene Untrusted-PR-Referenzen und läuft mit `dry-run: false`. Ein
+manueller Lauf kann zusätzlich `delete-shared: true` setzen; dadurch werden
+Shared-Referenzen ausschließlich bei einem ausdrücklich manuellen
+`expired`-Lauf berücksichtigt. Für `orphan` gilt standardmäßig eine
+Grace-Period von sieben Tagen. Die Outputs sind `mode`, `dry-run`,
+`deleted-assets` und `removed-references`.
+
 `pr-cleanup` entfernt ausschließlich den isolierten Namespace einer konkreten
 geschlossenen Pull Request. Details und Sicherheitsgrenzen stehen in
 [docs/operations.md](docs/operations.md).

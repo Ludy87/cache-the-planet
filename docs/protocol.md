@@ -67,12 +67,12 @@ danach als `trusted` bzw. bei Pull Requests als `untrusted` ausgewertet.
 Shared-Restore in Pull Requests erfordert weiterhin
 `allow-shared-restore: true`.
 Vertrauenswürdige Schlüssel verwenden das Schema
-`trusted/<owner>/<repository>/<default-branch>/<cache-name>/<logical-key>/v1`.
+`trusted/<owner>/<repository>/<default-branch>/<cache-name>/<os>-<arch>/<logical-key>/v<version>`.
 Pull-Request-Schlüssel verwenden
-`untrusted/<owner>/<repository>/pr-<number>/<cache-name>/<logical-key>/v1`.
+`untrusted/<owner>/<repository>/pr-<number>/<cache-name>/<os>-<arch>/<logical-key>/v<version>`.
 
 Geprüfte Basis-Caches können unter
-`shared/<owner>/<repository>/<cache-name>/<logical-key>/v1` veröffentlicht werden.
+`shared/<owner>/<repository>/<cache-name>/<os>-<arch>/<logical-key>/v<version>` veröffentlicht werden.
 Sie dürfen nur aus dem konfigurierten Default-Branch geschrieben werden. Pull Requests
 benötigen für deren Restore den expliziten Schalter
 `allow-shared-restore: true`.
@@ -80,9 +80,11 @@ benötigen für deren Restore den expliziten Schalter
 Clients können den vollständigen Namespace automatisch aus `scope` erzeugen.
 Erlaubte Werte sind `auto`, `shared`, `trusted` und `untrusted`. Bei `auto`
 wird für Pull Requests `untrusted` und für Pushes bzw. Tags `trusted` gewählt.
-Der logische Key enthält dabei nur Cache-Name, Plattform, Hash und Version.
-Wird die Plattform im logischen Key weggelassen, ergänzt die Action automatisch
-`RUNNER_OS` und `RUNNER_ARCH`; fehlende Werte werden als `unknown` eingesetzt.
+Der logische Teil des Nutzer-Keys ist der Abhängigkeits- oder Inhalts-Hash.
+Cache-Name, Plattform und Version werden außerhalb dieses logischen Teils in
+den vollständigen Namespace aufgenommen. Fehlen `RUNNER_OS` oder
+`RUNNER_ARCH`, verwendet die Action `unknown-unknown`; explizit leere
+`os`-/`arch`-Inputs ergeben ebenfalls `unknown`.
 Die Komponenten können mit `os`, `arch` und `version` explizit überschrieben
 werden. Der Nutzer-Key kann dadurch ausschließlich aus dem Abhängigkeits-Hash
 bestehen.
