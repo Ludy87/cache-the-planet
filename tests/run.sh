@@ -23,6 +23,44 @@ const securityScan = (directory) => {
   sourceSecurityScan(directory);
   distSecurityScan(directory);
 };
+const runInvalidLimit = (config, expression = '') => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-limit-config-'));
+  fs.writeFileSync(path.join(workspace, '.cache-the-planet.json'), JSON.stringify(config));
+  const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env['INPUT_CONFIG-FILE'] = '.cache-the-planet.json';
+    process.env.RUNNER_OS = 'Linux';
+    process.env.RUNNER_ARCH = 'X64';
+    process.env['INPUT_CACHE-NAME'] = 'npm';
+    process.env.GITHUB_REPOSITORY = 'owner/repo';
+    process.env.GITHUB_DEFAULT_BRANCH = 'main';
+    process.env.GITHUB_REF = 'refs/heads/main';
+    process.env.GITHUB_EVENT_NAME = 'push';
+    const common = require(${JSON.stringify(path.join(process.cwd(), 'src', 'common.js'))});
+    ${expression}
+  `;
+  const result = cp.spawnSync(process.execPath, ['-e', script], { encoding: 'utf8' });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result.status;
+};
+for (const name of [
+  'max_compressed_bytes', 'max_tar_bytes', 'max_entries',
+  'max_archive_path_length', 'max_logical_key_length',
+  'max_logical_key_components',
+]) {
+  const expression = name.startsWith('max_logical_key_') ? 'common.scopedKey("hash");' : '';
+  if (runInvalidLimit({ security: { [name]: 0 } }, expression) === 0) {
+    throw new Error(`${name} accepted zero in JSON configuration`);
+  }
+}
+for (const name of ['max_manifest_references', 'max_manifest_writes_per_hour']) {
+  if (runInvalidLimit(
+    { monitoring: { [name]: 0 } },
+    'common.manifestWriteGuard({ references: {}, monitoring: {} });',
+  ) === 0) {
+    throw new Error(`${name} accepted zero in JSON configuration`);
+  }
+}
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-security-'));
 try {
   const originalWorkspace = process.env.GITHUB_WORKSPACE;

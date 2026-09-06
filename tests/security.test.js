@@ -86,12 +86,41 @@ function runConfiguredDefaults(config, extraEnv = {}) {
     process.env.GITHUB_REPOSITORY = "owner/repo";
     process.env.GITHUB_DEFAULT_BRANCH = "main";
     process.env.GITHUB_REF = "refs/heads/main";
+    process.env.GITHUB_EVENT_NAME = "push";
     const common = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
     process.stdout.write(common.cacheScope() + "|" + common.scopedKey("hash"));
   `;
   const result = childProcess.spawnSync(process.execPath, ["-e", script], {
     cwd: workspace,
     env: { ...process.env, ...extraEnv },
+    encoding: "utf8",
+  });
+  fs.rmSync(workspace, { recursive: true, force: true });
+  return result;
+}
+
+function runCommonExpression(config, expression) {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-limits-test-"));
+  fs.writeFileSync(
+    path.join(workspace, ".cache-the-planet.json"),
+    JSON.stringify(config),
+  );
+  const script = `
+    process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+    process.env["INPUT_CONFIG-FILE"] = ".cache-the-planet.json";
+    process.env.RUNNER_OS = "Linux";
+    process.env.RUNNER_ARCH = "X64";
+    process.env["INPUT_CACHE-NAME"] = "npm";
+    process.env.GITHUB_REPOSITORY = "owner/repo";
+    process.env.GITHUB_DEFAULT_BRANCH = "main";
+    process.env.GITHUB_REF = "refs/heads/main";
+    process.env.GITHUB_EVENT_NAME = "push";
+    const common = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+    ${expression}
+  `;
+  const result = childProcess.spawnSync(process.execPath, ["-e", script], {
+    cwd: workspace,
+    env: { ...process.env },
     encoding: "utf8",
   });
   fs.rmSync(workspace, { recursive: true, force: true });
@@ -183,6 +212,52 @@ test("scope and version use JSON defaults without overriding explicit inputs", (
     runConfiguredDefaults({ scope: "shared", version: "v7" }).status,
     0,
   );
+});
+
+test("all max_* JSON limits reject invalid values", () => {
+  const eagerlyValidated = [
+    "max_compressed_bytes",
+    "max_tar_bytes",
+    "max_entries",
+    "max_archive_path_length",
+  ];
+  for (const name of eagerlyValidated) {
+    assert.notEqual(
+      runCommonExpression({ security: { [name]: 0 } }, "").status,
+      0,
+      `${name} accepted zero`,
+    );
+  }
+
+  assert.notEqual(
+    runCommonExpression(
+      { security: { max_logical_key_length: 0 } },
+      'common.scopedKey("hash");',
+    ).status,
+    0,
+    "max_logical_key_length accepted zero",
+  );
+  assert.notEqual(
+    runCommonExpression(
+      { security: { max_logical_key_components: 0 } },
+      'common.scopedKey("hash");',
+    ).status,
+    0,
+    "max_logical_key_components accepted zero",
+  );
+  for (const name of [
+    "max_manifest_references",
+    "max_manifest_writes_per_hour",
+  ]) {
+    assert.notEqual(
+      runCommonExpression(
+        { monitoring: { [name]: 0 } },
+        "common.manifestWriteGuard({ references: {}, monitoring: {} });",
+      ).status,
+      0,
+      `${name} accepted zero`,
+    );
+  }
 });
 
 test("cache hashes and manifest references are validated", () => {
