@@ -8,6 +8,24 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.3.2](https://github.com/Ludy87/cache-the-planet/compare/v1.3.1...v1.3.2) (2026-09-06)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** delete published PR cache artifacts ([#78](https://github.com/Ludy87/cache-the-planet/issues/78)) ([3e1c353](https://github.com/Ludy87/cache-the-planet/commit/3e1c353029867251f07c316e1458a3b274803c74))
+* **ci:** show encryption and npm test status in step summaries ([#79](https://github.com/Ludy87/cache-the-planet/issues/79)) ([f5e86f8](https://github.com/Ludy87/cache-the-planet/commit/f5e86f8f2b24e186b130015bd2ea67ae841588db))
+
+
+### ⚡ Performance
+
+* **cache:** reduce redundant GitHub API requests ([#82](https://github.com/Ludy87/cache-the-planet/issues/82)) ([712600e](https://github.com/Ludy87/cache-the-planet/commit/712600e0cec5de8d8373da4c80450638c829a0a0))
+
+
+### 📚 Documentation
+
+* clarify garbage-collection and cache-key documentation ([#81](https://github.com/Ludy87/cache-the-planet/issues/81)) ([49b5f13](https://github.com/Ludy87/cache-the-planet/commit/49b5f13c4455caabfd77c35d2371a71eed145033))
+
 ## [1.3.1](https://github.com/Ludy87/cache-the-planet/compare/v1.3.0...v1.3.1) (2026-09-05)
 
 
