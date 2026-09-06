@@ -97,8 +97,6 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          restore-keys: |
-            linux-x64/
           version: 3
           path: .cache/uv
 
