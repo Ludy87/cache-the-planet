@@ -69,6 +69,10 @@ outputs:
     description: "Release asset filename for the cached object"
   cache-size:
     description: "Compressed object size in bytes"
+branding:
+  icon: archive
+  color: blue
+
 runs:
   using: node24
   main: ../dist/restore.js
