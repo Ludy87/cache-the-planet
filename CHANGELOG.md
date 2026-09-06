@@ -8,6 +8,19 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.4.1](https://github.com/Ludy87/cache-the-planet/compare/v1.4.0...v1.4.1) (2026-09-06)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** use self-repository action syntax ([c5c8d0f](https://github.com/Ludy87/cache-the-planet/commit/c5c8d0fd5d455b1deb54c7618a2a7e12b59f1c15))
+* **ci:** use self-repository action syntax ([#98](https://github.com/Ludy87/cache-the-planet/issues/98)) ([ecff773](https://github.com/Ludy87/cache-the-planet/commit/ecff773705093013be23991b54d08a6bb6f02bd7))
+
+
+### 📚 Documentation
+
+* add cache scope examples ([#95](https://github.com/Ludy87/cache-the-planet/issues/95)) ([92a4971](https://github.com/Ludy87/cache-the-planet/commit/92a49719ad27bac24c19b92a8076914f304f9d62))
+
 ## [1.4.0](https://github.com/Ludy87/cache-the-planet/compare/v1.3.2...v1.4.0) (2026-09-06)
 
 
