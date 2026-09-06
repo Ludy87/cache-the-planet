@@ -227,6 +227,40 @@ test("GitHub API GET requests have bounded retries", async () => {
   }
 });
 
+test("manifest reads are deduplicated but fresh reads bypass the cache", async () => {
+  const originalFetch = global.fetch;
+  const previousToken = process.env.GITHUB_TOKEN;
+  const previousInputToken = process.env.INPUT_TOKEN;
+  let calls = 0;
+  try {
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.INPUT_TOKEN;
+    global.fetch = async () => {
+      calls += 1;
+      return new Response(
+        JSON.stringify({
+          sha: `sha-${calls}`,
+          content: Buffer.from(
+            JSON.stringify({ schema_version: 1, references: {} }),
+          ).toString("base64"),
+        }),
+        { status: 200 },
+      );
+    };
+    await common.refs("owner/manifest-cache-test");
+    await common.refs("owner/manifest-cache-test");
+    assert.equal(calls, 1);
+    await common.refs("owner/manifest-cache-test", { fresh: true });
+    assert.equal(calls, 2);
+  } finally {
+    global.fetch = originalFetch;
+    if (previousToken === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = previousToken;
+    if (previousInputToken === undefined) delete process.env.INPUT_TOKEN;
+    else process.env.INPUT_TOKEN = previousInputToken;
+  }
+});
+
 test("artifact publisher correlates workflow, repository, PR and head SHA", () => {
   const event = {
     workflow_run: {

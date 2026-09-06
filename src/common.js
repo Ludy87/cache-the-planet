@@ -12,6 +12,7 @@ let githubClientPromise;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
+const manifestCache = new Map();
 const manifestLocks = new Map();
 
 function parsePositiveSafeInteger(value, name, fallback) {
@@ -1458,20 +1459,40 @@ async function manifest(repository) {
   };
 }
 
-async function refs(repository) {
-  try {
-    return await manifest(repository);
-  } catch (error) {
-    if (error.status !== 404) throw error;
-    return { json: { schema_version: 1, references: {} }, sha: null };
+async function refs(repository, { fresh = false } = {}) {
+  if (!fresh && manifestCache.has(repository)) {
+    return manifestCache.get(repository);
   }
+  const pending = (async () => {
+    try {
+      return await manifest(repository);
+    } catch (error) {
+      if (error.status !== 404) throw error;
+      return { json: { schema_version: 1, references: {} }, sha: null };
+    }
+  })();
+  manifestCache.set(repository, pending);
+  try {
+    return await pending;
+  } catch (error) {
+    if (manifestCache.get(repository) === pending)
+      manifestCache.delete(repository);
+    throw error;
+  }
+}
+
+function invalidateManifestCache(repository) {
+  manifestCache.delete(repository);
 }
 
 async function updateManifestUnlocked(repository, message, update) {
   const maxAttempts = 12;
   const branch = manifestBranch();
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const current = await refs(repository);
+    // A compare-and-swap update must never use the read cache. This also
+    // ensures a retry observes the version that caused the conflict.
+    invalidateManifestCache(repository);
+    const current = await refs(repository, { fresh: true });
     if (!update(current.json)) return current.json;
     try {
       await gh(`/repos/${repository}/contents/manifests/references-v1.json`, {
@@ -1486,6 +1507,7 @@ async function updateManifestUnlocked(repository, message, update) {
           branch,
         }),
       });
+      invalidateManifestCache(repository);
       return current.json;
     } catch (error) {
       // GitHub also uses 409 for protected-branch/ruleset violations. Those
@@ -1494,6 +1516,7 @@ async function updateManifestUnlocked(repository, message, update) {
       const isManifestConflict =
         error.status === 409 && /\bconflict\b/i.test(error.message || "");
       if (!isManifestConflict || attempt === maxAttempts - 1) throw error;
+      invalidateManifestCache(repository);
       const delay =
         Math.min(1000 * 2 ** attempt, 10000) + Math.floor(Math.random() * 250);
       log(

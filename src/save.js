@@ -16,18 +16,20 @@ async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
       .filter(Boolean),
   );
   const { assets } = await c.assets(repository);
+  let deleted = false;
   for (const asset of assets) {
     if (!c.assetMatchesKeyCombination(asset.name, key)) continue;
     const hash = c.hashFromAssetName(asset.name);
     if (!hash || hash === keepHash || liveHashes.has(hash)) continue;
     try {
       await c.deleteObject(repository, hash, false);
+      deleted = true;
       c.log(`removed duplicate cache asset: key=${key}; content-hash=${hash}`);
     } catch (error) {
       c.log(`duplicate cache asset could not be deleted: ${error.message}`);
     }
   }
-  c.invalidateRepositoryCache(repository);
+  if (deleted) c.invalidateRepositoryCache(repository);
 }
 
 async function replaceOlderReferences(repository, key) {
