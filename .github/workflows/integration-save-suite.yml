@@ -87,6 +87,7 @@ jobs:
       contents: read
 
   build-dist-trusted:
+    needs: [test]
     if: ${{ github.event_name != 'pull_request' }}
     uses: ./.github/workflows/build-dist.yml
     with:
