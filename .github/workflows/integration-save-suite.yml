@@ -76,6 +76,12 @@ jobs:
 
       - name: Run integration tests
         run: bash tests/run.sh
+
+  demo:
+    needs: [test]
+    uses: ./.github/workflows/cache-action-demo.yml
+    permissions:
+      contents: write
       
   build-dist-pr:
     needs: [test]

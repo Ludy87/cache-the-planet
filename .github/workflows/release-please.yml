@@ -6,17 +6,20 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/release-please.yml'
-      - '.release-please-manifest.json'
-      - 'action.yml'
-      - 'gc/**'
-      - 'package-lock.json'
-      - 'package.json'
-      - 'pr-cleanup/**'
-      - 'release-please-config.json'
-      - 'save/**'
-      - 'scripts/**'
-      - 'src/**'
+      - ".github/workflows/release-please.yml"
+      - ".release-please-manifest.json"
+      - "action.yml"
+      - "gc/**"
+      - "package-lock.json"
+      - "package.json"
+      - "pr-cleanup/**"
+      - "release-please-config.json"
+      - "save/**"
+      - "scripts/**"
+      - "src/**"
+
+permissions:
+  contents: read
 
 concurrency:
   # Release Please creates/updates release metadata and must not race with

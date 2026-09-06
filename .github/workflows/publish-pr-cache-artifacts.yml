@@ -6,6 +6,9 @@ on:
     workflows: [Cache integration save suite]
     types: [completed]
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     if: >-
