@@ -78,6 +78,10 @@ inputs:
     description: "Restore without saving in the automatic post-step"
     required: false
     default: "false"
+  restore-only:
+    description: "Restore the cache without saving in the automatic post-step"
+    required: false
+    default: "false"
 outputs:
   cache-hit:
     description: "true when an exact key was restored"

@@ -88,7 +88,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
   try {
     const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
-    const readOnly = String(c.input("read-only")).toLowerCase() === "true";
+    const readOnly =
+      String(c.input("read-only")).toLowerCase() === "true" ||
+      String(c.input("restore-only")).toLowerCase() === "true";
     const setOutput = c.setOutput;
     setOutput("is_fork", isFork ? "true" : "false");
     setOutput("read_only", isFork || readOnly ? "true" : "false");
@@ -96,8 +98,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.input("scope", "auto").trim().toLowerCase();
     if (readOnly) {
-      saveSummary("SKIPPED", { Reason: "read-only is enabled" });
-      c.log("cache save skipped because read-only is enabled");
+      saveSummary("SKIPPED", { Reason: "restore-only is enabled" });
+      c.log("cache save skipped because restore-only is enabled");
       return;
     }
     if (isFork) {
