@@ -79,10 +79,12 @@ jobs:
           echo "Dockerfile and context hash: $FILES_HASH"
 
       - name: Restore Docker cache
+        id: restore
         uses: ./
         with:
           cache-name: docker
           scope: auto
+          save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: 2
@@ -90,7 +92,6 @@ jobs:
           restore-keys: |
             linux-x64/
           path: examples/docker-cache/.cache/docker-buildx
-          strict: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
@@ -112,25 +113,8 @@ jobs:
           rm -rf examples/docker-cache/.cache/docker-buildx
           mv examples/docker-cache/.cache/docker-buildx-new examples/docker-cache/.cache/docker-buildx
 
-      - name: Save Docker cache asset
-        # if: ${{ github.event.pull_request.head.repo.full_name == github.repository && success() }}
-        if: ${{ success() }}
-        id: save
-        uses: ./save
-        with:
-          cache-name: docker
-          # auto saves an isolated PR cache on pull requests and a trusted
-          # default-branch cache on main; the action creates the shared alias
-          # only from the default branch when appropriate.
-          scope: shared
-          key: ${{ needs.hash_pr.outputs.files_hash }}
-          version: 2
-          path: examples/docker-cache/.cache/docker-buildx
-          strict: false
-          allow-pr-cache: true
-
       - name: Upload Docker cache artifact for trusted publisher
-        if: ${{ (steps.save.outputs.is-fork == 'true' || steps.save.outputs.read-only == 'true') && success() }}
+        if: ${{ (steps.restore.outputs.is-fork == 'true' || steps.restore.outputs.read-only == 'true') && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-docker-${{ needs.hash_pr.outputs.files_hash }}-v2
