@@ -6,6 +6,27 @@ const path = require("node:path");
 const test = require("node:test");
 
 const common = require("../src/common");
+
+test("restore rejects symlinked workspace components", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-restore-link-"));
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "cache-restore-outside-"));
+  const link = path.join(workspace, "cache");
+  try {
+    try {
+      fs.symlinkSync(outside, link, "junction");
+    } catch (error) {
+      if (error.code === "EPERM" || error.code === "EACCES") return;
+      throw error;
+    }
+    assert.throws(
+      () => common.assertSafeRestoreWorkspace(workspace, ["cache"]),
+      /symlink or junction/,
+    );
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+    fs.rmSync(outside, { recursive: true, force: true });
+  }
+});
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {

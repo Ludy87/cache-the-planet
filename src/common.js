@@ -1773,8 +1773,36 @@ function assertArchiveMatchesRestorePaths(names, paths) {
   }
 }
 
+function assertSafeRestoreWorkspace(workspace, paths) {
+  const checkExistingComponents = (target, label) => {
+    const resolved = path.resolve(target);
+    const parsed = path.parse(resolved);
+    let current = parsed.root;
+    for (const component of resolved.slice(parsed.root.length).split(path.sep)) {
+      if (!component) continue;
+      current = path.join(current, component);
+      let stat;
+      try {
+        stat = fs.lstatSync(current);
+      } catch (error) {
+        if (error.code === "ENOENT") break;
+        throw new Error(`could not inspect restore path ${label}: ${error.message}`);
+      }
+      if (stat.isSymbolicLink()) {
+        throw new Error(`restore path contains a symlink or junction: ${label}`);
+      }
+    }
+  };
+
+  checkExistingComponents(workspace, workspace);
+  for (const restorePath of paths) {
+    checkExistingComponents(path.resolve(workspace, restorePath), restorePath);
+  }
+}
+
 async function extract(file, paths = restorePaths()) {
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+  assertSafeRestoreWorkspace(workspace, paths);
   if (fs.statSync(file).size > maxCompressedBytes) {
     throw new Error("cache archive exceeds the compressed size limit");
   }
@@ -1871,4 +1899,5 @@ module.exports = {
   manifestWriteGuard,
   download,
   extract,
+  assertSafeRestoreWorkspace,
 };
