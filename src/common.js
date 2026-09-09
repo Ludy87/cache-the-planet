@@ -1282,7 +1282,12 @@ function inspectTar(tarFile) {
   const tarSize = fs.statSync(tarFile).size;
   if (tarSize > maxTarBytes)
     throw new Error("cache archive exceeds the uncompressed size limit");
-  const listing = cp.spawnSync("tar", ["-tf", tarFile], { encoding: "utf8" });
+  const tarOptions = { encoding: "utf8", env: { ...process.env, LC_ALL: "C" } };
+  const listing = cp.spawnSync(
+    "tar",
+    ["--quoting-style=escape", "-tf", tarFile],
+    tarOptions,
+  );
   if (listing.status) {
     throw new Error(
       `created tar archive is invalid: ${listing.stderr || "tar listing failed"}`,
@@ -1304,7 +1309,11 @@ function inspectTar(tarFile) {
   ) {
     throw new Error("cache archive contains an unsafe path");
   }
-  const details = cp.spawnSync("tar", ["-tvf", tarFile], { encoding: "utf8" });
+  const details = cp.spawnSync(
+    "tar",
+    ["--quoting-style=escape", "-tvf", tarFile],
+    tarOptions,
+  );
   if (details.status)
     throw new Error(
       `cache archive metadata is invalid: ${details.stderr || "tar listing failed"}`,
@@ -1820,10 +1829,14 @@ async function extract(file, paths = restorePaths()) {
         tarFile,
         "--directory",
         workspace,
+        "--keep-directory-symlink",
         "--no-same-owner",
         "--no-same-permissions",
       ],
-      { stdio: ["ignore", "inherit", "inherit"] },
+      {
+        stdio: ["ignore", "inherit", "inherit"],
+        env: { ...process.env, LC_ALL: "C" },
+      },
     );
     if (extraction.status) throw new Error("tar extraction failed");
   } finally {

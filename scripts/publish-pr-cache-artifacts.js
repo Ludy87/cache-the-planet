@@ -156,6 +156,32 @@ function validateArtifactManifest(directory) {
   return value;
 }
 
+async function validateSourceArtifacts(runId, names, token, repository) {
+  if (!/^\d+$/.test(String(runId)) || !token)
+    throw new Error("workflow run ID and artifact token are required");
+  const response = await fetch(
+    `https://api.github.com/repos/${repository}/actions/runs/${encodeURIComponent(runId)}/artifacts?per_page=100`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      signal: AbortSignal.timeout(30000),
+    },
+  );
+  if (!response.ok) throw new Error(`artifact metadata lookup failed: ${response.status}`);
+  const metadata = await response.json();
+  const byName = new Map(
+    (metadata.artifacts || []).map((artifact) => [artifact.name, artifact]),
+  );
+  for (const name of names) {
+    const artifact = byName.get(name);
+    if (!artifact || artifact.expired || artifact.workflow_run?.id !== Number(runId))
+      throw new Error(`artifact is not bound to the trusted workflow run: ${name}`);
+  }
+}
+
 async function main() {
   const root =
     process.env.PR_CACHE_ARTIFACTS_DIR ||
@@ -184,6 +210,17 @@ async function main() {
   );
   const number = expectedNumber || String(run.pull_requests[0].number);
   const expectedHeadSha = process.env.EXPECTED_HEAD_SHA || "";
+  const artifactNames = fs
+    .readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((name) => name.startsWith(`cache-the-planet-pr-${number}-`));
+  await validateSourceArtifacts(
+    process.env.ARTIFACT_RUN_ID,
+    artifactNames,
+    process.env.SOURCE_ARTIFACT_TOKEN,
+    repository,
+  );
   const pr =
     Array.isArray(run.pull_requests) && run.pull_requests.length === 1
       ? validatePullRequestIdentity(run, number, expectedHeadSha)
@@ -265,6 +302,7 @@ module.exports = {
   validateArtifactName,
   validateArtifactContents,
   validateArtifactManifest,
+  validateSourceArtifacts,
   main,
 };
 if (require.main === module)

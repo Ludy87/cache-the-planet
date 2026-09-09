@@ -106,6 +106,8 @@ jobs:
         if: ${{ steps.pr.outputs.number != '' }}
         env:
           GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
+          SOURCE_ARTIFACT_TOKEN: ${{ github.token }}
+          ARTIFACT_RUN_ID: ${{ github.event.workflow_run.id }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           EXPECTED_WORKFLOW: Cache integration save suite
