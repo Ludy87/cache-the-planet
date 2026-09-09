@@ -223,6 +223,47 @@ und `cache-size`. Save liefert `is-fork`, `read-only`, `content-hash`,
 
 `cache-size` bezeichnet die Größe der tatsächlich gespeicherten Objektdatei.
 
+### Schalter im Detail
+
+| Schalter | Gültige Werte / Standard | Bedeutung |
+| --- | --- | --- |
+| `repository` | `owner/name`; Standard: `GITHUB_REPOSITORY` | Repository, in dessen Release `cache-v1` und Manifest gespeichert werden. |
+| `key` | logischer Schlüssel, erforderlich | Abhängigkeitsschlüssel, aus dem zusammen mit Plattform, Version und Scope der vollständige Cache-Key entsteht. |
+| `cache-name` | 1–32 Zeichen aus Buchstaben, Zahlen, `-`, `_`; erforderlich | Trennt verschiedene Cache-Arten voneinander, zum Beispiel `npm` oder `gradle`. |
+| `scope` | `auto`, `trusted`, `untrusted`, `shared`; Standard: `auto` | Bestimmt den Namespace. `auto` verwendet Trusted auf Main/Tags und Untrusted in PRs. |
+| `save-scope` | dieselben Scope-Werte; Standard: `scope` | Überschreibt nur den Scope beim Speichern im Post-Schritt der Root-Action. |
+| `os` / `arch` | Text; Standard: Runner-Werte | Macht Plattform- und Architektur-Caches unterscheidbar; leere Werte werden zu `unknown`. |
+| `version` | positive Zahl; Standard: `1` | Version des Cache-Formats und Bestandteil des Keys. Bei inkompatiblen Änderungen erhöhen. |
+| `restore-keys` | Zeilenweise Prefixe; Standard: leer | Fallback-Suche nach dem exakten Key. Nur validierte Namespaces sind erlaubt. |
+| `path` | Zeilenweise Workspace-Pfade; erforderlich | Dateien oder Verzeichnisse, die gespeichert beziehungsweise wiederhergestellt werden. |
+| `token` | GitHub-Token | Token für Contents- und Release-API; ohne Angabe wird `GITHUB_TOKEN` verwendet. |
+| `encryption-key` | Secret/Passphrase; Standard: leer | Aktiviert AES-256-GCM. Derselbe Schlüssel muss bei Save und Restore verwendet werden und darf nicht an Forks gelangen. |
+| `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; sonst gilt ein beschädigtes Asset als Cache-Miss. |
+| `config-file` | Workspace-relative JSON-Datei | Zusätzliche Konfiguration für Repository, Scope, Version, Limits und Allowlists. |
+| `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der `manifests/references-v1.json` enthält. |
+| `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |
+| `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
+| `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |
+| `exclude` | Zeilenweise Ausschlussmuster | Schließt Dateien beim Speichern aus. Keine Secrets als Ersatz für enge `path`-Angaben behandeln. |
+| `exclude-path` | Zeilenweise Workspace-Dateien | Liest zusätzliche Ausschlussmuster aus vorhandenen Dateien innerhalb des Workspace. |
+| `allow-pr-cache` | `true`/`false`; Standard: `true` | Erlaubt das Speichern isolierter Untrusted-PR-Caches. Forks bleiben schreibgeschützt. |
+
+Für die administrative `gc`-Action gelten zusätzlich diese Schalter:
+
+| Schalter | Gültige Werte / Standard | Bedeutung |
+| --- | --- | --- |
+| `mode` | `orphan`, `expired`, `object`, `all`; Standard: `orphan` | Wählt die Bereinigungsstrategie. `all` entfernt alle Cache-Assets und Referenzen. |
+| `object` | SHA-256 oder Asset-Dateiname | Zielobjekt für `mode: object`; ohne diesen Wert ist der Modus ungültig. |
+| `dry-run` | `true`/`false`; Standard: `true` | Simuliert Löschungen. Nur `false` erlaubt tatsächliche Änderungen. |
+| `grace-days` | positive Zahl; Standard: `7` | Mindestalter nicht referenzierter Orphan-Assets. |
+| `untrusted-ttl-hours` | positive Zahl; Standard: `24` | Lebensdauer von Untrusted-PR-Referenzen im Modus `expired`. |
+| `expire-all-untrusted` | `true`/`false`; Standard: `false` | Läuft alle Untrusted-Referenzen ab, unabhängig vom Alter. |
+| `delete-shared` | `true`/`false`; Standard: `false` | Bezieht Shared-Referenzen nur in einem ausdrücklich manuellen `expired`-Lauf ein. |
+
+`pr-cleanup` verwendet `repository`, `token`, `pr-repository` und `pr-number`.
+Es löscht ausschließlich den isolierten `untrusted`-Namespace der angegebenen
+geschlossenen Pull Request.
+
 ## Sicherheitsregeln
 
 Cache-Inhalte sind untrusted input. Keine Secrets, Private Keys, `.env`-,
@@ -288,6 +329,24 @@ Verfügung. Garbage Collection startet standardmäßig als Dry-Run:
     mode: orphan
     dry-run: true
 ```
+
+Die GC-Action unterstützt die Modi `orphan`, `expired`, `object` und `all`.
+`grace-days` legt für `orphan` fest, wie viele Tage ein nicht referenziertes
+Asset mindestens alt sein muss; der Standard ist `7`. `untrusted-ttl-hours`
+legt für `expired` die Lebensdauer von Untrusted-PR-Referenzen fest; der
+Standard ist `24`. `object` erwartet einen vollständigen
+`sha256:<64-hex>`-Hash oder einen Asset-Dateinamen. `dry-run` ist standardmäßig
+`true`; für Löschungen muss ausdrücklich `false` gesetzt werden. `all` ist
+besonders destruktiv.
+
+Die administrativen Inputs sind `mode`, `object`, `dry-run`, `grace-days`,
+`untrusted-ttl-hours`, `expire-all-untrusted` und `delete-shared`.
+`expire-all-untrusted` entfernt alle Untrusted-Referenzen; `delete-shared` darf
+nur in einem ausdrücklich manuellen `expired`-Lauf verwendet werden.
+
+Für direkte Aufrufe des GC-Bundles können dieselben Werte über `GC_MODE`,
+`GC_OBJECT`, `DRY_RUN`, `GRACE_DAYS`, `UNTRUSTED_TTL_HOURS`,
+`GC_EXPIRE_ALL_UNTRUSTED` und `GC_DELETE_SHARED` gesetzt werden.
 
 `gc` unterstützt die Modi `orphan`, `expired`, `object` und `all`. Der
 geplante Cleanup-Workflow verwendet `expired`, entfernt nach 24 Stunden

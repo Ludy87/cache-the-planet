@@ -47,6 +47,35 @@ Die zstd-Kompressionsstufe kann über `compression-level`,
 werden. Die Priorität ist Action-Input, Umgebungsvariable, JSON-Konfiguration;
 ohne Angabe wird die Stufe `3` verwendet.
 
+## Konfigurationsschalter und Prioritäten
+
+Die JSON-Datei ist optional und muss innerhalb von `GITHUB_WORKSPACE` liegen.
+Für die allgemeinen Einstellungen gilt diese Reihenfolge (höchste Priorität
+zuerst): Action-Input, passende Umgebungsvariable, JSON-Konfiguration,
+Standardwert.
+
+| JSON-Feld | Umgebungsvariable | Zweck | Standard |
+| --- | --- | --- | --- |
+| `cache_repository` | `CACHE_REPOSITORY` | Ziel-Repository für Manifest und Release-Assets | `GITHUB_REPOSITORY` |
+| `manifest_branch` | `CACHE_MANIFEST_BRANCH` | Branch der Manifestdatei | `cache-data` |
+| `scope` | — | Standard-Namespace für Restore und Save | `auto` |
+| `version` | — | Cache-Formatversion | `1` |
+| `compression_level` | `CACHE_COMPRESSION_LEVEL` | zstd-Kompressionsstufe | `3` |
+| `security.max_compressed_bytes` | `CACHE_MAX_COMPRESSED_BYTES` | Maximale komprimierte Objektgröße | konfigurationsabhängig |
+| `security.max_tar_bytes` | `CACHE_MAX_TAR_BYTES` | Maximale dekomprimierte Tar-Größe | konfigurationsabhängig |
+| `security.max_entries` | `CACHE_MAX_ENTRIES` | Maximale Anzahl von Archiv-Einträgen | konfigurationsabhängig |
+| `security.max_archive_path_length` | `CACHE_MAX_ARCHIVE_PATH_LENGTH` | Maximale Länge eines Archivpfads | `4096` |
+| `security.allowed_cache_names` | `CACHE_ALLOWED_CACHE_NAMES` | Kommagetrennte Cache-Namen-Allowlist | leer = alle gültigen Namen |
+| `security.max_logical_key_length` | `CACHE_MAX_LOGICAL_KEY_LENGTH` | Maximale Länge des logischen Keys | `512` |
+| `security.max_logical_key_components` | `CACHE_MAX_LOGICAL_KEY_COMPONENTS` | Maximale Anzahl von Key-Komponenten | `16` |
+| `security.max_manifest_references` | `CACHE_MAX_MANIFEST_REFERENCES` | Maximale Manifest-Referenzen | `100000` |
+| `security.max_manifest_writes_per_hour` | `CACHE_MAX_MANIFEST_WRITES_PER_HOUR` | Maximale Manifest-Schreibvorgänge pro Stunde | `1000` |
+
+Alle Größen-, Zähler- und Längenlimits müssen positive sichere Ganzzahlen
+sein. Ungültige, negative oder übergroße Werte werden abgelehnt. Ein leerer
+Wert bedeutet bei der Cache-Namen-Allowlist, dass keine zusätzliche Allowlist
+aktiviert ist; er deaktiviert nicht die syntaktische Validierung.
+
 Das Sicherheitsfeld `security.max_archive_path_length` begrenzt die maximale
 Länge eines einzelnen Archivpfads. Der Standardwert ist `4096`; die
 Umgebungsvariable `CACHE_MAX_ARCHIVE_PATH_LENGTH` überschreibt die JSON-
@@ -144,3 +173,16 @@ Beim Restore wird zuerst der Hash des heruntergeladenen Assets geprüft. Danach
 wird das Archiv bei Bedarf entschlüsselt, dekomprimiert, auf Pfadüberquerungen,
 Links und spezielle Dateitypen geprüft und erst anschließend in den Workspace
 entpackt.
+
+## Restore- und Save-Lebenszyklus
+
+Die Root-Action führt Restore als Hauptschritt und Save als Post-Schritt aus.
+Der Post-Schritt läuft nur nach einem erfolgreichen Workflow-Schritt und kann
+mit `restore-only: true` abgeschaltet werden. Die separate `restore`-Action
+führt nur Restore aus; die separate `save`-Action führt nur Save aus.
+
+Ein Save mit bereits vorhandener Referenz oder bereits vorhandenem Objekt wird
+nicht unnötig erneut hochgeladen. Der Asset-Hash wird über die tatsächlich
+gespeicherten Bytes gebildet, also über die komprimierten und gegebenenfalls
+verschlüsselten Bytes. Ein Cache-Hit darf deshalb nicht als Herkunfts- oder
+Vertrauensnachweis interpretiert werden.
