@@ -50,6 +50,11 @@ ohne Angabe wird die Stufe `3` verwendet.
 ## Konfigurationsschalter und Prioritäten
 
 Die JSON-Datei ist optional und muss innerhalb von `GITHUB_WORKSPACE` liegen.
+Wird keine Datei über den Action-Input `config-file` oder die Variable
+`CACHE_CONFIG_FILE` angegeben, sucht die Action automatisch nach
+`.cache-the-planet.json`: zuerst direkt im Workspace-Root, anschließend
+rekursiv im Verzeichnis `.github`. Die Datei im Root hat Vorrang vor einer
+Datei unter `.github`; ein explizit angegebener Pfad hat Vorrang vor beiden.
 Für die allgemeinen Einstellungen gilt diese Reihenfolge (höchste Priorität
 zuerst): Action-Input, passende Umgebungsvariable, JSON-Konfiguration,
 Standardwert.

@@ -301,6 +301,13 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
 }
 ```
 
+Wird `config-file` beziehungsweise `CACHE_CONFIG_FILE` nicht gesetzt, sucht
+die Action automatisch zuerst `.cache-the-planet.json` im Projekt-Root und
+danach rekursiv unter `.github/`. Existiert die Datei an mehreren Stellen,
+hat die Root-Datei Vorrang; eine ausdrücklich angegebene Datei hat immer
+Vorrang vor der automatischen Suche. Alle gefundenen Dateien müssen innerhalb
+des Workspace liegen.
+
 `cache_repository` legt das Ziel-Repository fest. `manifest_branch` legt den
 Branch für das Cache-Manifest fest. Ein gesetztes
 `CACHE_MANIFEST_BRANCH` oder der Action-Input `manifest-branch` überschreibt

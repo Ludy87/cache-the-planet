@@ -716,6 +716,41 @@ test("cache configuration allows, rejects, and defaults allowlists safely", () =
   }
 });
 
+test("automatically loads the root config before a config under .github", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-search-"));
+  try {
+    const nestedDirectory = path.join(workspace, ".github", "configs");
+    fs.mkdirSync(nestedDirectory, { recursive: true });
+    fs.writeFileSync(
+      path.join(nestedDirectory, ".cache-the-planet.json"),
+      JSON.stringify({ security: { allowed_cache_names: ["nested"] } }),
+    );
+    const run = (cacheName) => childProcess.spawnSync(
+      process.execPath,
+      ["-e", `
+        process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
+        process.env.RUNNER_OS = "Linux";
+        process.env.RUNNER_ARCH = "X64";
+        process.env["INPUT_CACHE-NAME"] = ${JSON.stringify(cacheName)};
+        const { cacheName: resolveCacheName } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
+        process.stdout.write(resolveCacheName());
+      `],
+      { env: process.env, encoding: "utf8" },
+    );
+    const nested = run("nested");
+    assert.equal(nested.status, 0);
+
+    fs.writeFileSync(
+      path.join(workspace, ".cache-the-planet.json"),
+      JSON.stringify({ security: { allowed_cache_names: ["root"] } }),
+    );
+    const root = run("root");
+    assert.equal(root.status, 0);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("manifest branch can be configured in JSON with environment override", () => {
   const defaultBranch = runManifestBranchWithConfig({});
   assert.equal(defaultBranch.status, 0);

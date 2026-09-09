@@ -36,12 +36,17 @@ Administratoren können die Grenzen mit `CACHE_MAX_MANIFEST_REFERENCES` und
 
 Alternativ können diese Einstellungen in einer JSON-Datei im Workspace liegen.
 Der Pfad wird mit `config-file` oder `CACHE_CONFIG_FILE` angegeben;
-Umgebungsvariablen überschreiben Werte aus der Datei:
+Umgebungsvariablen überschreiben Werte aus der Datei. Wird kein Pfad angegeben,
+sucht die Action zuerst `.cache-the-planet.json` im Workspace-Root und danach
+rekursiv unter `.github`:
 
 ```yaml
 with:
   config-file: .cache-the-planet.json
 ```
+
+Ein expliziter Pfad über `config-file` oder `CACHE_CONFIG_FILE` hat Vorrang
+vor der automatischen Suche. Die Datei muss innerhalb des Workspace liegen.
 
 Ein Beispiel befindet sich in
 `.cache-the-planet.json.example`. Die Konfigurationsdatei darf nicht außerhalb

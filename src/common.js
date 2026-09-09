@@ -70,6 +70,31 @@ function hasInput(name) {
   return Object.prototype.hasOwnProperty.call(process.env, variable);
 }
 
+function findDefaultConfigFile(workspace) {
+  const rootConfig = path.join(workspace, ".cache-the-planet.json");
+  if (fs.existsSync(rootConfig)) return rootConfig;
+  const githubDirectory = path.join(workspace, ".github");
+  const visit = (directory) => {
+    let entries;
+    try {
+      entries = fs.readdirSync(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isFile() && entry.name === ".cache-the-planet.json") {
+        return entryPath;
+      } else if (entry.isDirectory()) {
+        const result = visit(entryPath);
+        if (result) return result;
+      }
+    }
+    return null;
+  };
+  return visit(githubDirectory);
+}
+
 function token() {
   // ACTIONS_RUNTIME_TOKEN is for the Actions service, not the GitHub REST API.
   return input("token") || process.env.GITHUB_TOKEN;
@@ -92,10 +117,12 @@ function authorizationHeaders() {
 
 function configuration() {
   if (configurationCache) return configurationCache;
-  const configuredFile = input("config-file") || process.env.CACHE_CONFIG_FILE;
-  if (!configuredFile) return (configurationCache = {});
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-  const file = path.resolve(workspace, configuredFile);
+  const configuredFile = input("config-file") || process.env.CACHE_CONFIG_FILE;
+  const file = configuredFile
+    ? path.resolve(workspace, configuredFile)
+    : findDefaultConfigFile(workspace);
+  if (!file) return (configurationCache = {});
   const relative = path.relative(workspace, file);
   if (
     path.isAbsolute(relative) ||
