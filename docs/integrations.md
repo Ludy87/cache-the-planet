@@ -13,8 +13,36 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 | Gradle | `gradle-java17` | `.cache/gradle` | `actions/setup-java`: `cache` nicht setzen |
 | Task | `task` | `.cache/task` | Keine native Cache-Option vorhanden |
 | Docker/BuildKit | `docker` | `.cache/buildx` | `docker/setup-qemu-action`: `cache-image: false`; BuildKit-Cache separat konfigurieren |
+| Rust/Cargo | `cargo` | `.cache/cargo` | `dtolnay/rust-toolchain`: keine native Cache-Option; `CARGO_HOME` setzen |
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
+
+### Rust und Cargo
+
+`dtolnay/rust-toolchain` installiert die Rust-Toolchain, verwaltet aber nicht
+den Cargo-Cache. Setze `CARGO_HOME` auf ein Workspace-Verzeichnis und cache
+dieses Verzeichnis mit einem Key aus `Cargo.lock`:
+
+```yaml
+- uses: dtolnay/rust-toolchain@stable
+
+- name: Configure Cargo cache
+  run: echo "CARGO_HOME=$GITHUB_WORKSPACE/.cache/cargo" >> "$GITHUB_ENV"
+
+- uses: Ludy87/cache-the-planet@v1
+  with:
+    cache-name: cargo
+    key: ${{ hashFiles('Cargo.lock') }}
+    path: .cache/cargo
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+
+- run: cargo fetch --locked
+```
+
+Der Cache enthält primär Cargo-Registry- und Git-Downloads. Das Rust-
+`target`-Verzeichnis ist nicht automatisch enthalten, weil es stark von
+Toolchain, Betriebssystem, Architektur und Compilerflags abhängt. Wenn es
+bewusst gecached wird, muss es einen eigenen, vollständigen Key erhalten.
 
 ## Scope-Muster für Integrationen
 
