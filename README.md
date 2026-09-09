@@ -308,7 +308,7 @@ geschlossenen Pull Request. Details und Sicherheitsgrenzen stehen in
 - Bei `403` benötigt das Token `Contents: Read and write` im Cache-Repository.
 - Bei einem Cache-Miss Lockfile-Hash, Scope, Plattform, Version und
   `matched-key` prüfen.
-- Auf dem Runner müssen Node.js 22 oder höher, GNU `tar` und `zstd` vorhanden
+- Auf dem Runner müssen Node.js 24 oder höher, GNU `tar` und `zstd` vorhanden
   sein. CI verwendet Node.js 24.
 - Bei einem Asset-Konflikt ist HTTP 422 bei identischem Asset-Namen ein normaler
   Deduplication-Fall.
