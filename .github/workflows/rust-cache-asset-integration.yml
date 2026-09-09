@@ -18,6 +18,9 @@ on:
 
 env:
   CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+  FILES_TO_HASH: |
+    examples/rust-cache/Cargo.toml
+    examples/rust-cache/Cargo.lock
 
 permissions:
   contents: read
@@ -26,25 +29,34 @@ jobs:
   hash_pr:
     name: Hash Rust files
     runs-on: ubuntu-latest
-    permissions: { contents: read }
+    timeout-minutes: 5
+    permissions:
+      contents: read
     outputs:
       files_hash: ${{ steps.hash.outputs.files_hash }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - id: hash
+
+      - name: Hash Rust files
+        id: hash
         env:
-          FILES_HASH: ${{ hashFiles('examples/rust-cache/Cargo.toml', 'examples/rust-cache/Cargo.lock') }}
-        run: echo "files_hash=$FILES_HASH" >> "$GITHUB_OUTPUT"
+          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
+        run: |
+          HASH="$FILES_HASH"
+          echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
 
   save-cache:
     if: ${{ inputs.save-cache }}
     name: Install and save Rust Cargo cache asset
     needs: hash_pr
     runs-on: ubuntu-latest
-    permissions: { contents: read }
+    timeout-minutes: 5
+    permissions:
+      contents: read
     steps:
       - name: Create trusted token
         if: ${{ github.event_name != 'pull_request' }}
@@ -56,25 +68,34 @@ jobs:
           owner: Ludy87
           repositories: cache-the-planet
           permission-contents: write
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
         with:
           toolchain: stable
+
       - name: Restore Cargo cache
         id: cache
         uses: $/
         with:
           cache-name: cargo
-          key: ${{ needs.hash_pr.outputs.files_hash }}
-          path: .cache/cargo
+          save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
+          key: ${{ needs.hash_pr.outputs.files_hash }}
+          allow-shared-restore: true
+          path: .cache/cargo
           strict: true
+
       - name: Populate Cargo cache
         working-directory: examples/rust-cache
         run: cargo fetch --locked
+
       - name: Upload PR cache artifact
         if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -89,7 +110,7 @@ jobs:
     name: Restore Rust Cargo cache in a fresh job
     needs: [hash_pr]
     runs-on: ubuntu-latest
-    permissions: { contents: read }
+    timeout-minutes: 5
     strategy:
       matrix:
         scope-matrix:
@@ -101,14 +122,20 @@ jobs:
             allow-shared-restore: false
           - scope: shared
             allow-shared-restore: true
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
         with:
           toolchain: stable
+
       - name: Restore Cargo cache - ${{ matrix.scope-matrix.scope }}
         uses: $/
         with:
@@ -116,10 +143,11 @@ jobs:
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: .cache/cargo
-          restore-only: true
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
+          restore-only: true
           strict: true
         continue-on-error: true
+
       - name: Verify Cargo cache offline
         working-directory: examples/rust-cache
         run: cargo fetch --locked --offline
