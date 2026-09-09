@@ -21,7 +21,6 @@ env:
   FILES_TO_HASH: |
     examples/rust-cache/Cargo.toml
     examples/rust-cache/Cargo.lock
-  CACHE_CONFIG_FILE: .cache-the-planet.json
 
 permissions:
   contents: read
