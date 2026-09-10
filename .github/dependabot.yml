@@ -19,3 +19,43 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /examples/docker-cache/
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: cargo
+    directory: /examples/rust-cache/
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: gradle
+    directory: /examples/gradle-cache/
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: maven
+    directory: /examples/java-cache/
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: pip
+    directory: /examples/uv-cache/
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5

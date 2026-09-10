@@ -96,12 +96,21 @@ jobs:
         working-directory: examples/rust-cache
         run: cargo fetch --locked
 
+      - name: Display cache information
+        env:
+          CACHE_IS_FORK: ${{ steps.cache.outputs.is-fork }}
+          CACHE_READ_ONLY: ${{ steps.cache.outputs.read-only }}
+        run: |
+          echo "Fork: $CACHE_IS_FORK"
+          echo "Read-only: $CACHE_READ_ONLY"
+
       - name: Upload PR cache artifact
         if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v1
           path: .cache/cargo
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 
@@ -151,3 +160,4 @@ jobs:
       - name: Verify Cargo cache offline
         working-directory: examples/rust-cache
         run: cargo fetch --locked --offline
+        continue-on-error: true
