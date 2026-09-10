@@ -8,6 +8,43 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.5.0](https://github.com/Ludy87/cache-the-planet/compare/v1.4.1...v1.5.0) (2026-09-10)
+
+
+### 🎉 Features
+
+* add Rust Cargo cache integration ([#104](https://github.com/Ludy87/cache-the-planet/issues/104)) ([e434739](https://github.com/Ludy87/cache-the-planet/commit/e434739b2719bbdb3314c709fb14c2e6e614e38d))
+
+
+### 🐛 Bug Fixes
+
+* allow stylesheet files in cache scans ([#107](https://github.com/Ludy87/cache-the-planet/issues/107)) ([7171fc9](https://github.com/Ludy87/cache-the-planet/commit/7171fc9ee364d7f86d1aa717274aa24c6f18b77f))
+* discover cache configuration automatically ([#105](https://github.com/Ludy87/cache-the-planet/issues/105)) ([e1b34fc](https://github.com/Ludy87/cache-the-planet/commit/e1b34fc09d18ffd691db066788d13d608635c8c4))
+* include hidden files in cache artifacts ([#119](https://github.com/Ludy87/cache-the-planet/issues/119)) ([3e10eb7](https://github.com/Ludy87/cache-the-planet/commit/3e10eb7fed84d1d07e90e0c135a2355842bd34ec))
+* include hidden Gradle cache files ([#118](https://github.com/Ludy87/cache-the-planet/issues/118)) ([8e2936e](https://github.com/Ludy87/cache-the-planet/commit/8e2936e1511a8f8695ca38446e542525509c95ab))
+* pass cache config file to reusable integration workflows ([89b5e76](https://github.com/Ludy87/cache-the-planet/commit/89b5e7624fe654cdb2c3dc2b7b50542674dd4a04))
+* point Dependabot to example manifests ([#113](https://github.com/Ludy87/cache-the-planet/issues/113)) ([5e50f2e](https://github.com/Ludy87/cache-the-planet/commit/5e50f2ed43ab9e3d31ef77ea2928cdff7cb3b2a8))
+* populate rust cache fixture and align docker asset version ([#106](https://github.com/Ludy87/cache-the-planet/issues/106)) ([fc142e6](https://github.com/Ludy87/cache-the-planet/commit/fc142e6875ba090bfc7a8d35716c42336596eabe))
+
+
+### ⚡ Performance
+
+* Ignore generated example targets ([d074ec5](https://github.com/Ludy87/cache-the-planet/commit/d074ec5f94ee53392df1891dcba04d83630df029))
+
+
+### 📚 Documentation
+
+* document action switches and internals ([#103](https://github.com/Ludy87/cache-the-planet/issues/103)) ([db57dff](https://github.com/Ludy87/cache-the-planet/commit/db57dff165cb34f76d392de9eb48fb40bd769f6a))
+
+
+### 🔒 Security
+
+* add trivy repository scan ([#109](https://github.com/Ludy87/cache-the-planet/issues/109)) ([8a912d7](https://github.com/Ludy87/cache-the-planet/commit/8a912d7129ab7dc82a17db07a1d0d7c314d2298a))
+* avoid template injection in cache diagnostics ([#121](https://github.com/Ludy87/cache-the-planet/issues/121)) ([a86a204](https://github.com/Ludy87/cache-the-planet/commit/a86a2048bb058ab8fd3051da0ffc15d60da038b8))
+* harden artifact publishing and restore ([#101](https://github.com/Ludy87/cache-the-planet/issues/101)) ([0effe67](https://github.com/Ludy87/cache-the-planet/commit/0effe674a0166f996f3c9b7d0a9510730cdfd8c9))
+* reject workspace links during restore ([#99](https://github.com/Ludy87/cache-the-planet/issues/99)) ([d93ea0f](https://github.com/Ludy87/cache-the-planet/commit/d93ea0f22cb4ba7e61883fd184517d85d8a9eedd))
+* run Docker example as non-root ([#123](https://github.com/Ludy87/cache-the-planet/issues/123)) ([55fb30a](https://github.com/Ludy87/cache-the-planet/commit/55fb30a9319a6990282996ad5f05b60081b6ac20))
+
 ## [1.4.1](https://github.com/Ludy87/cache-the-planet/compare/v1.4.0...v1.4.1) (2026-09-06)
 
 
