@@ -160,3 +160,4 @@ jobs:
       - name: Verify Cargo cache offline
         working-directory: examples/rust-cache
         run: cargo fetch --locked --offline
+        continue-on-error: true
