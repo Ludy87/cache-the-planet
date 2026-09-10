@@ -119,6 +119,7 @@ jobs:
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-docker-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
           path: examples/docker-cache/.cache/docker-buildx
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 

@@ -110,6 +110,7 @@ jobs:
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-uv-python-3-13-${{ needs.hash_pr.outputs.files_hash }}-v4
           path: .cache/uv
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 

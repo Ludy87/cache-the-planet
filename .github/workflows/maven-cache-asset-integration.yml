@@ -99,6 +99,7 @@ jobs:
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-maven-java17-${{ needs.hash_pr.outputs.files_hash }}-v1
           path: .cache/m2
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 

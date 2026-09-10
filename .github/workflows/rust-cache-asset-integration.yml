@@ -102,6 +102,7 @@ jobs:
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v1
           path: .cache/cargo
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 
