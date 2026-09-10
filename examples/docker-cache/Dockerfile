@@ -3,7 +3,7 @@ FROM docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest AS builder
 RUN test -f /scripts/init.sh
 RUN java -version
 
-FROM alpine:3.22
+FROM alpine:3.24
 
 RUN apk add --no-cache ca-certificates
 
