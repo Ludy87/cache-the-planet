@@ -29,6 +29,16 @@ test("restore rejects symlinked workspace components", () => {
 });
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
+test("security scan allows token-named stylesheet files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-stylesheet-"));
+  try {
+    fs.writeFileSync(path.join(root, "token.css"), "/* package stylesheet */\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
   const configPath = path.join(workspace, ".cache-the-planet.json");
