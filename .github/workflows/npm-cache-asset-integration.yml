@@ -96,9 +96,12 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Display cache information
+        env:
+          CACHE_IS_FORK: ${{ steps.cache.outputs.is-fork }}
+          CACHE_READ_ONLY: ${{ steps.cache.outputs.read-only }}
         run: |
-          echo Fork: "${{ steps.cache.outputs.is-fork }}"
-          echo Read-only: "${{ steps.cache.outputs.read-only }}"
+          echo "Fork: $CACHE_IS_FORK"
+          echo "Read-only: $CACHE_READ_ONLY"
 
       - name: Upload npm cache artifact for trusted publisher
         if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}

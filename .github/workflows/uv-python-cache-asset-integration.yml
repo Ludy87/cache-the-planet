@@ -105,9 +105,12 @@ jobs:
           uv pip install --python .venv/bin/python -r examples/uv-cache/requirements.txt
 
       - name: Display cache information
+        env:
+          CACHE_IS_FORK: ${{ steps.cache.outputs.is-fork }}
+          CACHE_READ_ONLY: ${{ steps.cache.outputs.read-only }}
         run: |
-          echo Fork: "${{ steps.cache.outputs.is-fork }}"
-          echo Read-only: "${{ steps.cache.outputs.read-only }}"
+          echo "Fork: $CACHE_IS_FORK"
+          echo "Read-only: $CACHE_READ_ONLY"
 
       - name: Upload uv Python cache artifact for trusted publisher
         if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
