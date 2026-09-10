@@ -91,10 +91,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 4091095
+    },
+    "shared/Ludy87/cache-the-planet/gradle-java17/linux-x64/1ae0a68b81b9f243828c07322071980b1bf3cc8e630bfade14b37eda51ea020f/v1": {
+      "object": "sha256:eb10e37fac06f424e3fcd86f2ad28ec0f0d756128dc7967cf201b521f5248d63",
+      "updated_at": "2026-09-10T18:20:42.391Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 2684899
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-10T18:00:51.581Z",
-    "writes": 1
+    "writes": 2
   }
 }
