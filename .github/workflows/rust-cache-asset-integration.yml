@@ -75,11 +75,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
-        with:
-          toolchain: stable
-
       - name: Restore Cargo cache
         id: cache
         uses: $/
@@ -91,6 +86,11 @@ jobs:
           allow-shared-restore: true
           path: .cache/cargo
           strict: true
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        with:
+          toolchain: stable
 
       - name: Populate Cargo cache
         working-directory: examples/rust-cache
@@ -140,11 +140,6 @@ jobs:
           ref: main
           persist-credentials: false
 
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
-        with:
-          toolchain: stable
-
       - name: Restore Cargo cache - ${{ matrix.scope-matrix.scope }}
         uses: $/
         with:
@@ -156,6 +151,11 @@ jobs:
           restore-only: true
           strict: true
         continue-on-error: true
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        with:
+          toolchain: stable
 
       - name: Verify Cargo cache offline
         working-directory: examples/rust-cache
