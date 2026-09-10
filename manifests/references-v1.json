@@ -29,33 +29,12 @@
       "created_by": "astragermany-bot[bot]",
       "size": 4033935
     },
-    "untrusted/Ludy87/cache-the-planet/pr-38/uv/linux-x64/bae9d8df1b16edf554b3832ffe0d2d7dd7c79918a241d5db2d2d0f117d7de244/v2": {
-      "object": "sha256:3f0e04b041e17202ceeb0a4556df005e9c956ea3131acd05e56bfa37293665d7",
-      "updated_at": "2026-09-09T16:36:44.742Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 4356242
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-38/uv-python-3-13/linux-x64/bae9d8df1b16edf554b3832ffe0d2d7dd7c79918a241d5db2d2d0f117d7de244/v4": {
-      "object": "sha256:0c59cf20e1c306f82150c2430ca41d6d1190635caf7a8a81b1ab1cc253325510",
-      "updated_at": "2026-09-09T16:36:50.303Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 38990622
-    },
     "shared/Ludy87/cache-the-planet/npm/linux-x64/b37919275503e3987ae9d8c80c0abf5559bed3d33c87c5d3489139ef12a17abb/v1": {
       "object": "sha256:b305c9919465df6a14e3c9a47c6c87c72aca81c31b46916960b242c5ad0d40d5",
       "updated_at": "2026-09-09T17:11:00.111Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 7001912
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-38/cargo/linux-x64/ef44e01f1329b63a5d307e2e7eda7b1c55a2f53009b3551a4a8583405609c066/v1": {
-      "object": "sha256:1b91629e3b133daaeab167a28822fa6eb0e5396e496e1c57b0fb38ed8cc5081a",
-      "updated_at": "2026-09-10T16:39:21.156Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 1257985
     },
     "shared/Ludy87/cache-the-planet/cargo/linux-x64/ef44e01f1329b63a5d307e2e7eda7b1c55a2f53009b3551a4a8583405609c066/v1": {
       "object": "sha256:c6211d108e488000416a71a35633ac8c492bc1df36f3d0968612859f41fc9422",
