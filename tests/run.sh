@@ -91,6 +91,8 @@ try {
   securityScan(root);
   fs.writeFileSync(path.join(root, 'tokens.py'), 'secret = "package-example-value"\n');
   securityScan(root);
+  fs.writeFileSync(path.join(root, 'token.css'), '/* package stylesheet */\n');
+  securityScan(root);
   fs.writeFileSync(path.join(root, 'token.cpython-313.pyc'), Buffer.from([0, 1, 2, 3]));
   securityScan(root);
   fs.writeFileSync(path.join(root, 'ImageFont.py'), '# Copyright (c) 1997-2003 by Secret Labs AB\n');
