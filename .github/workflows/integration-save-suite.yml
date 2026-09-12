@@ -20,6 +20,9 @@ permissions:
 
 jobs:
   test:
+    needs: [build-dist-pr, build-dist-trusted]
+    if: ${{ !cancelled() && (needs.build-dist-pr.result == 'success' || needs.build-dist-pr.result == 'skipped') && (needs.build-dist-trusted.result == 'success' || needs.build-dist-trusted.result == 'skipped') }}
+    name: Run npm tests and integration tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -78,7 +81,6 @@ jobs:
         run: bash tests/run.sh
       
   build-dist-pr:
-    needs: [test]
     if: ${{ github.event_name == 'pull_request' }}
     uses: $/.github/workflows/build-dist.yml
     with:
@@ -87,7 +89,6 @@ jobs:
       contents: read
 
   build-dist-trusted:
-    needs: [test]
     if: ${{ github.event_name != 'pull_request' }}
     uses: $/.github/workflows/build-dist.yml
     with:
