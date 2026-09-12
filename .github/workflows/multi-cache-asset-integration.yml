@@ -17,6 +17,10 @@ on:
       APP_PRIVATE_KEY:
         required: false
 
+env:
+  NPM_CACHE: ${{ github.workspace }}/.cache/npm
+  MAVEN_CACHE: ${{ github.workspace }}/.cache/m2
+
 permissions:
   contents: read
 
@@ -71,15 +75,15 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          settings-path: ${{ github.workspace }}/cache/.m2
+          settings-path: ${{ github.workspace }}/.cache/m2
 
       - name: Configure cache directories
         run: |
-          npm config set cache "${{ github.workspace }}/.cache/npm" --global
-          mkdir -p ${{ github.workspace }}/cache/.m2
+          npm config set cache "$NPM_CACHE" --global
+          mkdir -p "$MAVEN_CACHE"
 
       - name: Install npm dependencies
         run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Build Maven project
-        run: mvn -B -Dmaven.repo.local="${{ github.workspace }}/.cache/m2" package --file examples/java-cache/pom.xml
+        run: mvn -B -Dmaven.repo.local="$MAVEN_CACHE" package --file examples/java-cache/pom.xml
