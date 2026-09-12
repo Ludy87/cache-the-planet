@@ -20,6 +20,7 @@ on:
 env:
   FILES_TO_HASH: |
     examples/java-cache/pom.xml
+  MAVEN_CACHE: ${{ github.workspace }}/.cache/m2
 
 permissions:
   contents: read
@@ -90,10 +91,10 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache-jdk: false
-          settings-path: ${{ github.workspace }}/cache/.m2
+          settings-path: "$MAVEN_CACHE"
 
       - name: Build with Maven
-        run: mvn -B -Dmaven.repo.local="${{ github.workspace }}/.cache/m2" package --file examples/java-cache/pom.xml
+        run: mvn -B -Dmaven.repo.local="$MAVEN_CACHE" package --file examples/java-cache/pom.xml
 
       - name: Display cache information
         env:
@@ -158,8 +159,8 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache-jdk: false
-          settings-path: ${{ github.workspace }}/cache/.m2
+          settings-path: "$MAVEN_CACHE"
 
       - name: Build offline with restored Maven cache
-        run: mvn -B -o -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml
+        run: mvn -B -o -Dmaven.repo.local="$MAVEN_CACHE" package --file examples/java-cache/pom.xml
         continue-on-error: true
