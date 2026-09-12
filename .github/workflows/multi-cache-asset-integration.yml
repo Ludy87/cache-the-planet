@@ -55,6 +55,7 @@ jobs:
               path: .cache/npm
             maven-java17:
               path: .cache/m2
+          allow-shared-restore: true
           token: ${{ steps.bot-token.outputs.token || github.token }}
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
           strict: true
