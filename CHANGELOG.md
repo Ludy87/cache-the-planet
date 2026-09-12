@@ -8,6 +8,32 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.6.0](https://github.com/Ludy87/cache-the-planet/compare/v1.5.0...v1.6.0) (2026-09-12)
+
+
+### 🎉 Features
+
+* add multi-cache action and integration workflow ([#128](https://github.com/Ludy87/cache-the-planet/issues/128)) ([c90bcf9](https://github.com/Ludy87/cache-the-planet/commit/c90bcf9ea6533d1c2509633af717a23b4ee1924b))
+
+
+### 🐛 Bug Fixes
+
+* bundle shared constants into common action ([#131](https://github.com/Ludy87/cache-the-planet/issues/131)) ([00b5239](https://github.com/Ludy87/cache-the-planet/commit/00b5239c5667a23aa234f9d5b492219af2797df7))
+* **ci:** broaden release please workflow triggers ([#126](https://github.com/Ludy87/cache-the-planet/issues/126)) ([2703e01](https://github.com/Ludy87/cache-the-planet/commit/2703e01150821e44a244f00cd3c91d21d24d3eaf))
+* pass multi-cache input names correctly ([#129](https://github.com/Ludy87/cache-the-planet/issues/129)) ([669a814](https://github.com/Ludy87/cache-the-planet/commit/669a814b5602a762d3152fd87f2310a7a37f3a38))
+* prepare tools before multi-cache restore ([#134](https://github.com/Ludy87/cache-the-planet/issues/134)) ([b638853](https://github.com/Ludy87/cache-the-planet/commit/b6388535163231a4007fff2242b815e7342204e9))
+* restore Cargo cache before toolchain setup ([#124](https://github.com/Ludy87/cache-the-planet/issues/124)) ([9539137](https://github.com/Ludy87/cache-the-planet/commit/9539137b177ecdb665d064c614b6330afa02d570))
+* run integration tests after distribution build ([#132](https://github.com/Ludy87/cache-the-planet/issues/132)) ([df54325](https://github.com/Ludy87/cache-the-planet/commit/df543252ad2db8637dfae27c38f0a5fc6a89147a))
+* run multi-cache in integration suites ([#133](https://github.com/Ludy87/cache-the-planet/issues/133)) ([42ef4c9](https://github.com/Ludy87/cache-the-planet/commit/42ef4c9121d2c108b5edce7ed72d8637927448a5))
+* simplify Gradle integration Java setup ([#135](https://github.com/Ludy87/cache-the-planet/issues/135)) ([6caac55](https://github.com/Ludy87/cache-the-planet/commit/6caac55b695d82de470b5051d198d10d25bcf866))
+* use workspace paths for multi-cache integration ([#136](https://github.com/Ludy87/cache-the-planet/issues/136)) ([e0abaf0](https://github.com/Ludy87/cache-the-planet/commit/e0abaf0af6d1d89dc29332d22731299ee5dfa40c))
+
+
+### 📚 Documentation
+
+* document multi-cache usage ([#137](https://github.com/Ludy87/cache-the-planet/issues/137)) ([5d79346](https://github.com/Ludy87/cache-the-planet/commit/5d793467fd606d91fd3f37b1bca566735bf8dd39))
+* update third-party notices ([#125](https://github.com/Ludy87/cache-the-planet/issues/125)) ([57aa772](https://github.com/Ludy87/cache-the-planet/commit/57aa7720c74842bfaae5ee8d92e2d80846fb17ed))
+
 ## [1.5.0](https://github.com/Ludy87/cache-the-planet/compare/v1.4.1...v1.5.0) (2026-09-10)
 
 
