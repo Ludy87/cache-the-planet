@@ -28,9 +28,18 @@ jobs:
     permissions:
       contents: write
 
-  uv-restore-cache:
+  multi-restore-cache:
     needs: [node-restore-cache]
     if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}
+    uses: $/.github/workflows/multi-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+
+  uv-restore-cache:
+    needs: [multi-restore-cache]
+    if: ${{ !cancelled() && needs.multi-restore-cache.result == 'success' }}
     uses: $/.github/workflows/uv-cache-asset-integration.yml
     with:
       restore-cache: true

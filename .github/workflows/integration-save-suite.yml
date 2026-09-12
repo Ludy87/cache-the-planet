@@ -112,8 +112,8 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   multi-save-cache:
-    needs: [build-dist-pr, build-dist-trusted]
-    if: ${{ !cancelled() && (needs.build-dist-pr.result == 'success' || needs.build-dist-pr.result == 'skipped') && (needs.build-dist-trusted.result == 'success' || needs.build-dist-trusted.result == 'skipped') }}
+    needs: [node-save-cache]
+    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: $/.github/workflows/multi-cache-asset-integration.yml
     with:
       save-cache: true
@@ -123,18 +123,9 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
-  multi-restore-cache:
-    needs: [multi-save-cache]
-    if: ${{ needs.multi-save-cache.result == 'success' }}
-    uses: $/.github/workflows/multi-cache-asset-integration.yml
-    with:
-      restore-cache: true
-    permissions:
-      contents: read
-
   uv-save-cache:
-    needs: [node-save-cache]
-    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
+    needs: [multi-save-cache]
+    if: ${{ !cancelled() && needs.multi-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-cache-asset-integration.yml
     with:
       save-cache: true
