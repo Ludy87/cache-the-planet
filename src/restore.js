@@ -1,5 +1,6 @@
 const fs = require("fs");
 const c = require("./common");
+const { INPUTS } = require("./constants");
 
 (async () => {
   try {
@@ -7,19 +8,19 @@ const c = require("./common");
     c.setOutput("is-fork", isFork ? "true" : "false");
     c.setOutput("read-only", isFork ? "true" : "false");
     const repository = c.cacheRepository();
-    const key = c.scopedKey(c.input("key"));
+    const key = c.scopedKey(c.input(INPUTS.KEY));
     const manifest = await c.refs(repository);
     const candidates = [];
     if (
       c.cacheScope() === "auto" &&
-      (String(c.input("allow-shared-restore")).toLowerCase() === "true" ||
+      (String(c.input(INPUTS.ALLOW_SHARED_RESTORE)).toLowerCase() === "true" ||
         c.eventName() !== "pull_request")
     ) {
-      candidates.push(c.sharedRestorePrefix(c.input("key")));
+      candidates.push(c.sharedRestorePrefix(c.input(INPUTS.KEY)));
     }
     candidates.push(key);
     for (const prefix of c
-      .input("restore-keys")
+      .input(INPUTS.RESTORE_KEYS)
       .split(/\r?\n/)
       .map((value) => value.trim())
       .filter(Boolean)) {
@@ -27,7 +28,8 @@ const c = require("./common");
         // On auto, prefer a verified shared cache, then use the normal
         // trusted (main/tag) or isolated untrusted (PR) namespace.
         if (
-          String(c.input("allow-shared-restore")).toLowerCase() === "true" ||
+          String(c.input(INPUTS.ALLOW_SHARED_RESTORE)).toLowerCase() ===
+            "true" ||
           c.eventName() !== "pull_request"
         ) {
           candidates.push(c.sharedRestorePrefix(prefix));

@@ -1,5 +1,6 @@
 const fs = require("fs");
 const c = require("./common");
+const { INPUTS } = require("./constants");
 
 function saveSummary(status, fields = {}) {
   c.summary("Cache Save", {
@@ -81,7 +82,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
 (async () => {
   try {
-    if (String(c.input("restore-only")).toLowerCase() === "true") {
+    if (String(c.input(INPUTS.RESTORE_ONLY)).toLowerCase() === "true") {
       c.log("post-save skipped because restore-only is enabled");
       c.summary("Cache Save", {
         Status: "SKIPPED",
@@ -94,7 +95,11 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const setOutput = c.setOutput;
     setOutput("is-fork", isFork ? "true" : "false");
     setOutput("read-only", isFork ? "true" : "false");
-    const key = c.scopedKey(c.input("key"), "save-scope", "scope");
+    const key = c.scopedKey(
+      c.input(INPUTS.KEY),
+      INPUTS.SAVE_SCOPE,
+      INPUTS.SCOPE,
+    );
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.cacheScope("save-scope", "scope");
     if (isFork) {
@@ -111,7 +116,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
     if (
       isPullRequest &&
-      String(c.input("allow-pr-cache")).toLowerCase() !== "true"
+      String(c.input(INPUTS.ALLOW_PR_CACHE)).toLowerCase() !== "true"
     ) {
       const reason =
         "Pull request cache saving is disabled; set allow-pr-cache: true to enable it";
@@ -181,7 +186,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `shared cache already exists; isolated PR cache publish skipped: key=${sharedEquivalent}`,
         );
         if (process.env.GITHUB_OUTPUT) {
-          setOutput("content-hash", current.json.references[sharedEquivalent].object);
+          setOutput(
+            "content-hash",
+            current.json.references[sharedEquivalent].object,
+          );
           setOutput("asset-name", sharedAsset.name);
         }
         return;
@@ -259,7 +267,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
             c.pullRequestCacheCombination(referenceKey) === combination,
         );
       if (conflictingKey) {
-        const strict = String(c.input("strict")).toLowerCase() === "true";
+        const strict = String(c.input(INPUTS.STRICT)).toLowerCase() === "true";
         if (strict) {
           throw new Error(
             `pull request cache limit reached: only one cache is allowed for ${combination}; existing key=${conflictingKey}`,

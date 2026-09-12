@@ -1,25 +1,26 @@
 const c = require("./common");
+const { INPUTS } = require("./constants");
 
 (async () => {
   try {
     const repository = c.cacheRepository();
-    const requestedMode = process.env.GC_MODE || c.input("mode");
+    const requestedMode = process.env.GC_MODE || c.input(INPUTS.MODE);
     const mode = process.argv.includes("--all")
       ? "all"
       : process.argv.includes("--object")
         ? "object"
         : requestedMode || "orphan";
-    const objectValue = process.env.GC_OBJECT || c.input("object");
+    const objectValue = process.env.GC_OBJECT || c.input(INPUTS.OBJECT);
     const dryRun =
       process.argv.includes("--dry-run") ||
-      (process.env.DRY_RUN || c.input("dry-run")) !== "false";
+      (process.env.DRY_RUN || c.input(INPUTS.DRY_RUN)) !== "false";
     const graceDays = c.parsePositiveSafeInteger(
-      process.env.GRACE_DAYS || c.input("grace-days"),
+      process.env.GRACE_DAYS || c.input(INPUTS.GRACE_DAYS),
       "GRACE_DAYS",
       7,
     );
     const ttlHours = c.parsePositiveSafeInteger(
-      process.env.UNTRUSTED_TTL_HOURS || c.input("untrusted-ttl-hours"),
+      process.env.UNTRUSTED_TTL_HOURS || c.input(INPUTS.UNTRUSTED_TTL_HOURS),
       "UNTRUSTED_TTL_HOURS",
       24,
     );
@@ -27,10 +28,11 @@ const c = require("./common");
     const untrustedTtl = ttlHours * 3600000;
     const expireAllUntrusted =
       (process.env.GC_EXPIRE_ALL_UNTRUSTED ||
-        c.input("expire-all-untrusted")) === "true";
+        c.input(INPUTS.EXPIRE_ALL_UNTRUSTED)) === "true";
     const deleteShared =
       process.env.GITHUB_EVENT_NAME === "workflow_dispatch" &&
-      (process.env.GC_DELETE_SHARED || c.input("delete-shared")) === "true";
+      (process.env.GC_DELETE_SHARED || c.input(INPUTS.DELETE_SHARED)) ===
+        "true";
     let deletedAssets = 0;
     let removedReferences = 0;
     c.setOutput("mode", mode);

@@ -1,11 +1,12 @@
 const c = require("./common");
+const { INPUTS } = require("./constants");
 
 (async () => {
   try {
     const repository = c.cacheRepository();
     const sourceRepository =
-      process.env.PR_REPOSITORY || c.input("pr-repository");
-    const number = process.env.PR_NUMBER || c.input("pr-number");
+      process.env.PR_REPOSITORY || c.input(INPUTS.PR_REPOSITORY);
+    const number = process.env.PR_NUMBER || c.input(INPUTS.PR_NUMBER);
     if (!repository || !sourceRepository || !number) {
       throw new Error(
         "cache repository, PR_REPOSITORY and PR_NUMBER are required",
