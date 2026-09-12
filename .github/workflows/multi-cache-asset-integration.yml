@@ -1,0 +1,83 @@
+name: Multi-cache asset integration
+
+on:
+  workflow_call:
+    inputs:
+      save-cache:
+        required: false
+        type: boolean
+        default: false
+      restore-cache:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      APP_ID:
+        required: false
+      APP_PRIVATE_KEY:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  multi-cache:
+    if: ${{ inputs.save-cache || inputs.restore-cache }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
+          persist-credentials: false
+
+      - name: Create cache repository token
+        if: ${{ inputs.save-cache && github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Configure cache directories
+        run: |
+          npm config set cache "$PWD/.cache/npm" --global
+          mkdir -p .cache/m2
+
+      - name: Restore and save multiple caches
+        id: cache
+        uses: $/multi-cache
+        with:
+          key: |
+            npm=${{ hashFiles('package-lock.json') }}
+            maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
+          multi-cache: |
+            npm:
+              path: .cache/npm
+            maven-java17:
+              path: .cache/m2
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
+          strict: true
+
+      - name: Install npm dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Build Maven project
+        run: mvn -B -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml

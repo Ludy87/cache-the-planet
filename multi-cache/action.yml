@@ -1,0 +1,100 @@
+name: Multi cache
+description: Restore and save multiple content-addressed caches
+inputs:
+  key:
+    description: Newline separated cache-name=logical-key entries
+    required: true
+  multi-cache:
+    description: Cache definitions containing cache names and paths
+    required: true
+  token:
+    description: GitHub token; defaults to GITHUB_TOKEN
+    required: false
+  strict:
+    description: Fail when a cache entry fails
+    required: false
+    default: "false"
+  repository:
+    description: owner/name of cache repository
+    required: false
+    default: ""
+  scope:
+    description: Cache scope passed to each entry
+    required: false
+    default: ""
+  save-scope:
+    description: Scope used when saving each cache
+    required: false
+    default: ""
+  version:
+    description: Numeric cache format version passed to each entry
+    required: false
+    default: ""
+  encryption-key:
+    description: Optional encryption key passed to each entry
+    required: false
+    default: ""
+  allow-pr-cache:
+    description: Allow saving pull request caches
+    required: false
+    default: "true"
+  os:
+    description: Operating system component of the cache key
+    required: false
+    default: "__runner__"
+  arch:
+    description: Architecture component of the cache key
+    required: false
+    default: "__runner__"
+  restore-keys:
+    description: Newline separated fallback prefixes
+    required: false
+    default: ""
+  compression-level:
+    description: zstd compression level
+    required: false
+    default: ""
+  exclude:
+    description: Newline separated exclusions for post-save
+    required: false
+    default: ""
+  exclude-path:
+    description: Newline separated workspace files containing exclusions
+    required: false
+    default: ""
+  config-file:
+    description: Optional JSON configuration file
+    required: false
+    default: ""
+  manifest-branch:
+    description: Branch containing the cache manifest
+    required: false
+    default: ""
+  allow-shared-restore:
+    description: Allow pull requests to restore shared caches
+    required: false
+    default: "false"
+  restore-only:
+    description: Only restore caches and skip post-save
+    required: false
+    default: "false"
+outputs:
+  cache-hit:
+    description: true when all configured caches were exact hits
+  matched-key:
+    description: Newline separated matched keys
+  is-fork:
+    description: true when the workflow is a fork pull request
+  read-only:
+    description: true when saving is unavailable
+  content-hash:
+    description: Newline separated sha256 object digests
+  asset-name:
+    description: Newline separated release asset filenames
+  cache-size:
+    description: Newline separated compressed object sizes
+runs:
+  using: node24
+  main: ../dist/multi-cache.js
+  post: ../dist/multi-cache-save.js
+  post-if: success()
