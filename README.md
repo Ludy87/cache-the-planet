@@ -62,6 +62,40 @@ Die Root-Action kann mit `restore-only: true` auf reines Restore beschränkt
 werden. Mit `save-scope` lässt sich der Scope des Post-Save-Schritts unabhängig
 von `scope` konfigurieren; ohne Angabe übernimmt er `scope`.
 
+### Mehrere Caches in einem Schritt
+
+Die Sub-Action `multi-cache` restauriert und speichert mehrere voneinander
+getrennte Caches. Jeder Eintrag benötigt einen eigenen logischen Schlüssel und
+Workspace-Pfad:
+
+```yaml
+- name: Restore and save npm and Maven caches
+  uses: Ludy87/cache-the-planet/multi-cache@v1
+  with:
+    key: |
+      npm=${{ hashFiles('package-lock.json') }}
+      maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
+    multi-cache: |
+      npm:
+        path: .cache/npm
+      maven-java17:
+        path: .cache/m2
+    allow-shared-restore: true
+    strict: true
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+`key` verwendet das Format `cache-name=logical-key`, jeweils eine Zuordnung
+pro Zeile. `multi-cache` verwendet benannte Einträge mit genau einem `path`.
+Die übrigen Action-Inputs wie `scope`, `save-scope`, `version`,
+`encryption-key`, `exclude` und `allow-pr-cache` werden auf jeden Eintrag
+angewendet. Bei Pull Requests ist `allow-shared-restore: true` erforderlich,
+wenn ein Shared-Cache als Fallback gelesen werden soll.
+
+Die Outputs werden von den einzelnen Restore-/Save-Läufen geschrieben. Für
+verlässliche Statusauswertung sollten die Einträge daher über ihre Cache-Keys
+und die Job-Zusammenfassung nachvollzogen werden.
+
 ## Beispiele für Scopes
 
 ### Automatisches Restore und Post-Save

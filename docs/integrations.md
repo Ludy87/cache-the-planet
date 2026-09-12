@@ -17,6 +17,48 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
 
+## Mehrere Ökosystem-Caches
+
+Für npm und Maven oder andere unabhängige Cache-Arten kann die Sub-Action
+`multi-cache` mehrere Einträge in einem Schritt verwalten:
+
+```yaml
+- name: Restore and save dependency caches
+  uses: Ludy87/cache-the-planet/multi-cache@v1
+  with:
+    key: |
+      npm=${{ hashFiles('package-lock.json') }}
+      maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
+    multi-cache: |
+      npm:
+        path: .cache/npm
+      maven-java17:
+        path: .cache/m2
+    allow-shared-restore: true
+    token: ${{ secrets.CACHE_APP_TOKEN }}
+```
+
+Die Tools müssen ihre Verzeichnisse vor der Nutzung auf diese Workspace-Pfade
+zeigen. Für npm genügt beispielsweise:
+
+```yaml
+- name: Configure npm cache
+  run: npm config set cache "$GITHUB_WORKSPACE/.cache/npm" --global
+```
+
+Für Maven wird das lokale Repository beim Build gesetzt:
+
+```yaml
+- name: Build with Maven cache
+  run: mvn -B -Dmaven.repo.local="$GITHUB_WORKSPACE/.cache/m2" package
+```
+
+`actions/setup-java` kann zusätzlich Konfigurationsdateien wie `settings.xml`
+und `toolchains.xml` ablegen. `settings-path` ist nicht das lokale Maven-
+Repository; verwende dort eine GitHub-Expression wie
+`${{ github.workspace }}/.cache/m2`, niemals eine nicht expandierte Shell-
+Variable in einem `with:`-Block.
+
 ### Rust und Cargo
 
 `dtolnay/rust-toolchain` installiert die Rust-Toolchain, verwaltet aber nicht
