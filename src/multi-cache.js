@@ -44,7 +44,6 @@ function parseKeys(value) {
 function run(entry, script) {
   const env = { ...process.env,
     "INPUT_CACHE-NAME": entry.name,
-    INPUT_CACHE_NAME: entry.name,
     INPUT_PATH: entry.path,
     INPUT_KEY: entry.key,
   };
