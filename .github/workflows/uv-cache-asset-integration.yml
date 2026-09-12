@@ -73,21 +73,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
-      - name: Set up Python without native cache
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.13"
-      - name: Set up uv without native GitHub cache
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
-        with:
-          enable-cache: false
-          cache-local-path: .cache/uv
-
-      - name: Create virtual environment
-        run: uv venv .venv
-
-      - name: Verify Python runtime
-        run: python --version
 
       - name: Restore uv cache asset
         id: cache
@@ -101,6 +86,23 @@ jobs:
           version: ${{ env.VERSION }}
           path: .cache/uv
           strict: true
+
+      - name: Set up Python without native cache
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv without native GitHub cache
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: false
+          cache-local-path: .cache/uv
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      - name: Verify Python runtime
+        run: python --version
 
       - name: Populate uv cache
         run: uv pip install --python .venv/bin/python -r examples/uv-cache/requirements.txt
@@ -136,7 +138,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        scope-matrix: 
+        scope-matrix:
           - scope: auto
             allow-shared-restore: true
           - scope: trusted
@@ -153,21 +155,6 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Set up Python without native cache
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.13"
-      - name: Set up uv without native GitHub cache
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
-        with:
-          enable-cache: false
-          cache-local-path: .cache/uv
-
-      - name: Create virtual environment
-        run: uv venv .venv
-
-      - name: Verify restored Python runtime
-        run: python --version
 
       - name: Restore uv cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
@@ -182,6 +169,23 @@ jobs:
           restore-only: true
           strict: true
         continue-on-error: true
+
+      - name: Set up Python without native cache
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv without native GitHub cache
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: false
+          cache-local-path: .cache/uv
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      - name: Verify restored Python runtime
+        run: python --version
 
       - name: Verify uv can use restored cache
         run: uv pip install --python .venv/bin/python --offline -r examples/uv-cache/requirements.txt

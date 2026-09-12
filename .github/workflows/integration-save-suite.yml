@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - '**/README.md'
-      - '**/docs/**'
-      - 'manifests/**'
+      - "**/README.md"
+      - "**/docs/**"
+      - "manifests/**"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -79,7 +79,7 @@ jobs:
 
       - name: Run integration tests
         run: bash tests/run.sh
-      
+
   build-dist-pr:
     if: ${{ github.event_name == 'pull_request' }}
     uses: $/.github/workflows/build-dist.yml

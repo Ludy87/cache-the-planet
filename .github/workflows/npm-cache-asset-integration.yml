@@ -71,11 +71,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          package-manager-cache: false
 
       - name: Restore npm cache asset
         id: cache
@@ -88,6 +83,12 @@ jobs:
           allow-shared-restore: true
           path: .cache/npm
           strict: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
 
       - name: Configure npm cache directory
         run: npm config set cache "$PWD/.cache/npm" --global
@@ -121,7 +122,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        scope-matrix: 
+        scope-matrix:
           - scope: auto
             allow-shared-restore: true
           - scope: trusted
@@ -138,14 +139,6 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          package-manager-cache: false
-
-      - name: Configure npm cache directory
-        run: npm config set cache "$PWD/.cache/npm" --global
 
       - name: Restore npm cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
@@ -159,6 +152,15 @@ jobs:
           restore-only: true
           strict: true
         continue-on-error: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Configure npm cache directory
+        run: npm config set cache "$PWD/.cache/npm" --global
 
       - name: Verify npm can use restored cache
         run: npm ci --prefer-offline --no-audit --no-fund

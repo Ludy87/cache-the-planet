@@ -76,11 +76,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
-        with:
-          enable-cache: false
-
       - name: Restore npm cache asset
         id: cache
         uses: $/
@@ -93,6 +88,11 @@ jobs:
           version: ${{ env.VERSION }}
           path: .cache/uv
           strict: true
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: false
 
       - name: Install managed Python
         run: |
@@ -135,7 +135,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        scope-matrix: 
+        scope-matrix:
           - scope: auto
             allow-shared-restore: true
           - scope: trusted
@@ -152,10 +152,6 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Set up uv
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
-        with:
-          enable-cache: false
 
       - name: Restore uv and Python asset cache - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
@@ -170,6 +166,11 @@ jobs:
           restore-only: true
           strict: true
         continue-on-error: true
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: false
 
       - name: Install managed Python from restored download cache
         run: |

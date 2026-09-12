@@ -71,12 +71,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
-      - name: Set up Java
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache-jdk: false
 
       - name: Restore Maven cache asset
         id: cache
@@ -89,6 +83,13 @@ jobs:
           allow-shared-restore: true
           path: .cache/m2
           strict: true
+
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache-jdk: false
 
       - name: Build with Maven
         run: mvn -B -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml
@@ -119,7 +120,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        scope-matrix: 
+        scope-matrix:
           - scope: auto
             allow-shared-restore: true
           - scope: trusted
@@ -136,12 +137,6 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Set up Java
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache-jdk: false
 
       - name: Restore Maven cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
@@ -155,6 +150,13 @@ jobs:
           restore-only: true
           strict: true
         continue-on-error: true
+
+      - name: Set up Java
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache-jdk: false
 
       - name: Build offline with restored Maven cache
         run: mvn -B -o -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml

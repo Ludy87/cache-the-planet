@@ -43,6 +43,22 @@ jobs:
           repositories: cache-the-planet
           permission-contents: write
 
+      - name: Restore and save multiple caches
+        id: cache
+        uses: $/multi-cache
+        with:
+          key: |
+            npm=${{ hashFiles('package-lock.json') }}
+            maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
+          multi-cache: |
+            npm:
+              path: .cache/npm
+            maven-java17:
+              path: .cache/m2
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
+          strict: true
+
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -59,22 +75,6 @@ jobs:
         run: |
           npm config set cache "$PWD/.cache/npm" --global
           mkdir -p .cache/m2
-
-      - name: Restore and save multiple caches
-        id: cache
-        uses: $/multi-cache
-        with:
-          key: |
-            npm=${{ hashFiles('package-lock.json') }}
-            maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
-          multi-cache: |
-            npm:
-              path: .cache/npm
-            maven-java17:
-              path: .cache/m2
-          token: ${{ steps.bot-token.outputs.token || github.token }}
-          restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
-          strict: true
 
       - name: Install npm dependencies
         run: npm ci --prefer-offline --no-audit --no-fund

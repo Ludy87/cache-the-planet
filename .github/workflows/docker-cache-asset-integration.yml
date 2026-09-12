@@ -74,12 +74,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      - name: echo Dockerfile and context hash
-        env:
-          FILES_HASH: ${{ needs.hash_pr.outputs.files_hash }}
-        run: |
-          echo "Dockerfile and context hash: $FILES_HASH"
-
       - name: Restore Docker cache
         id: cache
         uses: $/
@@ -139,7 +133,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        scope-matrix: 
+        scope-matrix:
           - scope: auto
             allow-shared-restore: true
           - scope: trusted

@@ -73,10 +73,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
-      - name: Set up Task
-        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
-        with:
-          version: 3.x
 
       - name: Restore task build cache asset
         id: cache
@@ -91,6 +87,11 @@ jobs:
             examples/task-cache/.cache/task
             examples/task-cache/.cache/task-state
           strict: true
+
+      - name: Set up Task
+        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
+        with:
+          version: 3.x
 
       - name: Run task build
         run: task --taskfile examples/task-cache/Taskfile.yml build
@@ -123,7 +124,7 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        scope-matrix: 
+        scope-matrix:
           - scope: auto
             allow-shared-restore: true
           - scope: trusted
@@ -140,10 +141,6 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Set up Task
-        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
-        with:
-          version: 3.x
 
       - name: Restore task build cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
@@ -159,6 +156,11 @@ jobs:
           restore-only: true
           strict: true
         continue-on-error: true
+
+      - name: Set up Task
+        uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
+        with:
+          version: 3.x
 
       - name: Verify restored task cache
         run: task --taskfile examples/task-cache/Taskfile.yml verify
