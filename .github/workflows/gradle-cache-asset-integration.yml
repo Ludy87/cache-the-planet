@@ -94,6 +94,9 @@ jobs:
       #     java-version: "17"
       #     cache-jdk: false
 
+      - name: Java version
+        run: java -version
+
       - name: Populate Gradle cache
         working-directory: examples/gradle-cache
         run: gradle --no-daemon test
