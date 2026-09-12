@@ -90,6 +90,7 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache-jdk: false
+          settings-path: $PWD/cache/.m2
 
       - name: Build with Maven
         run: mvn -B -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml
