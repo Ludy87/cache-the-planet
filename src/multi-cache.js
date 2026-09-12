@@ -2,7 +2,8 @@ const cp = require("child_process");
 const path = require("path");
 
 function input(name) {
-  return process.env[`INPUT_${name.replace(/ /g, "_").toUpperCase()}`] || "";
+  const normalized = name.replace(/ /g, "_").toUpperCase();
+  return process.env[`INPUT_${name.toUpperCase()}`] || process.env[`INPUT_${normalized}`] || "";
 }
 
 function parseDefinitions(value) {
@@ -42,6 +43,7 @@ function parseKeys(value) {
 
 function run(entry, script) {
   const env = { ...process.env,
+    "INPUT_CACHE-NAME": entry.name,
     INPUT_CACHE_NAME: entry.name,
     INPUT_PATH: entry.path,
     INPUT_KEY: entry.key,
