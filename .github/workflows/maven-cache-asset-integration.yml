@@ -158,6 +158,7 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache-jdk: false
+          settings-path: ${{ github.workspace }}/cache/.m2
 
       - name: Build offline with restored Maven cache
         run: mvn -B -o -Dmaven.repo.local="$PWD/.cache/m2" package --file examples/java-cache/pom.xml
