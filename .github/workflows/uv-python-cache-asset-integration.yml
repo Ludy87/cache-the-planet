@@ -76,7 +76,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      - name: Restore npm cache asset
+      - name: Restore uv Python cache asset
         id: cache
         uses: $/
         with:
