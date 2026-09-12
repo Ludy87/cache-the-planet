@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const cp = require("child_process");
 const { Readable, Transform } = require("stream");
 const { pipeline } = require("stream/promises");
+const { INPUTS } = require("./constants");
 
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
@@ -60,14 +61,28 @@ const defaultLogicalKeyComponents = 16;
 const githubApiTimeoutMs = 120000;
 const githubApiMaxRetries = 2;
 
+function inputEnvironmentNames(name) {
+  if (typeof name !== "string" || !name) {
+    throw new TypeError("input name must be a non-empty string");
+  }
+  const exact = `INPUT_${name.toUpperCase()}`;
+  const normalized = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
+  return exact === normalized ? [exact] : [exact, normalized];
+}
+
 function input(name, defaultValue = "") {
-  const variable = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
-  return process.env[variable] ?? defaultValue;
+  for (const variable of inputEnvironmentNames(name)) {
+    if (Object.prototype.hasOwnProperty.call(process.env, variable)) {
+      return process.env[variable];
+    }
+  }
+  return defaultValue;
 }
 
 function hasInput(name) {
-  const variable = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
-  return Object.prototype.hasOwnProperty.call(process.env, variable);
+  return inputEnvironmentNames(name).some((variable) =>
+    Object.prototype.hasOwnProperty.call(process.env, variable),
+  );
 }
 
 function findDefaultConfigFile(workspace) {
@@ -81,7 +96,9 @@ function findDefaultConfigFile(workspace) {
     } catch {
       return;
     }
-    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    for (const entry of entries.sort((left, right) =>
+      left.name.localeCompare(right.name),
+    )) {
       const entryPath = path.join(directory, entry.name);
       if (entry.isFile() && entry.name === ".cache-the-planet.json") {
         return entryPath;
@@ -97,7 +114,7 @@ function findDefaultConfigFile(workspace) {
 
 function token() {
   // ACTIONS_RUNTIME_TOKEN is for the Actions service, not the GitHub REST API.
-  return input("token") || process.env.GITHUB_TOKEN;
+  return input(INPUTS.TOKEN) || process.env.GITHUB_TOKEN;
 }
 
 function setOutput(name, value) {
@@ -118,7 +135,8 @@ function authorizationHeaders() {
 function configuration() {
   if (configurationCache) return configurationCache;
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-  const configuredFile = input("config-file") || process.env.CACHE_CONFIG_FILE;
+  const configuredFile =
+    input(INPUTS.CONFIG_FILE) || process.env.CACHE_CONFIG_FILE;
   const file = configuredFile
     ? path.resolve(workspace, configuredFile)
     : findDefaultConfigFile(workspace);
@@ -271,7 +289,7 @@ function repository() {
 
 function cacheRepository() {
   const value =
-    input("repository") ||
+    input(INPUTS.REPOSITORY) ||
     process.env.CACHE_REPOSITORY ||
     configuration().cache_repository ||
     repository();
@@ -339,7 +357,7 @@ function isCompleteCacheKey(key) {
 }
 
 function cacheName() {
-  const value = input("cache-name").trim();
+  const value = input(INPUTS.CACHE_NAME).trim();
   if (!/^[A-Za-z0-9_-]{1,32}$/.test(value)) {
     throw new Error(
       "cache-name is required and may contain only letters, numbers, hyphens, and underscores",
@@ -374,18 +392,18 @@ function cacheScope(inputName = "scope", fallbackInputName = null) {
 function runnerPlatform() {
   // GitHub exposes optional action inputs as INPUT_* even when omitted. The
   // metadata default distinguishes omission from an explicitly empty value.
-  const osInput = input("os");
-  const archInput = input("arch");
+  const osInput = input(INPUTS.OS);
+  const archInput = input(INPUTS.ARCH);
   const osValue =
     osInput === "__runner__"
       ? process.env.RUNNER_OS
-      : hasInput("os")
+      : hasInput(INPUTS.OS)
         ? osInput
         : process.env.RUNNER_OS;
   const archValue =
     archInput === "__runner__"
       ? process.env.RUNNER_ARCH
-      : hasInput("arch")
+      : hasInput(INPUTS.ARCH)
         ? archInput
         : process.env.RUNNER_ARCH;
   const osName = (osValue || "unknown").trim() || "unknown";
@@ -435,7 +453,7 @@ function logicalCacheKey(value, name, includeVersion = true) {
   }
   if (!includeVersion) return withPlatform;
   const version =
-    input("version").trim() ||
+    input(INPUTS.VERSION).trim() ||
     String(configuration().version ?? "").trim() ||
     "1";
   if (!/^\d+$/.test(version))
@@ -496,7 +514,7 @@ function manifestBranch() {
   const configuredBranch = configuration().manifest_branch;
   const branch =
     process.env.CACHE_MANIFEST_BRANCH ||
-    input("manifest-branch") ||
+    input(INPUTS.MANIFEST_BRANCH) ||
     configuredBranch ||
     "cache-data";
   if (
@@ -547,7 +565,11 @@ function isForkPullRequest() {
   return isPullRequestEvent() && Boolean(source) && source !== repository();
 }
 
-function scopedKey(key, scopeInputName = "scope", fallbackScopeInputName = null) {
+function scopedKey(
+  key,
+  scopeInputName = "scope",
+  fallbackScopeInputName = null,
+) {
   if (!key) return key;
   const name = cacheName();
   const scope = cacheScope(scopeInputName, fallbackScopeInputName);
@@ -741,7 +763,7 @@ function assertTrustedRestoreAllowed(keys) {
   if (
     isPullRequest &&
     keys.some((key) => key.startsWith("shared/")) &&
-    String(input("allow-shared-restore")).toLowerCase() !== "true"
+    String(input(INPUTS.ALLOW_SHARED_RESTORE)).toLowerCase() !== "true"
   ) {
     throw new Error("shared cache restore requires allow-shared-restore=true");
   }
@@ -776,7 +798,7 @@ function fail(error) {
   const debug =
     process.env.ACTIONS_STEP_DEBUG === "true" ||
     process.env.RUNNER_DEBUG === "1";
-  if (String(input("strict")).toLowerCase() !== "true") {
+  if (String(input(INPUTS.STRICT)).toLowerCase() !== "true") {
     console.log(`::warning::cache ignored: ${message}`);
     if (debug && error?.stack) console.error(error.stack);
     return false;
@@ -948,18 +970,18 @@ function have(command) {
 }
 
 function entries() {
-  return input("path")
+  return input(INPUTS.PATH)
     .split(/\r?\n/)
     .map((value) => value.trim())
     .filter(Boolean);
 }
 
 function excludePatterns() {
-  const patterns = input("exclude")
+  const patterns = input(INPUTS.EXCLUDE)
     .split(/\r?\n/)
     .map((value) => value.trim())
     .filter(Boolean);
-  const files = input("exclude-path")
+  const files = input(INPUTS.EXCLUDE_PATH)
     .split(/\r?\n/)
     .map((value) => value.trim())
     .filter(Boolean);
@@ -1009,7 +1031,7 @@ function excludePatterns() {
 }
 
 function encryptionKey() {
-  const value = input("encryption-key");
+  const value = input(INPUTS.ENCRYPTION_KEY);
   if (!value) return null;
   if (/^[0-9a-f]{64}$/i.test(value)) return Buffer.from(value, "hex");
   return crypto.createHash("sha256").update(value, "utf8").digest();
@@ -1021,7 +1043,7 @@ function encryptionEnabled() {
 
 function compressionLevel() {
   const configured =
-    input("compression-level") ||
+    input(INPUTS.COMPRESSION_LEVEL) ||
     process.env.CACHE_COMPRESSION_LEVEL ||
     configuration().compression_level ||
     "3";
@@ -1814,7 +1836,9 @@ function assertSafeRestoreWorkspace(workspace, paths) {
     const resolved = path.resolve(target);
     const parsed = path.parse(resolved);
     let current = parsed.root;
-    for (const component of resolved.slice(parsed.root.length).split(path.sep)) {
+    for (const component of resolved
+      .slice(parsed.root.length)
+      .split(path.sep)) {
       if (!component) continue;
       current = path.join(current, component);
       let stat;
@@ -1822,10 +1846,14 @@ function assertSafeRestoreWorkspace(workspace, paths) {
         stat = fs.lstatSync(current);
       } catch (error) {
         if (error.code === "ENOENT") break;
-        throw new Error(`could not inspect restore path ${label}: ${error.message}`);
+        throw new Error(
+          `could not inspect restore path ${label}: ${error.message}`,
+        );
       }
       if (stat.isSymbolicLink()) {
-        throw new Error(`restore path contains a symlink or junction: ${label}`);
+        throw new Error(
+          `restore path contains a symlink or junction: ${label}`,
+        );
       }
     }
   };
@@ -1872,8 +1900,8 @@ async function extract(file, paths = restorePaths()) {
 }
 
 module.exports = {
-  parsePositiveSafeInteger,
   input,
+  parsePositiveSafeInteger,
   hasInput,
   token,
   setOutput,
