@@ -19,6 +19,9 @@ on:
         required: false
   workflow_dispatch:
 
+env:
+  NPM_CACHE: ${{ github.workspace }}/.cache/npm
+
 permissions:
   contents: read
 
@@ -54,7 +57,7 @@ jobs:
           package-manager-cache: false
 
       - name: Configure npm cache directory
-        run: npm config set cache "$PWD/.cache/npm" --global
+        run: npm config set cache "$NPM_CACHE" --global
 
       - name: Restore npm cache asset
         id: npm-cache
