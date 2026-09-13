@@ -64,6 +64,48 @@ jobs:
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
           strict: true
 
+      - name: Verify list outputs for multiple caches
+        if: ${{ inputs.save-cache || inputs.restore-cache }}
+        env:
+          CACHE_HITS: ${{ steps.cache.outputs.cache-hits }}
+          MATCHED_KEYS: ${{ steps.cache.outputs.matched-keys }}
+          ASSET_NAMES: ${{ steps.cache.outputs.assets-name }}
+          CONTENT_HASHES: ${{ steps.cache.outputs.contents-hash }}
+          CACHE_SIZES: ${{ steps.cache.outputs.cache-sizes }}
+          SINGULAR_HIT: ${{ steps.cache.outputs.cache-hit }}
+        shell: bash
+        run: |
+          test "$(printf '%s\n' "$CACHE_HITS" | wc -l)" -ge 2
+          test -n "$MATCHED_KEYS"
+          test -n "$ASSET_NAMES"
+          test -n "$CONTENT_HASHES"
+          test -n "$CACHE_SIZES"
+          test -z "$SINGULAR_HIT"
+
+      - name: Verify singular outputs for one cache
+        if: ${{ inputs.restore-cache && !inputs.save-cache }}
+        id: single-cache
+        uses: $/multi-cache
+        with:
+          key: npm=${{ hashFiles('package-lock.json') }}
+          multi-cache: |
+            npm:
+              path: .cache/npm
+          restore-only: true
+          strict: true
+
+      - name: Assert singular cache outputs
+        if: ${{ inputs.restore-cache && !inputs.save-cache }}
+        env:
+          CACHE_HIT: ${{ steps.single-cache.outputs.cache-hit }}
+          MATCHED_KEY: ${{ steps.single-cache.outputs.matched-key }}
+          CACHE_HITS: ${{ steps.single-cache.outputs.cache-hits }}
+        shell: bash
+        run: |
+          test -n "$CACHE_HIT"
+          test -n "$MATCHED_KEY" || test "$CACHE_HIT" = "false"
+          test -z "$CACHE_HITS"
+
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

@@ -79,6 +79,20 @@ inputs:
     required: false
     default: "false"
 outputs:
+  cache-hits:
+    description: Newline separated exact-hit results in multi-cache order
+  matched-keys:
+    description: Newline separated matched keys in multi-cache order
+  asset-names:
+    description: Newline separated asset names in multi-cache order
+  content-hashes:
+    description: Newline separated object hashes in multi-cache order
+  cache-sizes:
+    description: Newline separated object sizes in multi-cache order
+  assets-name:
+    description: Newline separated asset names in multi-cache order
+  contents-hash:
+    description: Newline separated object hashes in multi-cache order
   cache-hit:
     description: true when all configured caches were exact hits
   matched-key:
