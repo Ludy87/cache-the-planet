@@ -79,6 +79,8 @@ inputs:
     required: false
     default: "false"
 outputs:
+  cache-results:
+    description: JSON object keyed by cache name containing per-cache outputs
   cache-hits:
     description: Newline separated exact-hit results in multi-cache order
   matched-keys:

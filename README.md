@@ -92,9 +92,26 @@ Die übrigen Action-Inputs wie `scope`, `save-scope`, `version`,
 angewendet. Bei Pull Requests ist `allow-shared-restore: true` erforderlich,
 wenn ein Shared-Cache als Fallback gelesen werden soll.
 
-Die Outputs werden von den einzelnen Restore-/Save-Läufen geschrieben. Für
-verlässliche Statusauswertung sollten die Einträge daher über ihre Cache-Keys
-und die Job-Zusammenfassung nachvollzogen werden.
+Bei genau einem Eintrag verwendet `multi-cache` die normalen Singular-Outputs
+`cache-hit`, `matched-key`, `asset-name`, `content-hash` und `cache-size`. Bei
+mehreren Einträgen werden ausschließlich die geordneten Listen-Outputs
+`cache-hits`, `matched-keys`, `assets-name`, `contents-hash` und `cache-sizes`
+gesetzt. Die Position jedes Werts entspricht der Reihenfolge in
+`multi-cache`.
+
+Zusätzlich stellt `multi-cache` mit `cache-results` ein JSON-Objekt bereit,
+das direkt nach Cache-Namen gelesen werden kann:
+
+```yaml
+- name: Read npm cache result
+  env:
+    NPM_CACHE_HIT: ${{ fromJSON(steps.cache.outputs.cache-results).npm.cache-hit }}
+    NPM_CONTENT_HASH: ${{ fromJSON(steps.cache.outputs.cache-results).npm.content-hash }}
+  run: echo "npm hit=$NPM_CACHE_HIT hash=$NPM_CONTENT_HASH"
+```
+
+Für Namen mit Sonderzeichen kann die Indexschreibweise verwendet werden:
+`${{ fromJSON(steps.cache.outputs['cache-results'])['maven-java17']['cache-hit'] }}`.
 
 ## Beispiele für Scopes
 
@@ -253,7 +270,9 @@ Restore unterstützt zusätzlich `restore-keys` und
 
 Restore-Outputs sind `cache-hit`, `matched-key`, `content-hash`, `asset-name`
 und `cache-size`. Save liefert `is-fork`, `read-only`, `content-hash`,
-`asset-name` und `cache-size`.
+`asset-name` und `cache-size`. Die `multi-cache`-Sub-Action verwendet bei
+mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
+`assets-name`, `contents-hash` und `cache-sizes`.
 
 `cache-size` bezeichnet die Größe der tatsächlich gespeicherten Objektdatei.
 

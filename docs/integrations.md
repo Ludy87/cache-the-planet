@@ -59,6 +59,25 @@ Repository; verwende dort eine GitHub-Expression wie
 `${{ github.workspace }}/.cache/m2`, niemals eine nicht expandierte Shell-
 Variable in einem `with:`-Block.
 
+### Multi-Cache-Outputs
+
+Bei genau einem `multi-cache`-Eintrag werden die Singular-Outputs
+`cache-hit`, `matched-key`, `asset-name`, `content-hash` und `cache-size`
+gesetzt. Bei zwei oder mehr Einträgen werden stattdessen die Listen-Outputs
+`cache-hits`, `matched-keys`, `assets-name`, `contents-hash` und `cache-sizes`
+gesetzt. Die Werte stehen in derselben Reihenfolge wie die Einträge in der
+`multi-cache`-Definition.
+
+Für den Zugriff nach Cache-Namen gibt es zusätzlich das JSON-Output
+`cache-results`. GitHub-Expressions müssen den String mit `fromJSON(...)`
+parsen:
+
+```yaml
+env:
+  NPM_HIT: ${{ fromJSON(steps.cache.outputs.cache-results).npm.cache-hit }}
+  MAVEN_HIT: ${{ fromJSON(steps.cache.outputs.cache-results)['maven-java17']['cache-hit'] }}
+```
+
 ### Rust und Cargo
 
 `dtolnay/rust-toolchain` installiert die Rust-Toolchain, verwaltet aber nicht

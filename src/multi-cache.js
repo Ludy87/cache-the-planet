@@ -77,6 +77,11 @@ function setListOutput(name, values) {
   );
 }
 
+function setJsonOutput(name, value) {
+  if (!process.env.GITHUB_OUTPUT) return;
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}<<MULTI_CACHE_JSON\n${JSON.stringify(value)}\nMULTI_CACHE_JSON\n`);
+}
+
 try {
   const keys = parseKeys(c.input(INPUTS.KEY));
   const entries = parseDefinitions(c.input(INPUTS.MULTI_CACHE)).map(
@@ -100,6 +105,10 @@ try {
     contentHash: results.map((result) => result["content-hash"] || ""),
     cacheSize: results.map((result) => result["cache-size"] || ""),
   };
+  const resultsByName = Object.fromEntries(
+    entries.map((entry, index) => [entry.name, results[index]]),
+  );
+  setJsonOutput("cache-results", resultsByName);
   if (entries.length === 1) {
     const [single] = results;
     for (const [name, value] of Object.entries(single)) {

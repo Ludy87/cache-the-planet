@@ -73,6 +73,8 @@ jobs:
           CONTENT_HASHES: ${{ steps.cache.outputs.contents-hash }}
           CACHE_SIZES: ${{ steps.cache.outputs.cache-sizes }}
           SINGULAR_HIT: ${{ steps.cache.outputs.cache-hit }}
+          NPM_RESULT: ${{ fromJSON(steps.cache.outputs.cache-results).npm.cache-hit }}
+          MAVEN_RESULT: ${{ fromJSON(steps.cache.outputs.cache-results)['maven-java17']['cache-hit'] }}
         shell: bash
         run: |
           test "$(printf '%s\n' "$CACHE_HITS" | wc -l)" -ge 2
@@ -81,6 +83,8 @@ jobs:
           test -n "$CONTENT_HASHES"
           test -n "$CACHE_SIZES"
           test -z "$SINGULAR_HIT"
+          test "$NPM_RESULT" = "true" || test "$NPM_RESULT" = "false"
+          test "$MAVEN_RESULT" = "true" || test "$MAVEN_RESULT" = "false"
 
       - name: Verify singular outputs for one cache
         if: ${{ inputs.restore-cache && !inputs.save-cache }}
