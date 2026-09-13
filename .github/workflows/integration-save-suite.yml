@@ -84,9 +84,13 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     uses: $/.github/workflows/build-dist.yml
     with:
-      dry-run: true
+      dry-run: ${{ !(github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository) }}
+      write-pr-branch: ${{ github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository }}
     permissions:
-      contents: read
+      contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   build-dist-trusted:
     if: ${{ github.event_name != 'pull_request' }}

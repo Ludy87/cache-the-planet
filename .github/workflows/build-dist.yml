@@ -12,6 +12,11 @@ on:
         required: false
         default: true
         type: boolean
+      write-pr-branch:
+        description: Write generated distribution only to the owner's same-repository pull request branch
+        required: false
+        default: false
+        type: boolean
     secrets:
       APP_ID:
         required: false
@@ -46,7 +51,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha || 'main' }}
+          ref: ${{ (inputs.write-pr-branch && github.event.pull_request.head.ref) || github.event.pull_request.head.sha || 'main' }}
           token: ${{ steps.bot-token.outputs.token || github.token }}
           persist-credentials: false
 
@@ -60,7 +65,7 @@ jobs:
           allow-shared-restore: true
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token }}
-          restore-only: ${{ inputs.dry-run || github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+          restore-only: ${{ inputs.dry-run || (!inputs.write-pr-branch && github.ref != format('refs/heads/{0}', github.event.repository.default_branch)) }}
           strict: true
 
       - name: Set up Node.js
@@ -76,10 +81,11 @@ jobs:
         run: npm ci --no-audit --no-fund ${{ inputs.dry-run && '--dry-run' || '' }}
 
       - name: Commit generated dist
-        if: ${{ !inputs.dry-run && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        if: ${{ !inputs.dry-run && (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || inputs.write-pr-branch) }}
         shell: bash
         env:
           BOT_TOKEN: ${{ steps.bot-token.outputs.token || github.token }}
+          TARGET_BRANCH: ${{ inputs.write-pr-branch && github.event.pull_request.head.ref || github.event.repository.default_branch }}
         run: |
           set -euo pipefail
           git remote set-url origin "https://x-access-token:${BOT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
@@ -87,8 +93,8 @@ jobs:
           git config user.name "AstraGermany-Bot[bot]"
           git config user.email "AstraGermany-Bot[bot]@users.noreply.github.com"
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            git fetch origin main
-            git rebase origin/main
+            git fetch origin "$TARGET_BRANCH"
+            git rebase "origin/$TARGET_BRANCH"
             npm run build
             git add -f dist package-lock.json
             if git diff --cached --quiet; then
@@ -96,11 +102,11 @@ jobs:
               exit 0
             fi
             git commit -m "chore: build action dist"
-            if git push origin HEAD:main; then
+            if git push origin "HEAD:$TARGET_BRANCH"; then
               exit 0
             fi
             echo "Push conflicted; retrying build (attempt $((attempt + 1)))"
-            git reset --hard origin/main
+            git reset --hard "origin/$TARGET_BRANCH"
           done
           echo "Unable to push generated dist after 10 attempts"
           exit 1
