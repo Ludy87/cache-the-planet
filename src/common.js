@@ -1511,7 +1511,8 @@ function isSafeAsset(asset) {
 }
 
 function assetNamePrefix(key) {
-  const slug = key
+  const displayKey = key.replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "");
+  const slug = displayKey
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120);
@@ -1531,6 +1532,7 @@ function assetMatchesKeyCombination(name, key) {
   const prefix = parts
     .slice(0, baseLength)
     .join("/")
+    .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120);
