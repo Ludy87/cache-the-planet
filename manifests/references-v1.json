@@ -77,20 +77,6 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
       "size": 16484081
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-140/docker-qemu/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62/v1": {
-      "object": "sha256:d6f284b1a72f4e9d33018e6e3a5f45a08fec979551a044689674c0dab5bbde6e",
-      "updated_at": "2026-09-15T06:00:47.601Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 36697913
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-140/trivy/linux-x64/trivy-v0.74.0/v1": {
-      "object": "sha256:8eba5c1d5a4d4376ee20f5d6b5640a26576f204d2a894502ce021cd4152672c5",
-      "updated_at": "2026-09-15T06:34:47.853Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 83735159
     }
   },
   "monitoring": {
