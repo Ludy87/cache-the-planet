@@ -109,6 +109,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
+      - name: Detect restored BuildKit cache
+        id: buildkit-cache
+        shell: bash
+        run: |
+          if [ -f examples/docker-cache/.cache/docker-buildx/index.json ]; then
+            echo 'cache-from=type=local,src=examples/docker-cache/.cache/docker-buildx' >> "$GITHUB_OUTPUT"
+          else
+            echo 'cache-from=' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build example image with QEMU
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -118,7 +128,7 @@ jobs:
           tags: cache-the-planet-example:qemu
           push: false
           outputs: type=cacheonly
-          cache-from: type=local,src=examples/docker-cache/.cache/docker-buildx
+          cache-from: ${{ steps.buildkit-cache.outputs.cache-from }}
           cache-to: type=local,dest=examples/docker-cache/.cache/docker-buildx-new,mode=max
 
       - name: Replace local BuildKit cache
@@ -183,6 +193,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
+      - name: Detect restored BuildKit cache
+        id: buildkit-cache
+        shell: bash
+        run: |
+          if [ -f examples/docker-cache/.cache/docker-buildx/index.json ]; then
+            echo 'cache-from=type=local,src=examples/docker-cache/.cache/docker-buildx' >> "$GITHUB_OUTPUT"
+          else
+            echo 'cache-from=' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build using restored QEMU cache
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -192,4 +212,4 @@ jobs:
           tags: cache-the-planet-example:qemu-restored
           push: false
           outputs: type=cacheonly
-          cache-from: type=local,src=examples/docker-cache/.cache/docker-buildx
+          cache-from: ${{ steps.buildkit-cache.outputs.cache-from }}
