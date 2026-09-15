@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  TRIVY_VERSION: v0.74.0
+
 jobs:
   actionlint:
     name: Actionlint and ShellCheck
@@ -76,19 +79,45 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Create AstraGermany-Bot token for trusted save
+        if: ${{ github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Restore Trivy cache asset
+        id: cache
+        uses: $/
+        with:
+          cache-name: trivy
+          save-scope: shared
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          key: trivy-${{ env.TRIVY_VERSION }}
+          allow-shared-restore: true
+          path: .cache/trivy
+          strict: true
+
       - name: Scan repository with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          version: v0.74.0
+          version: ${{ env.TRIVY_VERSION }}
           scan-type: fs
           scan-ref: .
+          cache-dir: .cache/trivy
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           exit-code: 1
+          cache: 'false'
 
   osv-scanner:
     name: OSV-Scanner
