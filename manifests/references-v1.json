@@ -1,21 +1,6 @@
 {
   "schema_version": 1,
-  "references": {
-    "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/4dac9999c9c19d5250cc4f3f1a4967b5062ba83a7cff4a405a0f60db59fc004e-cache-6ee9d8c57b16b8ee/v1": {
-      "object": "sha256:432c448dc93fb6041e59b9378ef8c5e53e5448aaf278c5fd946910614cebbec9",
-      "updated_at": "2026-09-15T09:46:23.366Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 7001850
-    },
-    "trusted/Ludy87/cache-the-planet/main/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-cache-d6d526a8c3b586bf/v1": {
-      "object": "sha256:ce7cd84dfcd6dd16ec3a6db5a4bf6f5290cd80e5c5eb9cf2f862ea5239bea32c",
-      "updated_at": "2026-09-15T09:46:27.423Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 16484584
-    }
-  },
+  "references": {},
   "monitoring": {
     "window_started_at": "2026-09-15T09:31:58.011Z",
     "writes": 27
