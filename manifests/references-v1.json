@@ -84,10 +84,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 36697913
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-140/trivy/linux-x64/trivy-v0.74.0/v1": {
+      "object": "sha256:8eba5c1d5a4d4376ee20f5d6b5640a26576f204d2a894502ce021cd4152672c5",
+      "updated_at": "2026-09-15T06:34:47.853Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 83735159
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-15T06:00:47.601Z",
-    "writes": 1
+    "writes": 2
   }
 }
