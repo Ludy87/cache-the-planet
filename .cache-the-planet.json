@@ -9,8 +9,7 @@
       "docker",
       "docker-qemu",
       "task",
-      "cargo",
-      "trivy"
+      "cargo"
     ]
   }
 }
