@@ -497,6 +497,10 @@ try {
     !== 'trusted-Ludy87-cache-the-planet-main-npm-linux-x64-key-v1--') {
     throw new Error('trusted asset name prefix was not generated correctly');
   }
+  if (assetNamePrefix('shared/Ludy87/cache-the-planet/npm/linux-x64/key-cache-0123456789abcdef/v1')
+    !== 'shared-Ludy87-cache-the-planet-npm-linux-x64-key-v1--') {
+    throw new Error('cache identity leaked into asset name prefix');
+  }
   if (!assetMatchesKeyCombination(
     assetName('shared/Ludy87/cache-the-planet/uv/linux-x64/old-key/v2', `sha256:${'b'.repeat(64)}`),
     'shared/Ludy87/cache-the-planet/uv/linux-x64/new-key/v2',
