@@ -28,6 +28,15 @@ jobs:
     permissions:
       contents: write
 
+  docker-qemu-restore-cache:
+    needs: [node-restore-cache]
+    if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}
+    uses: $/.github/workflows/docker-qemu-cache-asset-integration.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: write
+
   multi-restore-cache:
     needs: [node-restore-cache]
     if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}
