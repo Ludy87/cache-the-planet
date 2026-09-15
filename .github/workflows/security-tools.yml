@@ -104,7 +104,7 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: trivy-${{ env.TRIVY_VERSION }}
           allow-shared-restore: true
-          path: .cache/trivy
+          path: .cache/trivy/db
           strict: true
 
       - name: Scan repository with Trivy
