@@ -412,6 +412,21 @@ function runnerPlatform() {
   return `${safe(osName)}-${safe(architecture)}`;
 }
 
+const cacheIdentityFormat = "archive-v1|restore-safety-v1";
+
+function cacheIdentitySignature() {
+  const identity = JSON.stringify({
+    format: cacheIdentityFormat,
+    paths: entries().map((value) => value.replace(/\\/g, "/").trim()),
+    excludes: excludePatterns(),
+  });
+  return crypto
+    .createHash("sha256")
+    .update(identity, "utf8")
+    .digest("hex")
+    .slice(0, 16);
+}
+
 function logicalCacheKey(value, name, includeVersion = true) {
   const maxLength = configuredLimit(
     "CACHE_MAX_LOGICAL_KEY_LENGTH",
@@ -448,19 +463,20 @@ function logicalCacheKey(value, name, includeVersion = true) {
     (/^[A-Za-z0-9._-]+-[A-Za-z0-9._-]+$/.test(firstPart) &&
       withoutName.split("/").length > 1);
   const withPlatform = hasPlatform ? key : `${name}/${platform}/${withoutName}`;
-  if (withPlatform.length > maxLength) {
+  const withIdentity = `${withPlatform}-cache-${cacheIdentitySignature()}`;
+  if (withIdentity.length > maxLength) {
     throw new Error(`cache key must not exceed ${maxLength} characters`);
   }
-  if (!includeVersion) return withPlatform;
+  if (!includeVersion) return withIdentity;
   const version =
     input(INPUTS.VERSION).trim() ||
     String(configuration().version ?? "").trim() ||
     "1";
   if (!/^\d+$/.test(version))
     throw new Error("version must contain numbers only");
-  const complete = /\/v[A-Za-z0-9._-]+$/.test(withPlatform)
-    ? withPlatform
-    : `${withPlatform}/v${version}`;
+  const complete = /\/v[A-Za-z0-9._-]+$/.test(withIdentity)
+    ? withIdentity
+    : `${withIdentity}/v${version}`;
   if (complete.length > maxLength) {
     throw new Error(`cache key must not exceed ${maxLength} characters`);
   }

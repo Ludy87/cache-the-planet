@@ -256,16 +256,16 @@ test("compression level uses the documented configuration precedence", () => {
 });
 
 test("scope and version use JSON defaults without overriding explicit inputs", () => {
-  assert.equal(
+  assert.match(
     runConfiguredDefaults({ scope: "shared", version: "7" }).stdout,
-    "shared|shared/owner/repo/npm/linux-x64/hash/v7",
+    /^shared\|shared\/owner\/repo\/npm\/linux-x64\/hash-cache-[0-9a-f]{16}\/v7$/,
   );
-  assert.equal(
+  assert.match(
     runConfiguredDefaults(
       { scope: "shared", version: "7" },
       { INPUT_SCOPE: "trusted", INPUT_VERSION: "9" },
     ).stdout,
-    "trusted|trusted/owner/repo/main/npm/linux-x64/hash/v9",
+    /^trusted\|trusted\/owner\/repo\/main\/npm\/linux-x64\/hash-cache-[0-9a-f]{16}\/v9$/,
   );
   assert.notEqual(
     runConfiguredDefaults({ scope: "invalid", version: "7" }).status,
