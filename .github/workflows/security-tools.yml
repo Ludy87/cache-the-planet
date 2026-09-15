@@ -100,10 +100,8 @@ jobs:
         uses: $/
         with:
           cache-name: trivy
-          save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: trivy-${{ env.TRIVY_VERSION }}
-          allow-shared-restore: true
           path: .cache/trivy/db
           strict: true
 
