@@ -415,10 +415,13 @@ function runnerPlatform() {
 const cacheIdentityFormat = "archive-v1|restore-safety-v1";
 
 function cacheIdentitySignature() {
+  const paths = entries().map((value) => value.replace(/\\/g, "/").trim());
+  const excludes = excludePatterns();
+  if (!paths.length && !excludes.length) return "";
   const identity = JSON.stringify({
     format: cacheIdentityFormat,
-    paths: entries().map((value) => value.replace(/\\/g, "/").trim()),
-    excludes: excludePatterns(),
+    paths,
+    excludes,
   });
   return crypto
     .createHash("sha256")
@@ -463,7 +466,10 @@ function logicalCacheKey(value, name, includeVersion = true) {
     (/^[A-Za-z0-9._-]+-[A-Za-z0-9._-]+$/.test(firstPart) &&
       withoutName.split("/").length > 1);
   const withPlatform = hasPlatform ? key : `${name}/${platform}/${withoutName}`;
-  const withIdentity = `${withPlatform}-cache-${cacheIdentitySignature()}`;
+  const identity = cacheIdentitySignature();
+  const withIdentity = identity
+    ? `${withPlatform}-cache-${identity}`
+    : withPlatform;
   if (withIdentity.length > maxLength) {
     throw new Error(`cache key must not exceed ${maxLength} characters`);
   }
