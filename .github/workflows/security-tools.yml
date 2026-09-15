@@ -14,6 +14,7 @@ permissions:
 
 env:
   TRIVY_VERSION: v0.74.0
+  NODE_VERSION: 24
 
 jobs:
   actionlint:
@@ -79,19 +80,16 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
       - name: Scan repository with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: ${{ env.TRIVY_VERSION }}
           scan-type: fs
           scan-ref: .
-          cache-dir: .cache/trivy
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           exit-code: 1
@@ -123,7 +121,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           check-latest: true
       - name: Audit locked dependencies
         shell: bash
@@ -141,7 +139,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           check-latest: true
       - name: Validate lockfile package graph
         shell: bash
@@ -162,7 +160,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           check-latest: true
       - name: Generate CycloneDX SBOM
         shell: bash
@@ -173,7 +171,7 @@ jobs:
           name: npm-sbom
           path: npm-sbom.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
 
   dependency-review:
     name: Dependency review
