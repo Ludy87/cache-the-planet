@@ -694,16 +694,6 @@ function scopedRestorePrefix(prefix) {
   const selectedScope =
     scope === "auto" ? (pullRequest ? "untrusted" : "trusted") : scope;
   if (selectedScope === "shared") {
-    if (pullRequest)
-      log("scope=shared is mapped to an isolated untrusted PR cache");
-    if (pullRequest) {
-      const number = pullRequestNumber();
-      if (!number)
-        throw new Error(
-          "pull request number is required for an automatic restore key",
-        );
-      return `untrusted/${sourceRepository}/pr-${number}/${logicalKey}`;
-    }
     return `shared/${sourceRepository}/${logicalKey}`;
   }
   if (selectedScope === "untrusted") {

@@ -79,6 +79,7 @@ jobs:
         uses: $/
         with:
           cache-name: docker-qemu
+          scope: shared
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
