@@ -26,7 +26,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   docker-qemu-restore-cache:
     needs: [node-restore-cache]
@@ -35,7 +35,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   multi-restore-cache:
     needs: [node-restore-cache]
@@ -53,7 +53,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   uv-python-restore-cache:
     needs: [uv-restore-cache]
@@ -62,7 +62,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   task-restore-cache:
     needs: [uv-python-restore-cache]
@@ -71,7 +71,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   java-restore-cache:
     needs: [task-restore-cache]
@@ -80,7 +80,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   gradle-restore-cache:
     needs: [java-restore-cache]
@@ -89,7 +89,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   docker-restore-cache:
     needs: [gradle-restore-cache]
@@ -98,7 +98,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   rust-restore-cache:
     needs: [docker-restore-cache]
@@ -107,7 +107,7 @@ jobs:
     with:
       restore-cache: true
     permissions:
-      contents: write
+      contents: read
 
   all-restore-checks-passed:
     name: All restore checks passed

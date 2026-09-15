@@ -20,8 +20,8 @@ permissions:
 
 jobs:
   test:
-    needs: [build-dist-pr, build-dist-trusted]
-    if: ${{ !cancelled() && (needs.build-dist-pr.result == 'success' || needs.build-dist-pr.result == 'skipped') && (needs.build-dist-trusted.result == 'success' || needs.build-dist-trusted.result == 'skipped') }}
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     name: Run npm tests and integration tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -80,8 +80,7 @@ jobs:
       - name: Run integration tests
         run: bash tests/run.sh
 
-  build-dist-pr:
-    if: ${{ github.event_name == 'pull_request' }}
+  build-dist:
     uses: $/.github/workflows/build-dist.yml
     with:
       dry-run: ${{ !(github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository) }}
@@ -92,25 +91,14 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
-  build-dist-trusted:
-    if: ${{ github.event_name != 'pull_request' }}
-    uses: $/.github/workflows/build-dist.yml
-    with:
-      dry-run: false
-    permissions:
-      contents: write
-    secrets:
-      APP_ID: ${{ secrets.APP_ID }}
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-
   node-save-cache:
-    needs: [build-dist-pr, build-dist-trusted]
-    if: ${{ !cancelled() && (needs.build-dist-pr.result == 'success' || needs.build-dist-pr.result == 'skipped') && (needs.build-dist-trusted.result == 'success' || needs.build-dist-trusted.result == 'skipped') }}
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -122,7 +110,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -134,7 +122,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -146,7 +134,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -158,7 +146,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -170,7 +158,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -182,7 +170,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -194,7 +182,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -206,7 +194,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -218,7 +206,7 @@ jobs:
     with:
       save-cache: true
     permissions:
-      contents: write
+      contents: read
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
@@ -227,8 +215,7 @@ jobs:
     name: All save checks passed
     if: ${{ !cancelled() }}
     needs:
-      - build-dist-pr
-      - build-dist-trusted
+      - build-dist
       - node-save-cache
       - uv-save-cache
       - uv-python-save-cache
@@ -248,8 +235,7 @@ jobs:
       - name: Verify every required job passed (or was legitimately skipped)
         env:
           JOB_RESULTS: |
-            build-dist-pr=${{ needs.build-dist-pr.result }}
-            build-dist-trusted=${{ needs.build-dist-trusted.result }}
+            build-dist=${{ needs.build-dist.result }}
             node-save-cache=${{ needs.node-save-cache.result }}
             uv-save-cache=${{ needs.uv-save-cache.result }}
             uv-python-save-cache=${{ needs.uv-python-save-cache.result }}
