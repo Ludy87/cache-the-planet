@@ -88,7 +88,7 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
           allow-shared-restore: true
-          path: examples/docker-cache/.cache/docker-qemu
+          path: examples/docker-cache/.cache
           strict: true
 
       - name: Pull and archive QEMU image on cache miss
