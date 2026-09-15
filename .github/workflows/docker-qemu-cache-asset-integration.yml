@@ -177,7 +177,6 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
           path: examples/docker-cache/.cache
-          allow-shared-restore: true
           restore-only: true
           strict: true
 
