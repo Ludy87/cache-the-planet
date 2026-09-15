@@ -79,31 +79,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Create AstraGermany-Bot token for trusted save
-        if: ${{ github.event_name != 'pull_request' || (github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository) }}
-        id: bot-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: Ludy87
-          repositories: cache-the-planet
-          permission-contents: write
 
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
-      - name: Restore Trivy cache asset
-        id: cache
-        uses: $/
-        with:
-          cache-name: trivy
-          token: ${{ steps.bot-token.outputs.token || github.token }}
-          key: trivy-${{ env.TRIVY_VERSION }}
-          path: .cache/trivy/db
-          strict: true
 
       - name: Scan repository with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -115,17 +95,6 @@ jobs:
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           exit-code: 1
-          cache: 'false'
-          
-      - name: Upload trivy cache artifact for trusted publisher
-        # if: ${{ (steps.cache.outputs.is-fork == 'true' || steps.cache.outputs.read-only == 'true') && success() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-trivy-trivy-${{ env.TRIVY_VERSION }}-v1
-          path: .cache/trivy/db
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 1
 
   osv-scanner:
     name: OSV-Scanner
