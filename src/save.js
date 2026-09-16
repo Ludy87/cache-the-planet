@@ -402,6 +402,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
     });
+    if (untrustedKey && existingReference?.object && existingReference.object !== hash) {
+      await deleteUnreferencedObjects(repository, [existingReference.object], updated);
+    }
     if (sharedKey || trustedKey) {
       const replacement = await replaceOlderReferences(repository, key);
       updated = replacement.manifest;
