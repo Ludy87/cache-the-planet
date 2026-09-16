@@ -282,7 +282,6 @@ async function main() {
             INPUT_VERSION: parsed.version,
             INPUT_PATH: directory,
             INPUT_STRICT: "false",
-            INPUT_STRICT_SAVE: "true",
           },
           stdio: "inherit",
         },
