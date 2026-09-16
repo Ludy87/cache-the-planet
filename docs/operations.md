@@ -96,7 +96,8 @@ Vor dem produktiven Einsatz sollten folgende Punkte geprüft werden:
 
 Ohne `strict: true` behandelt Restore fehlende, beschädigte oder nicht
 entschlüsselbare Cache-Objekte als Miss und lässt den Workflow weiterlaufen.
-Mit `strict: true` wird derselbe Fehler an den Workflow weitergegeben. Save-
-und Verwaltungsfehler werden als Step-Fehler gemeldet; ein teilweise
+Mit `strict: true` wird derselbe Restore-Fehler an den Workflow weitergegeben.
+Save-Fehler werden unabhängig davon mit `strict-save: true` als Step-Fehler
+gemeldet; ein teilweise
 hochgeladenes, nicht referenziertes Objekt kann anschließend durch GC entfernt
 werden.

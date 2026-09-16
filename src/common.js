@@ -805,12 +805,12 @@ function summary(title, fields) {
   );
 }
 
-function fail(error) {
+function fail(error, strictInput = INPUTS.STRICT) {
   const message = error?.message || String(error);
   const debug =
     process.env.ACTIONS_STEP_DEBUG === "true" ||
     process.env.RUNNER_DEBUG === "1";
-  if (String(input(INPUTS.STRICT)).toLowerCase() !== "true") {
+  if (String(input(strictInput)).toLowerCase() !== "true") {
     console.log(`::warning::cache ignored: ${message}`);
     if (debug && error?.stack) console.error(error.stack);
     return false;

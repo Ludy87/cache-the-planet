@@ -109,8 +109,8 @@ verändert der Pull Request keinen Shared-Cache. Nach dem Merge auf `main` kann
 derselbe logische Key als `shared` gespeichert werden.
 
 Für untrusted-Pull-Request-Caches ist pro PR, Cache-Name, Plattform und Version
-maximal ein Cache erlaubt. Mit `strict: true` führt ein zweiter Inhalt zu einem
-Fehler. Mit `strict: false` wird der alte untrusted-Verweis atomar durch den
+maximal ein Cache erlaubt. Mit `strict-save: true` führt ein zweiter Inhalt zu einem
+Fehler. Mit `strict-save: false` wird der alte untrusted-Verweis atomar durch den
 neuen ersetzt; das alte Asset wird nur gelöscht, wenn es nicht mehr anderweitig
 referenziert wird. Shared-Caches werden dabei niemals automatisch ersetzt.
 
