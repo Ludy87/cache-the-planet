@@ -86,7 +86,6 @@ jobs:
         uses: $/
         with:
           cache-name: gradle-java${{ steps.java-version.outputs.JAVA_VERSION }}
-          scope: shared
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
