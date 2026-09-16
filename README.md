@@ -259,7 +259,7 @@ Restore und Save benötigen `cache-name`, `key` und `path`. `repository` ist
 optional; ohne Angabe werden zuerst `CACHE_REPOSITORY` und anschließend das
 Repository des laufenden Workflows (`GITHUB_REPOSITORY`) verwendet.
 Weitere gemeinsame Inputs sind `scope`, `os`, `arch`, `version`, `token`,
-`encryption-key`, `strict`, `config-file` und `manifest-branch`.
+`encryption-key`, `strict`, `strict-save`, `config-file` und `manifest-branch`.
 
 Mit `save-scope` kann der Post-Save einen abweichenden Scope verwenden; ohne
 Angabe wird der Wert von `scope` übernommen.
@@ -291,7 +291,8 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `path` | Zeilenweise Workspace-Pfade; erforderlich | Dateien oder Verzeichnisse, die gespeichert beziehungsweise wiederhergestellt werden. |
 | `token` | GitHub-Token | Token für Contents- und Release-API; ohne Angabe wird `GITHUB_TOKEN` verwendet. |
 | `encryption-key` | Secret/Passphrase; Standard: leer | Aktiviert AES-256-GCM. Derselbe Schlüssel muss bei Save und Restore verwendet werden und darf nicht an Forks gelangen. |
-| `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; sonst gilt ein beschädigtes Asset als Cache-Miss. |
+| `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Restore-Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; Save-Fehler werden über `strict-save` gesteuert. |
+| `strict-save` | `true`/`false`; Standard: Wert von `strict` | Steuert Save-Fehler unabhängig von Restore. Wenn nicht angegeben, wird `strict` übernommen; bei `false` wird ein bestehender Untrusted-PR-Verweis durch den neuen ersetzt. |
 | `config-file` | Workspace-relative JSON-Datei | Zusätzliche Konfiguration für Repository, Scope, Version, Limits und Allowlists. |
 | `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der `manifests/references-v1.json` enthält. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |

@@ -54,9 +54,13 @@ inputs:
     required: false
     default: ""
   strict:
-    description: "Fail the step on cache errors"
+    description: "Deprecated; save errors are controlled by strict-save"
     required: false
     default: "false"
+  strict-save:
+    description: "Fail the save step on cache errors"
+    required: false
+    default: ""
   config-file:
     description: "Optional JSON configuration file; environment variables override its values"
     required: false

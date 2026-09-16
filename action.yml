@@ -47,9 +47,13 @@ inputs:
     required: false
     default: ""
   strict:
-    description: "Fail the step on cache errors"
+    description: "Fail the restore step on cache errors"
     required: false
     default: "false"
+  strict-save:
+    description: "Fail the save step on cache errors"
+    required: false
+    default: ""
   config-file:
     description: "Optional JSON configuration file; environment variables override its values"
     required: false

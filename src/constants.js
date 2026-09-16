@@ -28,6 +28,7 @@ const INPUTS = Object.freeze({
   SCOPE: "scope",
   TOKEN: "token",
   STRICT: "strict",
+  STRICT_SAVE: "strict-save",
   UNTRUSTED_TTL_HOURS: "untrusted-ttl-hours",
   VERSION: "version",
 });

@@ -66,7 +66,7 @@ function inputEnvironmentNames(name) {
     throw new TypeError("input name must be a non-empty string");
   }
   const exact = `INPUT_${name.toUpperCase()}`;
-  const normalized = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
+  const normalized = `INPUT_${name.replace(/[- ]/g, "_").toUpperCase()}`;
   return exact === normalized ? [exact] : [exact, normalized];
 }
 
@@ -805,12 +805,12 @@ function summary(title, fields) {
   );
 }
 
-function fail(error) {
+function fail(error, strictInput = INPUTS.STRICT) {
   const message = error?.message || String(error);
   const debug =
     process.env.ACTIONS_STEP_DEBUG === "true" ||
     process.env.RUNNER_DEBUG === "1";
-  if (String(input(INPUTS.STRICT)).toLowerCase() !== "true") {
+  if (String(input(strictInput)).toLowerCase() !== "true") {
     console.log(`::warning::cache ignored: ${message}`);
     if (debug && error?.stack) console.error(error.stack);
     return false;
