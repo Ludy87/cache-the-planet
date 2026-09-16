@@ -95,7 +95,6 @@ jobs:
             ${{ env.GRADLE_USER_HOME }}/caches
             ${{ env.GRADLE_USER_HOME }}/wrapper
           strict: true
-          strict-save: false
 
       - name: Populate Gradle cache
         working-directory: examples/gradle-cache
