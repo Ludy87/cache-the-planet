@@ -153,8 +153,8 @@ Shared-Referenzen werden nur bei einem manuellen Lauf mit dem Schalter
 `delete_shared` einbezogen.
 
 Für untrusted-Pull-Request-Referenzen gilt pro PR, Cache-Name, Plattform und
-Version ein Ein-Cache-Limit. Bei `strict: true` wird ein weiterer Inhalt
-abgelehnt. Bei `strict: false` ersetzt die Action den bisherigen untrusted-
+Version ein Ein-Cache-Limit. Bei `strict-save: true` wird ein weiterer Inhalt
+abgelehnt. Bei `strict-save: false` ersetzt die Action den bisherigen untrusted-
 Verweis atomar und entfernt das alte Asset nur bei fehlenden weiteren
 Referenzen. Shared-Referenzen werden nicht automatisch ersetzt.
 
