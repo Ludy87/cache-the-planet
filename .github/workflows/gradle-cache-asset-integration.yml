@@ -75,11 +75,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
+      - name: get java version
+        id: java-version
+        run: |
+          echo "JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')" >> "$GITHUB_ENV"
+
       - name: Restore Gradle cache asset
         id: cache
         uses: $/
         with:
-          cache-name: gradle-java17
+          cache-name: gradle-java${{ steps.java-version.outputs.JAVA_VERSION }}
           scope: shared
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
@@ -144,11 +149,16 @@ jobs:
           ref: main
           persist-credentials: false
 
+      - name: get java version
+        id: java-version
+        run: |
+          echo "JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')" >> "$GITHUB_ENV"
+
       - name: Restore Gradle cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
         uses: $/
         with:
-          cache-name: gradle-java17
+          cache-name: gradle-java${{ steps.java-version.outputs.JAVA_VERSION }}
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
