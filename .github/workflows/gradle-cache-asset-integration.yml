@@ -117,7 +117,7 @@ jobs:
             "$GRADLE_USER_HOME/caches"
             "$GRADLE_USER_HOME/wrapper"
           include-hidden-files: true
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 1
 
   restore-cache:
