@@ -165,7 +165,7 @@ jobs:
 
   java-save-cache:
     needs: [task-save-cache]
-    if: ${{ !cancelled() && needs.task-save-cache.result == 'success' }}
+    if: ${{ !cancelled() && (needs.task-save-cache.result == 'success' || needs.task-save-cache.result == 'skipped') }}
     uses: $/.github/workflows/maven-cache-asset-integration.yml
     with:
       save-cache: true
