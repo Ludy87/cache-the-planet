@@ -29,13 +29,6 @@
       "created_by": "Ludy87",
       "size": 1334198
     },
-    "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/4dac9999c9c19d5250cc4f3f1a4967b5062ba83a7cff4a405a0f60db59fc004e-cache-6ee9d8c57b16b8ee/v1": {
-      "object": "sha256:556e824879621b7e48527b4477a0199412b7e4ecdbf55f09a7c5fa2bca5a8ea4",
-      "updated_at": "2026-09-16T16:55:48.269Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 7001920
-    },
     "trusted/Ludy87/cache-the-planet/main/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-cache-d6d526a8c3b586bf/v1": {
       "object": "sha256:f2e800d602debbaa51d6ecc2cb91badfbef4a0e89a00fd6b1b92356113ee47c1",
       "updated_at": "2026-09-16T16:55:50.485Z",
