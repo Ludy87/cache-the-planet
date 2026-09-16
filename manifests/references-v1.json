@@ -98,10 +98,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 7001854
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-151/cargo/linux-x64/ef44e01f1329b63a5d307e2e7eda7b1c55a2f53009b3551a4a8583405609c066-cache-4a838623dd2b2475/v1": {
+      "object": "sha256:5aac244602986a8dec6b384cbad4bfa8e735404c731f3dd7e9c0ff6be642efd6",
+      "updated_at": "2026-09-16T17:28:26.529Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 1338256
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-16T16:44:41.032Z",
-    "writes": 22
+    "writes": 23
   }
 }
