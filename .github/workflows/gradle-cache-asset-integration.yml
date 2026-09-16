@@ -89,8 +89,8 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
           path: |
-            "$GRADLE_USER_HOME/caches"
-            "$GRADLE_USER_HOME/wrapper"
+            ${{ env.GRADLE_USER_HOME }}/caches
+            ${{ env.GRADLE_USER_HOME }}/wrapper
           strict: true
 
       - name: Populate Gradle cache
@@ -112,10 +112,10 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit == 'false' && github.event_name == 'pull_request' && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-gradle-java${{ needs.hash_pr.outputs.java_version }}-${{ needs.hash_pr.outputs.files_hash }}-v"$VERSION"
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-gradle-java${{ needs.hash_pr.outputs.java_version }}-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
           path: |
-            "$GRADLE_USER_HOME/caches"
-            "$GRADLE_USER_HOME/wrapper"
+            ${{ env.GRADLE_USER_HOME }}/caches
+            ${{ env.GRADLE_USER_HOME }}/wrapper
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 1
@@ -154,8 +154,8 @@ jobs:
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
-            "$GRADLE_USER_HOME/caches"
-            "$GRADLE_USER_HOME/wrapper"
+            ${{ env.GRADLE_USER_HOME }}/caches
+            ${{ env.GRADLE_USER_HOME }}/wrapper
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
