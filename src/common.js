@@ -1515,6 +1515,7 @@ function assetNamePrefix(key) {
   const displayKey =
     parts.length >= 3 ? [parts[0], ...parts.slice(3)].join("/") : key;
   const slug = displayKey
+    .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return `${slug}--`;
