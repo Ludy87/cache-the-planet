@@ -1511,11 +1511,13 @@ function isSafeAsset(asset) {
 }
 
 function assetNamePrefix(key) {
-  const displayKey = key.replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "");
+  const parts = key.split("/");
+  const displayKey =
+    parts.length >= 3 ? [parts[0], ...parts.slice(3)].join("/") : key;
   const slug = displayKey
+    .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")
     .replace(/[^A-Za-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 181);
+    .replace(/^-+|-+$/g, "");
   return `${slug}--`;
 }
 
@@ -1529,14 +1531,24 @@ function assetMatchesKeyCombination(name, key) {
   const baseLength = isShared ? 5 : 6;
   const version = parts.at(-1);
   if (!version || (!isShared && !key.startsWith("trusted/"))) return false;
-  const prefix = parts
+  const prefix = [parts[0], ...parts.slice(3, baseLength)]
+    .join("/")
+    .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const legacyPrefix = parts
     .slice(0, baseLength)
     .join("/")
     .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")
     .replace(/[^A-Za-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 181);
-  if (!name.startsWith(`${prefix}-`) || !hashFromAssetName(name)) return false;
+    .replace(/^-+|-+$/g, "");
+  if (
+    ![prefix, legacyPrefix].some((candidate) =>
+      name.startsWith(`${candidate}-`),
+    ) ||
+    !hashFromAssetName(name)
+  )
+    return false;
   return isShared || name.includes(`-${version}--`);
 }
 
