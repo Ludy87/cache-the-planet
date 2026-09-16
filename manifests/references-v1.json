@@ -79,11 +79,11 @@
       "size": 1334202
     },
     "untrusted/Ludy87/cache-the-planet/pr-127/cargo/linux-x64/ef44e01f1329b63a5d307e2e7eda7b1c55a2f53009b3551a4a8583405609c066-cache-2e6d6a6e008fcadd/v1": {
-      "object": "sha256:5de12ccc96a6cf1216aa7f2c76b96e3cac0553c11274c8d23e345fc52a0ae231",
-      "updated_at": "2026-09-15T10:09:36.450Z",
+      "object": "sha256:c4445519dd51f87b908a524122bc405568c70c1ee65773839fe550014875202a",
+      "updated_at": "2026-09-16T09:26:22.852Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
-      "size": 1338246
+      "size": 1338255
     },
     "untrusted/Ludy87/cache-the-planet/pr-127/docker/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-cache-76e8861bd3739d90/v2": {
       "object": "sha256:7cd383cd7e7fa3f05641586b351b0e3ac5d95a4cf269f3e887228236978d6fb7",
@@ -151,6 +151,6 @@
   },
   "monitoring": {
     "window_started_at": "2026-09-16T09:06:51.388Z",
-    "writes": 3
+    "writes": 4
   }
 }
