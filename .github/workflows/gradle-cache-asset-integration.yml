@@ -18,7 +18,7 @@ on:
         required: false
 
 env:
-  # GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle
+  GRADLE_USER_HOME: ~/.gradle
   FILES_TO_HASH: |
     examples/gradle-cache/build.gradle
     examples/gradle-cache/settings.gradle
