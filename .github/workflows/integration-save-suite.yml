@@ -93,7 +93,7 @@ jobs:
 
   node-save-cache:
     needs: [build-dist]
-    if: false  # if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
@@ -105,7 +105,7 @@ jobs:
 
   docker-qemu-save-cache:
     needs: [node-save-cache]
-    if: false  # if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
+    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-qemu-cache-asset-integration.yml
     with:
       save-cache: true
@@ -129,7 +129,7 @@ jobs:
 
   uv-save-cache:
     needs: [multi-save-cache]
-    if: false  # if: ${{ !cancelled() && needs.multi-save-cache.result == 'success' }}
+    if: ${{ !cancelled() && needs.multi-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-cache-asset-integration.yml
     with:
       save-cache: true
@@ -141,7 +141,7 @@ jobs:
 
   uv-python-save-cache:
     needs: [uv-save-cache]
-    if: false  # if: false  # if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
+    if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-python-cache-asset-integration.yml
     with:
       save-cache: true
@@ -189,7 +189,7 @@ jobs:
 
   docker-save-cache:
     needs: [gradle-save-cache]
-    if: false  # if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
+    if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-cache-asset-integration.yml
     with:
       save-cache: true
@@ -201,7 +201,7 @@ jobs:
 
   rust-save-cache:
     needs: [docker-save-cache]
-    if: false  # if: ${{ !cancelled() && needs.docker-save-cache.result == 'success' }}
+    if: ${{ !cancelled() && needs.docker-save-cache.result == 'success' }}
     uses: $/.github/workflows/rust-cache-asset-integration.yml
     with:
       save-cache: true
