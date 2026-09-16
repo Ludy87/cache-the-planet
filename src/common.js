@@ -1528,9 +1528,11 @@ function assetName(key, hash) {
 function assetMatchesKeyCombination(name, key) {
   const parts = key.split("/");
   const isShared = key.startsWith("shared/");
+  const isTrusted = key.startsWith("trusted/");
+  const isUntrusted = key.startsWith("untrusted/");
   const baseLength = isShared ? 5 : 6;
   const version = parts.at(-1);
-  if (!version || (!isShared && !key.startsWith("trusted/"))) return false;
+  if (!version || (!isShared && !isTrusted && !isUntrusted)) return false;
   const prefix = [parts[0], ...parts.slice(3, baseLength)]
     .join("/")
     .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")

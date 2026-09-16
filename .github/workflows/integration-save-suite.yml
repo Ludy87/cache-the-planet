@@ -9,6 +9,7 @@ on:
       - "manifests/**"
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 concurrency:
@@ -19,6 +20,45 @@ permissions:
   contents: read
 
 jobs:
+  should-run:
+    name: Determine whether integration suite should run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.head_commit.id }}
+        shell: bash
+        run: |
+          if [[ "$EVENT_NAME" != "push" ]]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$REF" != "refs/heads/main" ]]; then
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          pr_count=$(gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/$REPOSITORY/commits/$COMMIT_SHA/pulls" \
+            --jq 'length')
+
+          if [[ "$pr_count" -gt 0 ]]; then
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          fi
+
   test:
     needs: [build-dist]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
@@ -81,6 +121,7 @@ jobs:
         run: bash tests/run.sh
 
   build-dist:
+    needs: [should-run]
     uses: $/.github/workflows/build-dist.yml
     with:
       dry-run: ${{ !(github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository) }}
