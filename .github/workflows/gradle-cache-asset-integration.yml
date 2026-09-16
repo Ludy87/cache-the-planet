@@ -78,7 +78,8 @@ jobs:
       - name: get java version
         id: java-version
         run: |
-          echo "JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')" >> "$GITHUB_ENV"
+          JAVA_VERSION="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)"
+          echo "JAVA_VERSION=$JAVA_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Restore Gradle cache asset
         id: cache
@@ -152,7 +153,8 @@ jobs:
       - name: get java version
         id: java-version
         run: |
-          echo "JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')" >> "$GITHUB_ENV"
+          JAVA_VERSION="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)"
+          echo "JAVA_VERSION=$JAVA_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Restore Gradle cache asset - ${{ matrix.scope-matrix.scope }}
         id: cache-auto
