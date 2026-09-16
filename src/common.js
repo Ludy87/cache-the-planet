@@ -66,7 +66,7 @@ function inputEnvironmentNames(name) {
     throw new TypeError("input name must be a non-empty string");
   }
   const exact = `INPUT_${name.toUpperCase()}`;
-  const normalized = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
+  const normalized = `INPUT_${name.replace(/[- ]/g, "_").toUpperCase()}`;
   return exact === normalized ? [exact] : [exact, normalized];
 }
 

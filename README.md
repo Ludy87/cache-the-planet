@@ -292,7 +292,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `token` | GitHub-Token | Token für Contents- und Release-API; ohne Angabe wird `GITHUB_TOKEN` verwendet. |
 | `encryption-key` | Secret/Passphrase; Standard: leer | Aktiviert AES-256-GCM. Derselbe Schlüssel muss bei Save und Restore verwendet werden und darf nicht an Forks gelangen. |
 | `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Restore-Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; Save-Fehler werden über `strict-save` gesteuert. |
-| `strict-save` | `true`/`false`; Standard: `false` | Bei `true` werden Save-Fehler als Step-Fehler gemeldet; bei `false` wird ein bestehender Untrusted-PR-Verweis durch den neuen ersetzt. |
+| `strict-save` | `true`/`false`; Standard: Wert von `strict` | Steuert Save-Fehler unabhängig von Restore. Wenn nicht angegeben, wird `strict` übernommen; bei `false` wird ein bestehender Untrusted-PR-Verweis durch den neuen ersetzt. |
 | `config-file` | Workspace-relative JSON-Datei | Zusätzliche Konfiguration für Repository, Scope, Version, Limits und Allowlists. |
 | `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der `manifests/references-v1.json` enthält. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |

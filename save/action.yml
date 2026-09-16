@@ -60,7 +60,7 @@ inputs:
   strict-save:
     description: "Fail the save step on cache errors"
     required: false
-    default: "false"
+    default: ""
   config-file:
     description: "Optional JSON configuration file; environment variables override its values"
     required: false
