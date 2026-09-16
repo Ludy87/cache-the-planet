@@ -1515,7 +1515,7 @@ function assetNamePrefix(key) {
   const slug = displayKey
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
+    .slice(0, 181);
   return `${slug}--`;
 }
 
@@ -1535,7 +1535,7 @@ function assetMatchesKeyCombination(name, key) {
     .replace(/-cache-[0-9a-f]{16}(?=\/|$)/gi, "")
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
+    .slice(0, 181);
   if (!name.startsWith(`${prefix}-`) || !hashFromAssetName(name)) return false;
   return isShared || name.includes(`-${version}--`);
 }
