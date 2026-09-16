@@ -12,7 +12,7 @@ const { INPUTS } = require("./constants");
     const manifest = await c.refs(repository);
     const candidates = [];
     if (
-      c.cacheScope() === "auto" &&
+      (c.cacheScope() === "auto" || c.cacheScope() === "shared") &&
       (String(c.input(INPUTS.ALLOW_SHARED_RESTORE)).toLowerCase() === "true" ||
         c.eventName() !== "pull_request")
     ) {
@@ -24,7 +24,10 @@ const { INPUTS } = require("./constants");
       .split(/\r?\n/)
       .map((value) => value.trim())
       .filter(Boolean)) {
-      if (c.cacheScope() === "auto" && !prefix.startsWith("shared/")) {
+      if (
+        (c.cacheScope() === "auto" || c.cacheScope() === "shared") &&
+        !prefix.startsWith("shared/")
+      ) {
         // On auto, prefer a verified shared cache, then use the normal
         // trusted (main/tag) or isolated untrusted (PR) namespace.
         if (
