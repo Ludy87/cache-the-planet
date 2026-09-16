@@ -195,7 +195,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         return;
       }
     }
-    if (existingReference?.object) {
+    if (existingReference?.object && !untrustedKey) {
       const existingAsset = await c.object(
         repository,
         existingReference.object,
