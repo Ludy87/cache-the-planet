@@ -1,13 +1,6 @@
 {
   "schema_version": 1,
   "references": {
-    "shared/Ludy87/cache-the-planet/gradle-java17/linux-x64/c1d375516907c26a15ae6879c6193b5cba5f54fd44e3d25d9d36d6df4793e02b-cache-4115248ab6c1bca1/v1": {
-      "object": "sha256:0526f8cd7b121cc961ff23e4bdb2a78bc490ec85fc8be1f8b4b65f3dafa4cff9",
-      "updated_at": "2026-09-16T16:54:03.514Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 1873442
-    },
     "shared/Ludy87/cache-the-planet/docker/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-cache-a597a7f7b28a4b72/v2": {
       "object": "sha256:daca0d85c0a79fb4889053569961813eeb7551d4a6c85b6f965a02a5b550ac8f",
       "updated_at": "2026-09-16T16:54:33.893Z",
