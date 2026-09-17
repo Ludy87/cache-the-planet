@@ -21,6 +21,7 @@ env:
   FILES_TO_HASH: |
     examples/rust-cache/Cargo.toml
     examples/rust-cache/Cargo.lock
+  VERSION: 1
 
 permissions:
   contents: read
@@ -84,8 +85,14 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          path: .cache/cargo
-          strict: true
+          path: |
+            .cache/cargo/bin
+            .cache/cargo/.crates.toml
+            .cache/cargo/.crates2.json
+            .cache/cargo/registry
+            .cache/cargo/git
+          version: ${{ env.VERSION }}
+          strict: false
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
@@ -108,11 +115,16 @@ jobs:
           echo "Cache Hit: $CACHE_HIT"
 
       - name: Upload rust Cargo cache artifact for trusted publisher
-        if: ${{ github.event_name == 'pull_request' && success() }}
+        if: ${{ steps.cache.outputs.cache-hit == 'false' && github.event_name == 'pull_request' && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v1
-          path: .cache/cargo
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
+          path: |
+            .cache/cargo/bin
+            .cache/cargo/.crates.toml
+            .cache/cargo/.crates2.json
+            .cache/cargo/registry
+            .cache/cargo/git
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -149,7 +161,13 @@ jobs:
           cache-name: cargo
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          path: .cache/cargo
+          path: |
+            .cache/cargo/bin
+            .cache/cargo/.crates.toml
+            .cache/cargo/.crates2.json
+            .cache/cargo/registry
+            .cache/cargo/git
+          version: ${{ env.VERSION }}
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
