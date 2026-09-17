@@ -1840,14 +1840,18 @@ function restorePaths() {
 }
 
 function assertArchiveMatchesRestorePaths(names, paths) {
-  if (paths.includes(".")) return;
-  const normalizedNames = names.map((name) =>
-    name.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/$/, ""),
-  );
+  const normalize = (value) => {
+    let normalized = String(value).replace(/\\/g, "/");
+    while (normalized.startsWith("./")) normalized = normalized.slice(2);
+    return normalized.replace(/\/+$/, "") || ".";
+  };
+  const allowed = paths.map(normalize);
+  if (allowed.includes(".")) return;
+  const normalizedNames = names.map(normalize);
   if (
     normalizedNames.some(
       (name) =>
-        !paths.some(
+        !allowed.some(
           (root) =>
             name === root ||
             name.startsWith(`${root}/`) ||
@@ -1995,5 +1999,6 @@ module.exports = {
   manifestWriteGuard,
   download,
   extract,
+  assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
 };
