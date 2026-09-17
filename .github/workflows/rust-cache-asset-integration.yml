@@ -21,6 +21,7 @@ env:
   FILES_TO_HASH: |
     examples/rust-cache/Cargo.toml
     examples/rust-cache/Cargo.lock
+  VERSION: 2
 
 permissions:
   contents: read
@@ -90,6 +91,7 @@ jobs:
             .cache/cargo/.crates2.json
             .cache/cargo/registry
             .cache/cargo/git
+          version: ${{ env.VERSION }}
           strict: true
 
       - name: Set up Rust toolchain
@@ -116,7 +118,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v1
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
           path: |
             .cache/cargo/bin
             .cache/cargo/.crates.toml
@@ -165,6 +167,7 @@ jobs:
             .cache/cargo/.crates2.json
             .cache/cargo/registry
             .cache/cargo/git
+          version: ${{ env.VERSION }}
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
