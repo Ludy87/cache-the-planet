@@ -8,13 +8,6 @@
       "created_by": "Ludy87",
       "size": 1338176
     },
-    "untrusted/Ludy87/cache-the-planet/pr-38/uv-python-3-13/linux-x64/ca9c81a79c9bb865554628877e5df6e3eba4bd841188875ad51b0928bc639c8a-cache-e98da368ca88a677/v5": {
-      "object": "sha256:42a1e0f8aea2c095a53109f7dfaa03cfeb00fa1fc5cc5b4e6e2cfe5f743c468f",
-      "updated_at": "2026-09-16T17:02:16.490Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 39038834
-    },
     "untrusted/Ludy87/cache-the-planet/pr-151/cargo/linux-x64/ef44e01f1329b63a5d307e2e7eda7b1c55a2f53009b3551a4a8583405609c066-cache-4a838623dd2b2475/v1": {
       "object": "sha256:5aac244602986a8dec6b384cbad4bfa8e735404c731f3dd7e9c0ff6be642efd6",
       "updated_at": "2026-09-16T17:28:26.529Z",
@@ -119,10 +112,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 4105089
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-38/uv-python-3-13/linux-x64/ca9c81a79c9bb865554628877e5df6e3eba4bd841188875ad51b0928bc639c8a/v5": {
+      "object": "sha256:4bd0fe0544cd2b9d6743c714c5edc9ca8b1af940ba0e61919b83f7750a438548",
+      "updated_at": "2026-09-17T07:36:48.867Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 39137110
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-17T07:30:07.271Z",
-    "writes": 14
+    "writes": 15
   }
 }
