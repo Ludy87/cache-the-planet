@@ -415,12 +415,12 @@ function runnerPlatform() {
 const cacheIdentityFormat = "archive-v1|restore-safety-v1";
 
 function cacheIdentitySignature() {
-  const paths = entries().map((value) => value.replace(/\\/g, "/").trim());
+  // The publisher repacks downloaded artifacts from a different workspace
+  // path. Cache paths are transport details, not cache content identity.
   const excludes = excludePatterns();
-  if (!paths.length && !excludes.length) return "";
+  if (!excludes.length) return "";
   const identity = JSON.stringify({
     format: cacheIdentityFormat,
-    paths,
     excludes,
   });
   return crypto
