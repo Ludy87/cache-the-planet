@@ -91,7 +91,7 @@ jobs:
 
       - name: Populate Gradle cache
         working-directory: examples/gradle-cache
-        run: gradle build --no-daemon test
+        run: gradle --no-daemon test
 
       - name: Display cache information
         env:
