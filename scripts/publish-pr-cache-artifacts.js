@@ -261,12 +261,17 @@ async function main() {
       const directory = path.join(root, entry.name);
       validateArtifactContents(directory);
       validateArtifactManifest(directory);
-      cp.execFileSync(
-        process.execPath,
-        [path.join(process.cwd(), "dist", "save.js")],
-        {
-          cwd: process.cwd(),
-          env: {
+      const stagingRoot = path.join(process.cwd(), ".cache", parsed.cacheName);
+      fs.rmSync(stagingRoot, { recursive: true, force: true });
+      fs.mkdirSync(path.dirname(stagingRoot), { recursive: true });
+      fs.cpSync(directory, stagingRoot, { recursive: true, force: true });
+      try {
+        cp.execFileSync(
+          process.execPath,
+          [path.join(process.cwd(), "dist", "save.js")],
+          {
+            cwd: process.cwd(),
+            env: {
             ...process.env,
             CACHE_CONFIG_FILE: "",
             CACHE_ALLOWED_CACHE_NAMES: allowedCacheNames?.join(",") || "",
@@ -280,12 +285,15 @@ async function main() {
             "INPUT_ALLOW-PR-CACHE": "true",
             INPUT_KEY: parsed.key,
             INPUT_VERSION: parsed.version,
-            INPUT_PATH: directory,
+            INPUT_PATH: `.cache/${parsed.cacheName}`,
             INPUT_STRICT: "false",
+            },
+            stdio: "inherit",
           },
-          stdio: "inherit",
-        },
-      );
+        );
+      } finally {
+        fs.rmSync(stagingRoot, { recursive: true, force: true });
+      }
     }
   } finally {
     try {
