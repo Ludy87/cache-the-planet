@@ -84,7 +84,12 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          path: .cache/cargo
+          path: |
+            .cache/cargo/bin
+            .cache/cargo/.crates.toml
+            .cache/cargo/.crates2.json
+            .cache/cargo/registry
+            .cache/cargo/git
           strict: true
 
       - name: Set up Rust toolchain
@@ -112,7 +117,12 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v1
-          path: .cache/cargo
+          path: |
+            .cache/cargo/bin
+            .cache/cargo/.crates.toml
+            .cache/cargo/.crates2.json
+            .cache/cargo/registry
+            .cache/cargo/git
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -149,7 +159,12 @@ jobs:
           cache-name: cargo
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          path: .cache/cargo
+          path: |
+            .cache/cargo/bin
+            .cache/cargo/.crates.toml
+            .cache/cargo/.crates2.json
+            .cache/cargo/registry
+            .cache/cargo/git
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
