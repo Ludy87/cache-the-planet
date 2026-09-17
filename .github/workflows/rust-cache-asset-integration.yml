@@ -21,7 +21,7 @@ env:
   FILES_TO_HASH: |
     examples/rust-cache/Cargo.toml
     examples/rust-cache/Cargo.lock
-  VERSION: 2
+  VERSION: 1
 
 permissions:
   contents: read

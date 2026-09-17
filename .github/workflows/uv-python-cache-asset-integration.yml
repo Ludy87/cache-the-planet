@@ -23,7 +23,7 @@ env:
   UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python
   FILES_TO_HASH: |
     examples/uv-cache/requirements.txt
-  VERSION: 5
+  VERSION: 1
 
 permissions:
   contents: read
