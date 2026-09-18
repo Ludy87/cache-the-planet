@@ -19,6 +19,7 @@ on:
 
 env:
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
+  UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv/python-install
   FILES_TO_HASH: |
     examples/uv-cache/requirements.txt
   VERSION: 1
