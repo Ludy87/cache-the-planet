@@ -4,7 +4,7 @@
 
 `cache-the-planet` ist ein content-addressed Cache für GitHub Actions. Große,
 immutable Cache-Objekte werden als Assets des GitHub-Pre-Releases `cache-v1`
-gespeichert. `manifests/references-v1.json` ordnet logische Keys den
+gespeichert. Getrennte Dateien unter `manifests/v1/` ordnen logische Keys den
 SHA-256-Objekten zu.
 
 ## Funktionsweise
@@ -294,7 +294,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Restore-Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; Save-Fehler werden über `strict-save` gesteuert. |
 | `strict-save` | `true`/`false`; Standard: Wert von `strict` | Steuert Save-Fehler unabhängig von Restore. Ein neuer Untrusted-PR-Cache ersetzt immer den bisherigen; das alte Asset wird gelöscht, sofern es nicht anderweitig referenziert ist. |
 | `config-file` | Workspace-relative JSON-Datei | Zusätzliche Konfiguration für Repository, Scope, Version, Limits und Allowlists. |
-| `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der `manifests/references-v1.json` enthält. |
+| `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der die Dateien unter `manifests/v1/` enthält. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |
 | `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
 | `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |

@@ -16,6 +16,19 @@ const assetsCache = new Map();
 const manifestCache = new Map();
 const manifestLocks = new Map();
 
+function manifestPathForKey(key) {
+  if (typeof key !== "string") throw new Error("manifest key is required");
+  if (key.startsWith("trusted/")) return "manifests/v1/trusted.json";
+  if (key.startsWith("shared/")) return "manifests/v1/shared.json";
+  const match = key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//);
+  if (match) return `manifests/v1/untrusted/pr-${match[1]}.json`;
+  throw new Error("manifest key has an unsupported namespace");
+}
+
+function manifestPaths() {
+  return ["manifests/v1/trusted.json", "manifests/v1/shared.json"];
+}
+
 function parsePositiveSafeInteger(value, name, fallback) {
   if (value === undefined || value === "") return fallback;
   const parsed = Number(value);
@@ -1559,10 +1572,10 @@ function hashFromAssetName(name) {
   return match ? `sha256:${match[1]}` : null;
 }
 
-async function manifest(repository) {
+async function manifest(repository, filePath) {
   const branch = manifestBranch();
   const result = await gh(
-    `/repos/${repository}/contents/manifests/references-v1.json?ref=${encodeURIComponent(branch)}`,
+    `/repos/${repository}/contents/${filePath}?ref=${encodeURIComponent(branch)}`,
   );
   const json = JSON.parse(
     Buffer.from(result.body.content, "base64").toString(),
@@ -1574,43 +1587,80 @@ async function manifest(repository) {
   };
 }
 
-async function refs(repository, { fresh = false } = {}) {
-  if (!fresh && manifestCache.has(repository)) {
-    return manifestCache.get(repository);
+async function refs(repository, { fresh = false, key, filePath } = {}) {
+  const selectedPath = filePath || (key ? manifestPathForKey(key) : "manifests/v1/trusted.json");
+  const cacheKey = `${repository}:${selectedPath}`;
+  if (!fresh && manifestCache.has(cacheKey)) {
+    return manifestCache.get(cacheKey);
   }
   const pending = (async () => {
     try {
-      return await manifest(repository);
+      return await manifest(repository, selectedPath);
     } catch (error) {
       if (error.status !== 404) throw error;
       return { json: { schema_version: 1, references: {} }, sha: null };
     }
   })();
-  manifestCache.set(repository, pending);
+  manifestCache.set(cacheKey, pending);
   try {
     return await pending;
   } catch (error) {
-    if (manifestCache.get(repository) === pending)
-      manifestCache.delete(repository);
+    if (manifestCache.get(cacheKey) === pending) manifestCache.delete(cacheKey);
     throw error;
   }
 }
 
-function invalidateManifestCache(repository) {
-  manifestCache.delete(repository);
+async function refsForKeys(repository, keys, { fresh = false } = {}) {
+  const paths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const manifests = await Promise.all(
+    paths.map((filePath) => refs(repository, { fresh, filePath })),
+  );
+  const references = {};
+  for (const current of manifests) Object.assign(references, current.json.references);
+  return { json: { schema_version: 1, references }, sha: null };
 }
 
-async function updateManifestUnlocked(repository, message, update) {
+async function refsAll(repository, { fresh = false } = {}) {
+  const paths = [...manifestPaths()];
+  try {
+    const directory = await gh(
+      `/repos/${repository}/contents/manifests/v1/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
+    );
+    if (Array.isArray(directory.body)) {
+      for (const item of directory.body) {
+        if (/^pr-[1-9]\d*\.json$/.test(item.name))
+          paths.push(`manifests/v1/untrusted/${item.name}`);
+      }
+    }
+  } catch (error) {
+    if (error.status !== 404) throw error;
+  }
+  const entries = [];
+  for (const filePath of paths) {
+    const current = await refs(repository, { fresh, filePath });
+    for (const [key, reference] of Object.entries(current.json.references))
+      entries.push([key, reference, filePath]);
+  }
+  return { json: { schema_version: 1, references: Object.fromEntries(entries.map(([key, reference]) => [key, reference])) }, entries };
+}
+
+function invalidateManifestCache(repository) {
+  for (const key of [...manifestCache.keys()]) {
+    if (key.startsWith(`${repository}:`)) manifestCache.delete(key);
+  }
+}
+
+async function updateManifestUnlocked(repository, message, update, filePath) {
   const maxAttempts = 12;
   const branch = manifestBranch();
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     // A compare-and-swap update must never use the read cache. This also
     // ensures a retry observes the version that caused the conflict.
     invalidateManifestCache(repository);
-    const current = await refs(repository, { fresh: true });
+    const current = await refs(repository, { fresh: true, filePath });
     if (!update(current.json)) return current.json;
     try {
-      await gh(`/repos/${repository}/contents/manifests/references-v1.json`, {
+      await gh(`/repos/${repository}/contents/${filePath}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1643,17 +1693,18 @@ async function updateManifestUnlocked(repository, message, update) {
   throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
 }
 
-async function updateManifest(repository, message, update) {
-  const previous = manifestLocks.get(repository) || Promise.resolve();
+async function updateManifest(repository, message, update, { key, filePath } = {}) {
+  const selectedPath = filePath || manifestPathForKey(key);
+  const lockKey = `${repository}:${selectedPath}`;
+  const previous = manifestLocks.get(lockKey) || Promise.resolve();
   const current = previous
     .catch(() => {})
-    .then(() => updateManifestUnlocked(repository, message, update));
-  manifestLocks.set(repository, current);
+    .then(() => updateManifestUnlocked(repository, message, update, selectedPath));
+  manifestLocks.set(lockKey, current);
   try {
     return await current;
   } finally {
-    if (manifestLocks.get(repository) === current)
-      manifestLocks.delete(repository);
+    if (manifestLocks.get(lockKey) === current) manifestLocks.delete(lockKey);
   }
 }
 
@@ -1729,7 +1780,7 @@ async function setRef(repository, key, hash, metadata = {}) {
         "cache writes are temporarily locked: manifest write rate limit exceeded",
       );
     return result;
-  });
+  }, { key });
 }
 
 async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
@@ -1753,6 +1804,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
       };
       return true;
     },
+    { key },
   );
   if (locked)
     throw new Error(
@@ -1992,6 +2044,8 @@ module.exports = {
   invalidateRepositoryCache,
   object,
   refs,
+  refsForKeys,
+  refsAll,
   updateManifest,
   setRef,
   replaceRef,

@@ -7,8 +7,9 @@ Referenzen:
 
 1. Das Pre-Release `cache-v1` speichert die großen, unveränderlichen
    `tar.zst`-Objekte als GitHub-Release-Assets.
-2. `manifests/references-v1.json` enthält die kleine Zuordnung von Cache-Keys
-   zu Objekt-Hashes.
+2. Getrennte Dateien unter `manifests/v1/` enthalten die Zuordnung von
+   Cache-Keys zu Objekt-Hashes: `trusted.json`, `shared.json` und je eine
+   Datei unter `untrusted/pr-<number>.json` pro Pull Request.
 3. Die GitHub Contents API liest und aktualisiert dieses Manifest.
 4. Die Action prüft, lädt und entpackt Assets direkt, ohne das Repository zu
    klonen oder große Dateien in der Git-Historie abzulegen.
@@ -66,6 +67,6 @@ einbezogen. Ein Objekt bleibt erhalten, solange noch eine Trusted- oder
 Shared-Referenz darauf zeigt. Verwaiste Manifest-Referenzen werden beim
 Speichern erkannt und neu aufgebaut.
 
-Ein einzelnes Manifest ist für tausende Keys praktikabel. Sollte es später zu
-groß werden, kann ein zukünftiges Protokoll die Referenzen auf mehrere Dateien
-aufteilen, ohne die Objekt-Hashes oder die Asset-Struktur zu ändern.
+PR-Manifeste sind voneinander unabhängig und reduzieren Konflikte bei
+parallelen Saves. Garbage Collection muss deshalb alle Manifestdateien
+auswerten, bevor ein Asset als verwaist gelöscht werden darf.

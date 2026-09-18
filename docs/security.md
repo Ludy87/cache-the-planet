@@ -27,10 +27,10 @@ Untrusted-PR-Cache erzeugt der PR-Lauf deshalb nur ein Artifact. Ein separater
 `workflow_run`-Publisher aus `main` lädt dieses Artifact und schreibt es mit
 einem kurzlebigen App-Token, ohne PR-Code mit diesem Token auszuführen.
 
-Das Manifest protokolliert bei neuen Referenzen Quelle, Ersteller und
+Die getrennten Manifeste protokollieren bei neuen Referenzen Quelle, Ersteller und
 komprimierte Archivgröße. Zusätzlich begrenzt die Action standardmäßig das
-Manifest auf 100.000 Referenzen und 1.000 Schreibvorgänge pro Stunde. Wird das
-Schreiblimit überschritten, wird das Manifest für eine Stunde gesperrt.
+jedes Manifest auf 100.000 Referenzen und 1.000 Schreibvorgänge pro Stunde. Wird das
+Schreiblimit überschritten, wird die betroffene Manifestdatei für eine Stunde gesperrt.
 Administratoren können die Grenzen mit `CACHE_MAX_MANIFEST_REFERENCES` und
 `CACHE_MAX_MANIFEST_WRITES_PER_HOUR` anpassen.
 
