@@ -22,13 +22,6 @@
       "created_by": "Ludy87",
       "size": 4101251
     },
-    "untrusted/Ludy87/cache-the-planet/pr-163/docker-qemu/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62/v1": {
-      "object": "sha256:9884b13e84eae11f7ba0a39a2ac728727e968b0c3c76c6fb7f5ddd5c63b590d2",
-      "updated_at": "2026-09-18T07:34:22.638Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 32257977
-    },
     "untrusted/Ludy87/cache-the-planet/pr-163/gradle-java17/linux-x64/35c4d0d6d52b874a8a9a750e11e3d937f3f0d79bfb21c4c7456412984bcc9d24/v1": {
       "object": "sha256:2211ccaf7fa021e01748e42352e34633b9527bec4b9529a90e80ff335dcf1cab",
       "updated_at": "2026-09-18T07:34:26.283Z",
