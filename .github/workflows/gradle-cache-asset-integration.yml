@@ -18,7 +18,7 @@ on:
         required: false
 
 env:
-  GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle
+  GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle-java17
   FILES_TO_HASH: |
     examples/gradle-cache/build.gradle
     examples/gradle-cache/settings.gradle
@@ -85,8 +85,8 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
           path: |
-            .cache/gradle/caches
-            .cache/gradle/wrapper
+            .cache/gradle-java17/caches
+            .cache/gradle-java17/wrapper
           strict: true
 
       - name: Populate Gradle cache
@@ -110,8 +110,8 @@ jobs:
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-gradle-java17-${{ needs.hash_pr.outputs.files_hash }}-v1
           path: |
-            .cache/gradle/caches
-            .cache/gradle/wrapper
+            .cache/gradle-java17/caches
+            .cache/gradle-java17/wrapper
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -150,8 +150,8 @@ jobs:
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
-            .cache/gradle/caches
-            .cache/gradle/wrapper
+            .cache/gradle-java17/caches
+            .cache/gradle-java17/wrapper
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
