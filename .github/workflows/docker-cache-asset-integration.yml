@@ -84,7 +84,7 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
           allow-shared-restore: true
-          path: examples/docker-cache/.cache/docker-buildx
+          path: .cache/docker
           strict: true
 
       - name: Set up Docker Buildx
@@ -98,14 +98,14 @@ jobs:
           tags: cache-the-planet-example:test
           push: false
           outputs: type=cacheonly
-          cache-from: type=local,src=examples/docker-cache/.cache/docker-buildx
-          cache-to: type=local,dest=examples/docker-cache/.cache/docker-buildx-new,mode=max
+          cache-from: type=local,src=.cache/docker
+          cache-to: type=local,dest=.cache/docker-buildx-new,mode=max
 
       - name: Replace local BuildKit cache
         shell: bash
         run: |
-          rm -rf examples/docker-cache/.cache/docker-buildx
-          mv examples/docker-cache/.cache/docker-buildx-new examples/docker-cache/.cache/docker-buildx
+          rm -rf .cache/docker
+          mv examples/docker-cache/.cache/docker-buildx-new .cache/docker
 
       - name: Display cache information
         env:
@@ -123,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-docker-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
-          path: examples/docker-cache/.cache/docker-buildx
+          path: .cache/docker
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -162,7 +162,7 @@ jobs:
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
-          path: examples/docker-cache/.cache/docker-buildx
+          path: .cache/docker
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
