@@ -20,21 +20,33 @@ const { INPUTS } = require("./constants");
     }
 
     const prefix = `untrusted/${sourceRepository}/pr-${number}/`;
-    const manifestKey = `${prefix}cleanup/unknown-unknown/v1`;
     let removed = [];
     let deletedAssets = 0;
-    const updatedManifest = await c.updateManifest(
-      repository,
-      `cache: remove closed PR ${sourceRepository}#${number}`,
-      (manifest) => {
-        removed = Object.entries(manifest.references).filter(([key]) =>
-          key.startsWith(prefix),
-        );
-        for (const [key] of removed) delete manifest.references[key];
-        return removed.length > 0;
-      },
-      { key: manifestKey },
-    );
+    // PR manifests are split by number now, but older versions could leave
+    // references in another untrusted manifest. Inspect all manifests so a
+    // cleanup cannot silently report success while the cache still exists.
+    const all = await c.refsAll(repository, { fresh: true });
+    const matchingByPath = new Map();
+    for (const [key, reference, filePath] of all.entries) {
+      if (!key.startsWith(prefix)) continue;
+      if (!matchingByPath.has(filePath)) matchingByPath.set(filePath, []);
+      matchingByPath.get(filePath).push([key, reference]);
+    }
+
+    for (const [filePath, matches] of matchingByPath) {
+      await c.updateManifest(
+        repository,
+        `cache: remove closed PR ${sourceRepository}#${number}`,
+        (manifest) => {
+          for (const [key] of matches) delete manifest.references[key];
+          removed.push(...matches);
+          return matches.length > 0;
+        },
+        { filePath },
+      );
+    }
+
+    const updatedManifest = await c.refsAll(repository, { fresh: true });
 
     const live = new Set(
       Object.values(updatedManifest.references).map(
