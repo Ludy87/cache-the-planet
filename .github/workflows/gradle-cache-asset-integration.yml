@@ -51,7 +51,7 @@ jobs:
           HASH="$FILES_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
           JAVA_VERSION="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)"
-          echo "JAVA_VERSION=$JAVA_VERSION" >> "$GITHUB_OUTPUT"
+          echo "java_version=$JAVA_VERSION" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
     name: Build and save Gradle cache asset
