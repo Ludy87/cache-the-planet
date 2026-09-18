@@ -8,6 +8,29 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.7.0](https://github.com/Ludy87/cache-the-planet/compare/v1.6.0...v1.7.0) (2026-09-18)
+
+
+### 🎉 Features
+
+* **manifests:** split cache references by scope and pull request ([#166](https://github.com/Ludy87/cache-the-planet/issues/166)) ([1f42a7f](https://github.com/Ludy87/cache-the-planet/commit/1f42a7fd53fca68ba6ee1ced042f5e3b442d2b37))
+
+
+### 🐛 Bug Fixes
+
+* **cache:** keep PR cache identity stable during publishing ([#157](https://github.com/Ludy87/cache-the-planet/issues/157)) ([5bd7b0b](https://github.com/Ludy87/cache-the-planet/commit/5bd7b0b97f4a766c615c9ca6f3499d3813d2a297))
+* **cargo:** align cached paths across shared and PR jobs ([#159](https://github.com/Ludy87/cache-the-planet/issues/159)) ([1588027](https://github.com/Ludy87/cache-the-planet/commit/158802718dcbc77957c780c604c1140b8b507c2c))
+* **cargo:** restore shared cache with matching paths ([5d2eb78](https://github.com/Ludy87/cache-the-planet/commit/5d2eb789063e3cc1934b894222fde6f581859c04))
+* **ci:** align integration cache paths with cache names ([#163](https://github.com/Ludy87/cache-the-planet/issues/163)) ([b01622f](https://github.com/Ludy87/cache-the-planet/commit/b01622fcc03c96367996a2959e2a0e5683370d87))
+* **ci:** correct task cache temp directory path ([#165](https://github.com/Ludy87/cache-the-planet/issues/165)) ([ce5ef0c](https://github.com/Ludy87/cache-the-planet/commit/ce5ef0c96ea53b36df44911f533c5547649454de))
+* **ci:** keep Gradle cache paths inside workspace ([#161](https://github.com/Ludy87/cache-the-planet/issues/161)) ([c5fa877](https://github.com/Ludy87/cache-the-planet/commit/c5fa877652a13972a2f5a4ffe1ced9d2d5aad7e8))
+* **ci:** use detected Java version for Gradle cache paths ([#151](https://github.com/Ludy87/cache-the-planet/issues/151)) ([2c8921a](https://github.com/Ludy87/cache-the-planet/commit/2c8921a92c830d3c0e3c8a7257b95105f371b56d))
+* **ci:** use relative Gradle cache paths ([#162](https://github.com/Ludy87/cache-the-planet/issues/162)) ([538c18e](https://github.com/Ludy87/cache-the-planet/commit/538c18e1c8dd2e30d7e9bfc6e348523326afad71))
+* clean up untrusted PR references across manifests ([#170](https://github.com/Ludy87/cache-the-planet/issues/170)) ([c9a952e](https://github.com/Ludy87/cache-the-planet/commit/c9a952e3009a2bad5a2b1c8d939e743e537d2a43))
+* **manifests:** allow default read-only manifest lookup ([#167](https://github.com/Ludy87/cache-the-planet/issues/167)) ([a0d6507](https://github.com/Ludy87/cache-the-planet/commit/a0d6507ccc222d0a8aa7086940bb79a018780889))
+* **pr:** cleanup untrusted manifests v2 ([#171](https://github.com/Ludy87/cache-the-planet/issues/171)) ([15e22d1](https://github.com/Ludy87/cache-the-planet/commit/15e22d1a4cdd711c839b10ef0e4b01e656496097))
+* **restore:** nested cache paths ([#164](https://github.com/Ludy87/cache-the-planet/issues/164)) ([f8e05e0](https://github.com/Ludy87/cache-the-planet/commit/f8e05e0283f392d402188b4fb574945b04e634f0))
+
 ## [1.6.0](https://github.com/Ludy87/cache-the-planet/compare/v1.5.0...v1.6.0) (2026-09-16)
 
 
