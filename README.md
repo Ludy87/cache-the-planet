@@ -79,7 +79,7 @@ Workspace-Pfad:
       npm:
         path: .cache/npm
       maven-java17:
-        path: .cache/m2
+        path: .cache/maven-java17
     allow-shared-restore: true
     strict: true
     token: ${{ secrets.CACHE_APP_TOKEN }}
