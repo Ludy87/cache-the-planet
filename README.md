@@ -282,7 +282,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | --- | --- | --- |
 | `repository` | `owner/name`; Standard: `GITHUB_REPOSITORY` | Repository, in dessen Release `cache-v1` und Manifest gespeichert werden. |
 | `key` | logischer Schlüssel, erforderlich | Abhängigkeitsschlüssel, aus dem zusammen mit Plattform, Version und Scope der vollständige Cache-Key entsteht. |
-| `cache-name` | 1–32 Zeichen aus Buchstaben, Zahlen, `-`, `_`; erforderlich | Trennt verschiedene Cache-Arten voneinander, zum Beispiel `npm` oder `gradle`. |
+| `cache-name` | 1–32 Zeichen aus Buchstaben, Zahlen, `-`, `_`; erforderlich | Trennt verschiedene Cache-Arten voneinander, zum Beispiel `npm` oder `gradle`. Wenn der lokale Cache-Pfad den Namen enthält, müssen `cache-name`, Tool-Konfiguration und `path` zusammenpassen. |
 | `scope` | `auto`, `trusted`, `untrusted`, `shared`; Standard: `auto` | Bestimmt den Namespace. `auto` verwendet Trusted auf Main/Tags und Untrusted in PRs. |
 | `save-scope` | dieselben Scope-Werte; Standard: `scope` | Überschreibt nur den Scope beim Speichern im Post-Schritt der Root-Action. |
 | `os` / `arch` | Text; Standard: Runner-Werte | Macht Plattform- und Architektur-Caches unterscheidbar; leere Werte werden zu `unknown`. |

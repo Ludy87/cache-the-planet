@@ -18,9 +18,18 @@ on:
         required: false
 
 env:
-  UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
-  UV_PYTHON_CACHE_DIR: ${{ github.workspace }}/.cache/uv/python
-  UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python
+  UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv-python-3-13
+  UV_PYTHON_CACHE_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/python
+  UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/python-install
+  UV_PYTHON_VENV_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv
+  UV_PYTHON_VENV_BIN_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/bin
+  UV_PYTHON_VENV_LIB_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib
+  UV_PYTHON_VENV_LIB_PYTHON_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13
+  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages
+  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_BIN_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/bin
+  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_LIB_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/lib
+  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_LIB_PYTHON_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/lib/python3.13
+  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_LIB_PYTHON_SITE_PACKAGES_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/lib/python3.13/site-packages
   FILES_TO_HASH: |
     examples/uv-cache/requirements.txt
   VERSION: 1
@@ -86,7 +95,7 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
           version: ${{ env.VERSION }}
-          path: .cache/uv
+          path: .cache/uv-python-3-13
           strict: true
 
       - name: Set up uv
@@ -120,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-uv-python-3-13-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
-          path: .cache/uv
+          path: .cache/uv-python-3-13
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -164,7 +173,7 @@ jobs:
           version: ${{ env.VERSION }}
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          path: .cache/uv
+          path: .cache/uv-python-3-13
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true

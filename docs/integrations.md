@@ -10,12 +10,20 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 | uv | `uv` | `.cache/uv` | `astral-sh/setup-uv`: `enable-cache: false` |
 | uv-managed Python | `uv-python-3-13` | `.cache/uv` | `astral-sh/setup-uv`: `enable-cache: false` |
 | Maven | `maven-java17` | `.cache/m2` | `actions/setup-java`: `cache` nicht setzen |
-| Gradle | `gradle-java17` | `.cache/gradle` | `actions/setup-java`: `cache` nicht setzen |
+| Gradle | `gradle-java17` | `.cache/gradle-java17` | `actions/setup-java`: `cache` nicht setzen |
 | Task | `task` | `.cache/task` | Keine native Cache-Option vorhanden |
 | Docker/BuildKit | `docker` | `.cache/buildx` | `docker/setup-qemu-action`: `cache-image: false`; BuildKit-Cache separat konfigurieren |
 | Rust/Cargo | `cargo` | `.cache/cargo` | `dtolnay/rust-toolchain`: keine native Cache-Option; `CARGO_HOME` setzen |
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
+
+`cache-name` und der lokale Pfad müssen bei einer Integration konsistent sein.
+Im Gradle-Beispiel wird `cache-name: gradle-java17` verwendet und Gradle mit
+`GRADLE_USER_HOME` auf `${{ github.workspace }}/.cache/gradle-java17` gesetzt.
+Save, Restore und Artifact-Upload verwenden deshalb alle
+`.cache/gradle-java17`. Ein bereits gespeichertes Archiv wird durch eine
+spätere Änderung des Pfads nicht umgeschrieben; dafür ist ein neuer Cache-Key
+oder eine neue Cache-Version erforderlich.
 
 ## Mehrere Ökosystem-Caches
 
