@@ -105,7 +105,7 @@ jobs:
         shell: bash
         run: |
           rm -rf .cache/docker
-          mv examples/docker-cache/.cache/docker-buildx-new .cache/docker
+          mv .cache/docker-buildx-new .cache/docker
 
       - name: Display cache information
         env:
@@ -179,5 +179,5 @@ jobs:
           tags: cache-the-planet-example:restored
           push: false
           outputs: type=cacheonly
-          cache-from: type=local,src=examples/docker-cache/.cache/docker-buildx
+          cache-from: type=local,src=.cache/docker
         continue-on-error: true
