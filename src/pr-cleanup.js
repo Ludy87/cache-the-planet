@@ -49,7 +49,7 @@ const { INPUTS } = require("./constants");
     const updatedManifest = await c.refsAll(repository, { fresh: true });
 
     const live = new Set(
-      Object.values(updatedManifest.references).map(
+      Object.values(updatedManifest.json.references).map(
         (reference) => reference.object,
       ),
     );
