@@ -18,7 +18,7 @@ on:
         required: false
 
 env:
-  TASK_TEMP_DIR: ${{ github.workspace }}/examples/task-cache/.cache/task-state
+  TASK_TEMP_DIR: ${{ github.workspace }}.cache/task/task-state
   FILES_TO_HASH: |
     examples/task-cache/Taskfile.yml
     examples/task-cache/src/**
@@ -84,8 +84,8 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
           path: |
-            examples/task-cache/.cache/task
-            examples/task-cache/.cache/task-state
+            .cache/task/task
+            .cache/task/task-state
           strict: true
 
       - name: Set up Task
@@ -113,8 +113,8 @@ jobs:
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-task-${{ needs.hash_pr.outputs.files_hash }}-v1
           path: |
-            examples/task-cache/.cache/task
-            examples/task-cache/.cache/task-state
+            .cache/task/task
+            .cache/task/task-state
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -153,8 +153,8 @@ jobs:
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
-            examples/task-cache/.cache/task
-            examples/task-cache/.cache/task-state
+            .cache/task/task
+            .cache/task/task-state
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
