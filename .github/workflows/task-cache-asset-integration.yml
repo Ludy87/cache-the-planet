@@ -18,7 +18,7 @@ on:
         required: false
 
 env:
-  TASK_TEMP_DIR: ${{ github.workspace }}.cache/task/task-state
+  TASK_TEMP_DIR: ${{ github.workspace }}/.cache/task/task-state
   FILES_TO_HASH: |
     examples/task-cache/Taskfile.yml
     examples/task-cache/src/**
