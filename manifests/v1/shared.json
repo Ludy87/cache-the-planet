@@ -2,15 +2,15 @@
   "schema_version": 1,
   "references": {
     "shared/Ludy87/cache-the-planet/npm/linux-x64/e6fe56e6e5a589a7c3556c06217a0dabf93ed662989a14884467f175e3f91cc2/v1": {
-      "object": "sha256:305e0dea19a37d71182de08f6589c206cad45951a8dfdee129c6be8f310ed665",
-      "updated_at": "2026-09-18T09:17:07.286Z",
+      "object": "sha256:5477ac973b4760e05af6ed9433c65a1636b8873c34047c2086c2e4196a2438bf",
+      "updated_at": "2026-09-18T09:17:35.085Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 7001794
+      "size": 7002382
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-18T09:17:07.285Z",
-    "writes": 1
+    "writes": 2
   }
 }
