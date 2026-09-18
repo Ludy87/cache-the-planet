@@ -89,14 +89,14 @@ jobs:
             .cache/gradle-java17/wrapper
           strict: true
 
-      - name: Populate Gradle cache
-        if: ${{ steps.cache.outputs.cache-hit == 'false' }}
-        shell: bash
-        working-directory: examples/gradle-cache
-        run: gradle build --no-daemon test
+      # - name: Populate Gradle cache
+      #   if: ${{ steps.cache.outputs.cache-hit == 'false' }}
+      #   shell: bash
+      #   working-directory: examples/gradle-cache
+      #   run: gradle build --no-daemon test
 
       - name: Build offline with restored Gradle cache
-        if: ${{ steps.cache.outputs.cache-hit == 'true' }}
+        # if: ${{ steps.cache.outputs.cache-hit == 'true' }}
         working-directory: examples/gradle-cache
         shell: bash
         run: gradle --offline build --no-daemon test
