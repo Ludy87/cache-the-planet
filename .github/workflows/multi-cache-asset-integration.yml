@@ -19,7 +19,7 @@ on:
 
 env:
   NPM_CACHE: ${{ github.workspace }}/.cache/npm
-  MAVEN_CACHE: ${{ github.workspace }}/.cache/m2
+  MAVEN_CACHE: ${{ github.workspace }}/.cache/maven-java17
 
 permissions:
   contents: read
@@ -58,7 +58,7 @@ jobs:
             npm:
               path: .cache/npm
             maven-java17:
-              path: .cache/m2
+              path: .cache/maven-java17
           allow-shared-restore: true
           token: ${{ steps.bot-token.outputs.token || github.token }}
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
@@ -121,7 +121,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          settings-path: ${{ github.workspace }}/.cache/m2
+          settings-path: ${{ github.workspace }}/.cache/maven-java17
 
       - name: Configure cache directories
         run: |

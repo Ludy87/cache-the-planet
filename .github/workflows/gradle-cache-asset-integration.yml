@@ -18,11 +18,11 @@ on:
         required: false
 
 env:
-  GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle
   FILES_TO_HASH: |
     examples/gradle-cache/build.gradle
     examples/gradle-cache/settings.gradle
     examples/gradle-cache/src/**/*.java
+  VERSION: 1
 
 permissions:
   contents: read
@@ -36,6 +36,7 @@ jobs:
       contents: read
     outputs:
       files_hash: ${{ steps.hash.outputs.files_hash }}
+      java_version: ${{ steps.hash.outputs.java_version }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,12 +50,16 @@ jobs:
         run: |
           HASH="$FILES_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
+          JAVA_VERSION="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)"
+          echo "java_version=$JAVA_VERSION" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}
     name: Build and save Gradle cache asset
     needs: hash_pr
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle-java${{ needs.hash_pr.outputs.java_version }}
     permissions:
       contents: read
     steps:
@@ -85,19 +90,27 @@ jobs:
         id: cache
         uses: $/
         with:
-          cache-name: gradle-java${{ steps.java-version.outputs.JAVA_VERSION }}
+          cache-name: gradle-java${{ needs.hash_pr.outputs.java_version }}
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
           path: |
-            ${{ env.GRADLE_USER_HOME }}/caches
-            ${{ env.GRADLE_USER_HOME }}/wrapper
+            .cache/gradle-java${{ needs.hash_pr.outputs.java_version }}/caches
+            .cache/gradle-java${{ needs.hash_pr.outputs.java_version }}/wrapper
           strict: true
 
       - name: Populate Gradle cache
+        if: ${{ steps.cache.outputs.cache-hit == 'false' }}
+        shell: bash
         working-directory: examples/gradle-cache
-        run: gradle --no-daemon test
+        run: gradle build --no-daemon test
+
+      - name: Build offline with restored Gradle cache
+        if: ${{ steps.cache.outputs.cache-hit == 'true' }}
+        working-directory: examples/gradle-cache
+        shell: bash
+        run: gradle --offline build --no-daemon test
 
       - name: Display cache information
         env:
@@ -114,12 +127,12 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit == 'false' && github.event_name == 'pull_request' && success() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-gradle-java17-${{ needs.hash_pr.outputs.files_hash }}-v1
+          name: cache-the-planet-pr-${{ github.event.pull_request.number }}-gradle-java${{ needs.hash_pr.outputs.java_version }}-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
           path: |
-            ${{ env.GRADLE_USER_HOME }}/caches
-            ${{ env.GRADLE_USER_HOME }}/wrapper
+            .cache/gradle-java${{ needs.hash_pr.outputs.java_version }}/caches
+            .cache/gradle-java${{ needs.hash_pr.outputs.java_version }}/wrapper
           include-hidden-files: true
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 1
 
   restore-cache:
@@ -128,6 +141,8 @@ jobs:
     needs: [hash_pr]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.cache/gradle-java${{ needs.hash_pr.outputs.java_version }}
     strategy:
       matrix:
         scope-matrix:
@@ -158,12 +173,12 @@ jobs:
         id: cache-auto
         uses: $/
         with:
-          cache-name: gradle-java${{ steps.java-version.outputs.JAVA_VERSION }}
+          cache-name: gradle-java${{ needs.hash_pr.outputs.java_version }}
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
-            ${{ env.GRADLE_USER_HOME }}/caches
-            ${{ env.GRADLE_USER_HOME }}/wrapper
+            .cache/gradle-java${{ needs.hash_pr.outputs.java_version }}/caches
+            .cache/gradle-java${{ needs.hash_pr.outputs.java_version }}/wrapper
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true

@@ -485,20 +485,20 @@ try {
     'untrusted/Ludy87/spdf-cache/pr-6/buildx/Linux-X64/unoserver/v1',
     `sha256:${'a'.repeat(64)}`,
   );
-  if (!namedAsset.startsWith('untrusted-Ludy87-spdf-cache-pr-6-buildx-Linux-X64-unoserver-v1--')
+  if (!namedAsset.startsWith('untrusted-pr-6-buildx-Linux-X64-unoserver-v1--')
     || hashFromAssetName(namedAsset) !== `sha256:${'a'.repeat(64)}`) {
     throw new Error('descriptive asset name was not generated correctly');
   }
   if (assetNamePrefix('shared/Ludy87/cache-the-planet/npm/linux-x64/key/v1')
-    !== 'shared-Ludy87-cache-the-planet-npm-linux-x64-key-v1--') {
+    !== 'shared-npm-linux-x64-key-v1--') {
     throw new Error('asset name prefix was not generated correctly');
   }
   if (assetNamePrefix('trusted/Ludy87/cache-the-planet/main/npm/linux-x64/key/v1')
-    !== 'trusted-Ludy87-cache-the-planet-main-npm-linux-x64-key-v1--') {
+    !== 'trusted-main-npm-linux-x64-key-v1--') {
     throw new Error('trusted asset name prefix was not generated correctly');
   }
   if (assetNamePrefix('shared/Ludy87/cache-the-planet/npm/linux-x64/key-cache-0123456789abcdef/v1')
-    !== 'shared-Ludy87-cache-the-planet-npm-linux-x64-key-v1--') {
+    !== 'shared-npm-linux-x64-key-v1--') {
     throw new Error('cache identity leaked into asset name prefix');
   }
   if (!assetMatchesKeyCombination(

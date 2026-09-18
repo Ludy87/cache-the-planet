@@ -41,7 +41,32 @@ const { INPUTS } = require("./constants");
       c.setOutput("deleted-assets", deletedAssets);
       c.setOutput("removed-references", removedReferences);
     };
-    const manifest = await c.refs(repository);
+    const manifest = await c.refsAll(repository);
+    const updateManifestGroups = async (entries, message, remove) => {
+      const groups = new Map();
+      for (const [key, , filePath] of entries) {
+        if (!groups.has(filePath)) groups.set(filePath, []);
+        groups.get(filePath).push(key);
+      }
+      for (const [filePath, keys] of groups) {
+        await c.updateManifest(
+          repository,
+          message,
+          (current) => {
+            let changed = false;
+            for (const key of keys) {
+              if (current.references[key] && remove(key, current.references[key])) {
+                delete current.references[key];
+                removedReferences += 1;
+                changed = true;
+              }
+            }
+            return changed;
+          },
+          { filePath, key: keys[0] },
+        );
+      }
+    };
     const references = manifest.json.references;
     const liveObjects = new Set(
       Object.values(references).map((reference) => reference.object),
@@ -63,27 +88,19 @@ const { INPUTS } = require("./constants");
         expired.map(([, reference]) => reference.object),
       );
       if (expired.length && !dryRun) {
-        await c.updateManifest(
-          repository,
+        await updateManifestGroups(
+          manifest.entries.filter(([key]) =>
+            expired.some(([expiredKey]) => expiredKey === key),
+          ),
           "cache: expire untrusted references",
-          (current) => {
-            let changed = false;
-            const candidates = expireAllUntrusted
-              ? Object.entries(current.references).filter(([key]) =>
-                  isDeletableKey(key),
-                )
-              : c.expiredUntrustedReferences(
-                  current.references,
-                  Date.now(),
-                  untrustedTtl,
-                );
-            for (const [key] of candidates) {
-              delete current.references[key];
-              removedReferences += 1;
-              changed = true;
-            }
-            return changed;
-          },
+          (key, reference) =>
+            isDeletableKey(key) &&
+            (expireAllUntrusted ||
+              c.expiredUntrustedReferences(
+                { [key]: reference },
+                Date.now(),
+                untrustedTtl,
+              ).length > 0),
         );
       }
       if (dryRun && expired.length)
@@ -92,7 +109,7 @@ const { INPUTS } = require("./constants");
         );
       const liveAfterExpiry = new Set(
         Object.values(
-          dryRun ? references : (await c.refs(repository)).json.references,
+          dryRun ? references : (await c.refsAll(repository)).json.references,
         ).map((reference) => reference.object),
       );
       for (const asset of cacheAssets) {
@@ -134,15 +151,10 @@ const { INPUTS } = require("./constants");
         deletedAssets += 1;
       }
       if (Object.keys(references).length && !dryRun) {
-        await c.updateManifest(
-          repository,
+        await updateManifestGroups(
+          manifest.entries,
           "cache: clear all references",
-          (current) => {
-            if (!Object.keys(current.references).length) return false;
-            removedReferences += Object.keys(current.references).length;
-            current.references = {};
-            return true;
-          },
+          () => true,
         );
       }
       if (dryRun && Object.keys(references).length) {
@@ -183,20 +195,10 @@ const { INPUTS } = require("./constants");
         .filter(([, reference]) => reference.object === hash)
         .map(([key]) => key);
       if (matchingKeys.length && !dryRun) {
-        await c.updateManifest(
-          repository,
+        await updateManifestGroups(
+          manifest.entries.filter(([key]) => matchingKeys.includes(key)),
           `cache: remove object ${hash}`,
-          (current) => {
-            let changed = false;
-            for (const key of matchingKeys) {
-              if (current.references[key]?.object === hash) {
-                delete current.references[key];
-                removedReferences += 1;
-                changed = true;
-              }
-            }
-            return changed;
-          },
+          (key, reference) => reference.object === hash,
         );
       }
       if (dryRun && matchingKeys.length)

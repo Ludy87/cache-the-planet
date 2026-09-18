@@ -20,6 +20,7 @@ const { INPUTS } = require("./constants");
     }
 
     const prefix = `untrusted/${sourceRepository}/pr-${number}/`;
+    const manifestKey = `${prefix}cleanup/unknown-unknown/v1`;
     let removed = [];
     let deletedAssets = 0;
     const updatedManifest = await c.updateManifest(
@@ -32,6 +33,7 @@ const { INPUTS } = require("./constants");
         for (const [key] of removed) delete manifest.references[key];
         return removed.length > 0;
       },
+      { key: manifestKey },
     );
 
     const live = new Set(

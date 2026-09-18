@@ -27,6 +27,21 @@ test("restore rejects symlinked workspace components", () => {
     fs.rmSync(outside, { recursive: true, force: true });
   }
 });
+
+test("restore accepts tar parent entries for nested cache paths", () => {
+  assert.doesNotThrow(() =>
+    common.assertArchiveMatchesRestorePaths(
+      [
+        "./.cache",
+        "./.cache/gradle",
+        "./.cache/gradle/caches",
+        "./.cache/gradle/caches/modules-2",
+        "./.cache/gradle/wrapper",
+      ],
+      [".cache/gradle/caches", ".cache/gradle/wrapper"],
+    ),
+  );
+});
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
 test("security scan allows token-named stylesheet files", () => {

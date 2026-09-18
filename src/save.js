@@ -10,7 +10,17 @@ function saveSummary(status, fields = {}) {
 }
 
 async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
-  if (!key.startsWith("shared/") && !key.startsWith("trusted/")) return;
+  // Every scope is content-addressed, but an upload can still race with
+  // another publisher.  In particular, PR artifacts are published by a
+  // separate trusted workflow and may be processed more than once.  Remove
+  // stale assets for untrusted keys as well; otherwise identical logical
+  // keys can leave multiple archives in the release.
+  if (
+    !key.startsWith("shared/") &&
+    !key.startsWith("trusted/") &&
+    !key.startsWith("untrusted/")
+  )
+    return;
   const liveHashes = new Set(
     Object.values(manifest.references || {})
       .map((reference) => reference?.object)
@@ -58,6 +68,7 @@ async function replaceOlderReferences(repository, key) {
       }
       return changed;
     },
+    { key },
   );
   return { manifest, hashes: [...removedHashes] };
 }
@@ -165,7 +176,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "shared cache keys may only be saved from the repository default branch",
       );
     }
-    const current = await c.refs(repository);
+    const current = await c.refs(repository, { key });
     const existingReference = current.json.references[key];
     const sharedCounterpart =
       requestedScope === "auto" && trustedKey

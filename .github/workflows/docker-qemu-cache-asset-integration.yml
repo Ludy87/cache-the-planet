@@ -22,9 +22,9 @@ env:
   FILES_TO_HASH: |
     examples/docker-cache/Dockerfile
     examples/docker-cache/hello.txt
-  VERSION: 2
+  VERSION: 1
   QEMU_IMAGE: docker.io/tonistiigi/binfmt:latest
-  QEMU_IMAGE_TAR: examples/docker-cache/.cache/qemu-binfmt.tar
+  QEMU_IMAGE_TAR: .cache/docker-qemu/qemu-binfmt.tar
 
 permissions:
   contents: read
@@ -88,7 +88,7 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
           allow-shared-restore: true
-          path: examples/docker-cache/.cache
+          path: .cache/docker-qemu
           strict: true
 
       - name: Pull and archive QEMU image on cache miss
@@ -117,8 +117,8 @@ jobs:
         id: buildkit-cache
         shell: bash
         run: |
-          if [ -f examples/docker-cache/.cache/docker-buildx/index.json ]; then
-            echo 'cache-from=type=local,src=examples/docker-cache/.cache/docker-buildx' >> "$GITHUB_OUTPUT"
+          if [ -f .cache/docker-qemu/index.json ]; then
+            echo 'cache-from=type=local,src=.cache/docker-qemu' >> "$GITHUB_OUTPUT"
           else
             echo 'cache-from=' >> "$GITHUB_OUTPUT"
           fi
@@ -133,13 +133,13 @@ jobs:
           push: false
           outputs: type=cacheonly
           cache-from: ${{ steps.buildkit-cache.outputs.cache-from }}
-          cache-to: type=local,dest=examples/docker-cache/.cache/docker-buildx-new,mode=max
+          cache-to: type=local,dest=.cache/docker-qemu-buildx-new,mode=max
 
       - name: Replace local BuildKit cache
         shell: bash
         run: |
-          rm -rf examples/docker-cache/.cache/docker-buildx
-          mv examples/docker-cache/.cache/docker-buildx-new examples/docker-cache/.cache/docker-buildx
+          rm -rf .cache/docker-qemu
+          mv .cache/docker-qemu-buildx-new .cache/docker-qemu
 
       - name: Display cache information
         env:
@@ -157,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-docker-qemu-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
-          path: examples/docker-cache/.cache
+          path: .cache/docker-qemu
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -183,7 +183,7 @@ jobs:
           cache-name: docker-qemu
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
-          path: examples/docker-cache/.cache
+          path: .cache/docker-qemu
           restore-only: true
           strict: true
 
@@ -204,8 +204,8 @@ jobs:
         id: buildkit-cache
         shell: bash
         run: |
-          if [ -f examples/docker-cache/.cache/docker-buildx/index.json ]; then
-            echo 'cache-from=type=local,src=examples/docker-cache/.cache/docker-buildx' >> "$GITHUB_OUTPUT"
+          if [ -f .cache/docker-qemu/index.json ]; then
+            echo 'cache-from=type=local,src=.cache/docker-qemu' >> "$GITHUB_OUTPUT"
           else
             echo 'cache-from=' >> "$GITHUB_OUTPUT"
           fi

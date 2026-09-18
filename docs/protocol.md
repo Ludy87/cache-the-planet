@@ -24,9 +24,15 @@ und Assets nur in einem ausdrücklich autorisierten Verwaltungsjob ändern; der
 Standardmodus ist ein unverbindlicher Dry-Run.
 
 Das Manifest liegt im Cache-Repository unter
-`manifests/references-v1.json`:
+Die Referenzen liegen unter `manifests/v1/`:
 
-Im Repository dieses Projekts wird die Datei im Branch `cache-data` verwaltet.
+```text
+manifests/v1/trusted.json
+manifests/v1/shared.json
+manifests/v1/untrusted/pr-<number>.json
+```
+
+Im Repository dieses Projekts werden diese Dateien im Branch `cache-data` verwaltet.
 Andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH`, dem
 Input `manifest-branch` oder dem Feld `manifest_branch` in
 `.cache-the-planet.json` konfigurieren. Die Priorität ist
