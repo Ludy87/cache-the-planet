@@ -28,10 +28,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 16485114
+    },
+    "shared/Ludy87/cache-the-planet/docker-qemu/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62/v1": {
+      "object": "sha256:7a4df07f985f267076374c58ef4b1c6a1902a9bf03d43ce1469c6a014a259fb4",
+      "updated_at": "2026-09-18T07:59:18.021Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 4439507
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-18T07:48:48.926Z",
-    "writes": 5
+    "writes": 6
   }
 }
