@@ -21,15 +21,6 @@ env:
   UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv-python-3-13
   UV_PYTHON_CACHE_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/python
   UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/python-install
-  UV_PYTHON_VENV_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv
-  UV_PYTHON_VENV_BIN_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/bin
-  UV_PYTHON_VENV_LIB_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib
-  UV_PYTHON_VENV_LIB_PYTHON_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13
-  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages
-  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_BIN_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/bin
-  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_LIB_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/lib
-  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_LIB_PYTHON_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/lib/python3.13
-  UV_PYTHON_VENV_LIB_PYTHON_SITE_PACKAGES_LIB_PYTHON_SITE_PACKAGES_DIR: ${{ github.workspace }}/.cache/uv-python-3-13/venv/lib/python3.13/site-packages/lib/python3.13/site-packages
   FILES_TO_HASH: |
     examples/uv-cache/requirements.txt
   VERSION: 1
@@ -98,10 +89,16 @@ jobs:
           path: .cache/uv-python-3-13
           strict: true
 
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
       - name: Set up uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           enable-cache: false
+          cache-local-path: .cache/uv-python-3-13
 
       - name: Install managed Python
         run: |
