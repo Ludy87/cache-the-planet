@@ -117,8 +117,8 @@ jobs:
         id: buildkit-cache
         shell: bash
         run: |
-          if [ -f examples/docker-cache/.cache/docker-buildx/index.json ]; then
-            echo 'cache-from=type=local,src=examples/docker-cache/.cache/docker-buildx' >> "$GITHUB_OUTPUT"
+          if [ -f .cache/docker-qemu/index.json ]; then
+            echo 'cache-from=type=local,src=.cache/docker-qemu' >> "$GITHUB_OUTPUT"
           else
             echo 'cache-from=' >> "$GITHUB_OUTPUT"
           fi
@@ -133,13 +133,13 @@ jobs:
           push: false
           outputs: type=cacheonly
           cache-from: ${{ steps.buildkit-cache.outputs.cache-from }}
-          cache-to: type=local,dest=examples/docker-cache/.cache/docker-buildx-new,mode=max
+          cache-to: type=local,dest=.cache/docker-qemu-buildx-new,mode=max
 
       - name: Replace local BuildKit cache
         shell: bash
         run: |
-          rm -rf examples/docker-cache/.cache/docker-buildx
-          mv examples/docker-cache/.cache/docker-buildx-new examples/docker-cache/.cache/docker-buildx
+          rm -rf .cache/docker-qemu
+          mv .cache/docker-qemu-buildx-new .cache/docker-qemu
 
       - name: Display cache information
         env:
@@ -204,8 +204,8 @@ jobs:
         id: buildkit-cache
         shell: bash
         run: |
-          if [ -f examples/docker-cache/.cache/docker-buildx/index.json ]; then
-            echo 'cache-from=type=local,src=examples/docker-cache/.cache/docker-buildx' >> "$GITHUB_OUTPUT"
+          if [ -f .cache/docker-qemu/index.json ]; then
+            echo 'cache-from=type=local,src=.cache/docker-qemu' >> "$GITHUB_OUTPUT"
           else
             echo 'cache-from=' >> "$GITHUB_OUTPUT"
           fi
