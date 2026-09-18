@@ -17,7 +17,11 @@ const manifestCache = new Map();
 const manifestLocks = new Map();
 
 function manifestPathForKey(key) {
-  if (typeof key !== "string") throw new Error("manifest key is required");
+  // Read-only callers that explicitly request the default manifest do not
+  // have a cache key. Writes always pass a key or an explicit file path.
+  if (key === undefined || key === null || key === "")
+    return "manifests/v1/trusted.json";
+  if (typeof key !== "string") throw new Error("manifest key must be a string");
   if (key.startsWith("trusted/")) return "manifests/v1/trusted.json";
   if (key.startsWith("shared/")) return "manifests/v1/shared.json";
   const match = key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//);
