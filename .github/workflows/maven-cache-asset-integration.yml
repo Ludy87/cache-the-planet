@@ -20,7 +20,7 @@ on:
 env:
   FILES_TO_HASH: |
     examples/java-cache/pom.xml
-  MAVEN_CACHE: ${{ github.workspace }}/.cache/m2
+  MAVEN_CACHE: ${{ github.workspace }}/.cache/maven-java17
 
 permissions:
   contents: read
@@ -82,7 +82,7 @@ jobs:
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
-          path: .cache/m2
+          path: .cache/maven-java17
           strict: true
 
       - name: Set up Java
@@ -112,7 +112,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-maven-java17-${{ needs.hash_pr.outputs.files_hash }}-v1
-          path: .cache/m2
+          path: .cache/maven-java17
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
@@ -150,7 +150,7 @@ jobs:
           cache-name: maven-java17
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
-          path: .cache/m2
+          path: .cache/maven-java17
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true

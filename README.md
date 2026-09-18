@@ -4,7 +4,7 @@
 
 `cache-the-planet` ist ein content-addressed Cache für GitHub Actions. Große,
 immutable Cache-Objekte werden als Assets des GitHub-Pre-Releases `cache-v1`
-gespeichert. `manifests/references-v1.json` ordnet logische Keys den
+gespeichert. Getrennte Dateien unter `manifests/v1/` ordnen logische Keys den
 SHA-256-Objekten zu.
 
 ## Funktionsweise
@@ -79,7 +79,7 @@ Workspace-Pfad:
       npm:
         path: .cache/npm
       maven-java17:
-        path: .cache/m2
+        path: .cache/maven-java17
     allow-shared-restore: true
     strict: true
     token: ${{ secrets.CACHE_APP_TOKEN }}
@@ -282,7 +282,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | --- | --- | --- |
 | `repository` | `owner/name`; Standard: `GITHUB_REPOSITORY` | Repository, in dessen Release `cache-v1` und Manifest gespeichert werden. |
 | `key` | logischer Schlüssel, erforderlich | Abhängigkeitsschlüssel, aus dem zusammen mit Plattform, Version und Scope der vollständige Cache-Key entsteht. |
-| `cache-name` | 1–32 Zeichen aus Buchstaben, Zahlen, `-`, `_`; erforderlich | Trennt verschiedene Cache-Arten voneinander, zum Beispiel `npm` oder `gradle`. |
+| `cache-name` | 1–32 Zeichen aus Buchstaben, Zahlen, `-`, `_`; erforderlich | Trennt verschiedene Cache-Arten voneinander, zum Beispiel `npm` oder `gradle`. Wenn der lokale Cache-Pfad den Namen enthält, müssen `cache-name`, Tool-Konfiguration und `path` zusammenpassen. |
 | `scope` | `auto`, `trusted`, `untrusted`, `shared`; Standard: `auto` | Bestimmt den Namespace. `auto` verwendet Trusted auf Main/Tags und Untrusted in PRs. |
 | `save-scope` | dieselben Scope-Werte; Standard: `scope` | Überschreibt nur den Scope beim Speichern im Post-Schritt der Root-Action. |
 | `os` / `arch` | Text; Standard: Runner-Werte | Macht Plattform- und Architektur-Caches unterscheidbar; leere Werte werden zu `unknown`. |
@@ -294,7 +294,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Restore-Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; Save-Fehler werden über `strict-save` gesteuert. |
 | `strict-save` | `true`/`false`; Standard: Wert von `strict` | Steuert Save-Fehler unabhängig von Restore. Ein neuer Untrusted-PR-Cache ersetzt immer den bisherigen; das alte Asset wird gelöscht, sofern es nicht anderweitig referenziert ist. |
 | `config-file` | Workspace-relative JSON-Datei | Zusätzliche Konfiguration für Repository, Scope, Version, Limits und Allowlists. |
-| `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der `manifests/references-v1.json` enthält. |
+| `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der die Dateien unter `manifests/v1/` enthält. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |
 | `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
 | `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |

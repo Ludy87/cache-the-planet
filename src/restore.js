@@ -9,7 +9,6 @@ const { INPUTS } = require("./constants");
     c.setOutput("read-only", isFork ? "true" : "false");
     const repository = c.cacheRepository();
     const key = c.scopedKey(c.input(INPUTS.KEY));
-    const manifest = await c.refs(repository);
     const candidates = [];
     if (
       c.cacheScope() === "auto" &&
@@ -38,6 +37,7 @@ const { INPUTS } = require("./constants");
       candidates.push(c.scopedRestorePrefix(prefix));
     }
     c.assertTrustedRestoreAllowed(candidates);
+    const manifest = await c.refsForKeys(repository, candidates);
     let found = null;
 
     for (const prefix of candidates) {

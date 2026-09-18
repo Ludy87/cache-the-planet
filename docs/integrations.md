@@ -9,13 +9,24 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 | npm | `npm` | `.cache/npm` | `actions/setup-node`: `package-manager-cache: false` |
 | uv | `uv` | `.cache/uv` | `astral-sh/setup-uv`: `enable-cache: false` |
 | uv-managed Python | `uv-python-3-13` | `.cache/uv` | `astral-sh/setup-uv`: `enable-cache: false` |
-| Maven | `maven-java17` | `.cache/m2` | `actions/setup-java`: `cache` nicht setzen |
-| Gradle | `gradle-java17` | `.cache/gradle` | `actions/setup-java`: `cache` nicht setzen |
+| Maven | `maven-java17` | `.cache/maven-java17` | `actions/setup-java`: `cache` nicht setzen |
+| Gradle | `gradle-java17` | `.cache/gradle-java17` | `actions/setup-java`: `cache` nicht setzen |
 | Task | `task` | `.cache/task` | Keine native Cache-Option vorhanden |
 | Docker/BuildKit | `docker` | `.cache/buildx` | `docker/setup-qemu-action`: `cache-image: false`; BuildKit-Cache separat konfigurieren |
 | Rust/Cargo | `cargo` | `.cache/cargo` | `dtolnay/rust-toolchain`: keine native Cache-Option; `CARGO_HOME` setzen |
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
+
+`cache-name` wird nicht automatisch in einen Dateipfad umgewandelt. Die
+Integrations-Workflows verwenden aber bewusst denselben Namensbestandteil für
+`cache-name` und den lokalen Cache-Root; beide Werte müssen deshalb manuell
+konsistent gehalten werden.
+Im Gradle-Beispiel wird `cache-name: gradle-java17` verwendet und Gradle mit
+`GRADLE_USER_HOME` auf `${{ github.workspace }}/.cache/gradle-java17` gesetzt.
+Save, Restore und Artifact-Upload verwenden deshalb alle
+`.cache/gradle-java17`. Ein bereits gespeichertes Archiv wird durch eine
+spätere Änderung des Pfads nicht umgeschrieben; dafür ist ein neuer Cache-Key
+oder eine neue Cache-Version erforderlich.
 
 ## Mehrere Ökosystem-Caches
 
@@ -33,7 +44,7 @@ Für npm und Maven oder andere unabhängige Cache-Arten kann die Sub-Action
       npm:
         path: .cache/npm
       maven-java17:
-        path: .cache/m2
+        path: .cache/maven-java17
     allow-shared-restore: true
     token: ${{ secrets.CACHE_APP_TOKEN }}
 ```
@@ -50,13 +61,13 @@ Für Maven wird das lokale Repository beim Build gesetzt:
 
 ```yaml
 - name: Build with Maven cache
-  run: mvn -B -Dmaven.repo.local="$GITHUB_WORKSPACE/.cache/m2" package
+  run: mvn -B -Dmaven.repo.local="$GITHUB_WORKSPACE/.cache/maven-java17" package
 ```
 
 `actions/setup-java` kann zusätzlich Konfigurationsdateien wie `settings.xml`
 und `toolchains.xml` ablegen. `settings-path` ist nicht das lokale Maven-
 Repository; verwende dort eine GitHub-Expression wie
-`${{ github.workspace }}/.cache/m2`, niemals eine nicht expandierte Shell-
+`${{ github.workspace }}/.cache/maven-java17`, niemals eine nicht expandierte Shell-
 Variable in einem `with:`-Block.
 
 ### Multi-Cache-Outputs

@@ -68,6 +68,7 @@ async function replaceOlderReferences(repository, key) {
       }
       return changed;
     },
+    { key },
   );
   return { manifest, hashes: [...removedHashes] };
 }
@@ -175,7 +176,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "shared cache keys may only be saved from the repository default branch",
       );
     }
-    const current = await c.refs(repository);
+    const current = await c.refs(repository, { key });
     const existingReference = current.json.references[key];
     const sharedCounterpart =
       requestedScope === "auto" && trustedKey

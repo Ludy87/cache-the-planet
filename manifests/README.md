@@ -1,7 +1,8 @@
 # Referenz-Manifest
 
-`references-v1.json` wird beim ersten Speichervorgang automatisch erstellt. Es
-enthält `schema_version: 1` sowie eine Zuordnung vollständiger Cache-Keys zu
+Unter `v1/` werden beim ersten Speichervorgang getrennte Manifestdateien
+automatisch erstellt: `trusted.json`, `shared.json` sowie je eine Datei unter
+`untrusted/pr-<number>.json`. Jede Datei enthält `schema_version: 1` sowie eine Zuordnung vollständiger Cache-Keys zu
 `{object, updated_at}`:
 
 ```json
@@ -20,7 +21,7 @@ Vertrauenswürdige Referenzen verwenden den Namensraum `trusted/`. Referenzen
 aus Pull Requests verwenden `untrusted/<repository>/pr-<number>/` und werden
 beim Schließen des Pull Requests bereinigt.
 
-Das JSON-Manifest ist die maßgebliche Zuordnung zwischen Cache-Key und
+Jede JSON-Manifestdatei ist die maßgebliche Zuordnung zwischen Cache-Key und
 Objekt. Die unveränderlichen Cache-Objekte selbst liegen ausschließlich als
 Assets im Pre-Release `cache-v1`. Das Manifest sollte nicht manuell bearbeitet
 werden; die Action aktualisiert es über die GitHub Contents API mit
