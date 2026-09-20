@@ -1,14 +1,6 @@
 {
   "schema_version": 1,
-  "references": {
-    "untrusted/Ludy87/cache-the-planet/pr-168/gradle-java17/linux-x64/ba762e3ac59d84324ba2c27187b4880398ab41da4eaba092e11f23989c279cba/v1": {
-      "object": "sha256:687b91cd1e73c6209ebecaf4d70055659701bdb94a411182767bfab3a1579b97",
-      "updated_at": "2026-09-18T11:10:22.782Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "dependabot[bot]",
-      "size": 2349989
-    }
-  },
+  "references": {},
   "monitoring": {
     "window_started_at": "2026-09-18T11:10:22.731Z",
     "writes": 1
