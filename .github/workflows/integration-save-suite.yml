@@ -19,6 +19,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NPM_CACHE: ${{ github.workspace }}/.cache/npm
+
 jobs:
   should-run:
     name: Determine whether integration suite should run
@@ -73,6 +76,22 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
+      
+      - uses: Ludy87/cache-the-planet@9c1c1727a73d1bc3e119369958cfa61332791d4c
+        with:
+          key: ${{ hashFiles('package-lock.json') }}
+          cache-name: npm
+          path: .cache/npm
+          save-scope: shared
+          allow-shared-restore: true
+          strict: true
+          storage: sftp
+          sftp-host: ${{ secrets.SFTP_HOST }}
+          sftp-username: ${{ secrets.SFTP_USERNAME }}
+          sftp-port: ${{ secrets.SFTP_PORT }}
+          sftp-password: ${{ secrets.SFTP_PASSWORD }}
+          # sftp-private-key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          sftp-base-path: ${{ secrets.SFTP_BASE_PATH }}
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
