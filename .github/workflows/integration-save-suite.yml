@@ -77,7 +77,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
       
-      - uses: Ludy87/cache-the-planet@9c1c1727a73d1bc3e119369958cfa61332791d4c
+      - uses: Ludy87/cache-the-planet@73fda734f04e0c3fb68d9fc54f1865ef3a5e747c
         with:
           key: ${{ hashFiles('package-lock.json') }}
           cache-name: npm
