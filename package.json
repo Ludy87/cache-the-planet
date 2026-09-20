@@ -45,6 +45,7 @@
     "esbuild": "0.28.2"
   },
   "dependencies": {
-    "@actions/github": "9.1.1"
+    "@actions/github": "9.1.1",
+    "ssh2-sftp-client": "12.0.1"
   }
 }

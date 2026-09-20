@@ -286,12 +286,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         const existing = await c.object(repository, hash);
         const name = c.assetName(key, hash);
         if (!existing) {
-          const release = (await c.assets(repository)).release;
-          const uploadUrl = release.upload_url.replace(
-            "{?name,label}",
-            `?name=${encodeURIComponent(name)}`,
-          );
-          await c.upload(uploadUrl, archive.file, name, "application/zstd");
+          await c.uploadObject(repository, archive.file, name, "application/zstd");
           c.invalidateRepositoryCache(repository);
         }
         const updated = await c.replaceRef(
@@ -383,13 +378,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const name = c.assetName(key, hash);
 
     if (!existing) {
-      const release = (await c.assets(repository)).release;
       try {
-        const uploadUrl = release.upload_url.replace(
-          "{?name,label}",
-          `?name=${encodeURIComponent(name)}`,
-        );
-        await c.upload(uploadUrl, archive.file, name, "application/zstd");
+        await c.uploadObject(repository, archive.file, name, "application/zstd");
         c.invalidateRepositoryCache(repository);
         c.log(`uploaded object ${hash}`);
       } catch (error) {

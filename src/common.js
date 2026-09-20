@@ -10,6 +10,7 @@ const { INPUTS } = require("./constants");
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
 let githubClientPromise;
+let sftpClientPromise;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -314,6 +315,49 @@ function cacheRepository() {
     throw new Error("cache repository must be an owner/name repository");
   }
   return value;
+}
+
+function storageMode() {
+  const value = String(
+    input(INPUTS.STORAGE) || process.env.CACHE_STORAGE || configuration().storage || "github-release",
+  ).trim().toLowerCase();
+  if (value !== "github-release" && value !== "sftp")
+    throw new Error("storage must be github-release or sftp");
+  return value;
+}
+
+function sftpSettings() {
+  if (storageMode() !== "sftp") return null;
+  const configured = configuration().sftp || {};
+  const host = input(INPUTS.SFTP_HOST) || process.env.SFTP_HOST || configured.host;
+  const username = input(INPUTS.SFTP_USERNAME) || process.env.SFTP_USERNAME || configured.username;
+  const privateKey = input(INPUTS.SFTP_PRIVATE_KEY) || process.env.SFTP_PRIVATE_KEY || configured.private_key;
+  const password = input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD || configured.password;
+  const port = Number(input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22);
+  const basePath = input(INPUTS.SFTP_BASE_PATH) || process.env.SFTP_BASE_PATH || configured.base_path || "/cache-the-planet";
+  if (!host || !username || (!privateKey && !password))
+    throw new Error("SFTP storage requires host, username, and private-key or password");
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("sftp-port must be valid");
+  if (!basePath.startsWith("/") || basePath.includes("..")) throw new Error("sftp-base-path must be an absolute safe path");
+  return { host, username, port, privateKey, password, basePath };
+}
+
+async function sftpClient() {
+  const settings = sftpSettings();
+  if (!sftpClientPromise) {
+    sftpClientPromise = import("ssh2-sftp-client").then(async ({ default: SftpClient }) => {
+      const client = new SftpClient("cache-the-planet");
+      await client.connect({ host: settings.host, port: settings.port, username: settings.username, ...(settings.privateKey ? { privateKey: settings.privateKey } : { password: settings.password }) });
+      return client;
+    });
+  }
+  return sftpClientPromise;
+}
+
+function sftpObjectPath(hash) {
+  validateCacheHash(hash);
+  const { basePath } = sftpSettings();
+  return `${basePath.replace(/\/+$/, "")}/${hash.slice(7)}.tar.zst`;
 }
 
 function defaultBranch() {
@@ -1476,6 +1520,18 @@ async function release(repository) {
 }
 
 async function assets(repository) {
+  if (storageMode() === "sftp") {
+    const client = await sftpClient();
+    const settings = sftpSettings();
+    await client.mkdir(settings.basePath, true);
+    const entries = await client.list(settings.basePath);
+    return {
+      release: null,
+      assets: entries
+        .filter((entry) => entry.type === "-" && /^[a-f0-9]{64}\.tar\.zst$/i.test(entry.name))
+        .map((entry) => ({ id: entry.name, name: entry.name, size: entry.size, created_at: entry.modifyTime ? new Date(entry.modifyTime).toISOString() : new Date(0).toISOString(), sftp: true })),
+    };
+  }
   if (assetsCache.has(repository)) return assetsCache.get(repository);
   const pending = (async () => {
     const cacheRelease = await release(repository);
@@ -1504,6 +1560,16 @@ function invalidateRepositoryCache(repository) {
 
 async function object(repository, hash) {
   validateCacheHash(hash);
+  if (storageMode() === "sftp") {
+    try {
+      const client = await sftpClient();
+      const stat = await client.stat(sftpObjectPath(hash));
+      return { id: hash, name: `${hash.slice(7)}.tar.zst`, size: stat.size, sftp: true };
+    } catch (error) {
+      if (error.code === 2 || /no such file/i.test(error.message || "")) return null;
+      throw error;
+    }
+  }
   const result = await assets(repository);
   return result.assets.find(
     (asset) =>
@@ -1827,6 +1893,11 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
 async function deleteObject(repository, hash, invalidate = true) {
   const asset = await object(repository, hash);
   if (!asset) return false;
+  if (storageMode() === "sftp") {
+    const client = await sftpClient();
+    await client.delete(sftpObjectPath(hash));
+    return true;
+  }
   await gh(`/repos/${repository}/releases/assets/${asset.id}`, {
     method: "DELETE",
   });
@@ -1841,11 +1912,17 @@ async function download(repository, hash) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
   try {
-    await downloadToFile(asset.browser_download_url, file, {
-      maxBytes: maxCompressedBytes,
-      timeoutMs: 120000,
-      headers: authorizationHeaders(),
-    });
+    if (storageMode() === "sftp") {
+      const client = await sftpClient();
+      await client.fastGet(sftpObjectPath(hash), file);
+      if (fs.statSync(file).size > maxCompressedBytes) throw new Error("cache archive exceeds the compressed size limit");
+    } else {
+      await downloadToFile(asset.browser_download_url, file, {
+        maxBytes: maxCompressedBytes,
+        timeoutMs: 120000,
+        headers: authorizationHeaders(),
+      });
+    }
     if (digest(file) !== hash)
       throw new Error("integrity check failed: sha256 mismatch");
     return file;
@@ -1853,6 +1930,30 @@ async function download(repository, hash) {
     removeTemporaryFile(directory);
     throw error;
   }
+}
+
+async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() !== "sftp") {
+    const release = (await assets(repository)).release;
+    const uploadUrl = release.upload_url.replace("{?name,label}", `?name=${encodeURIComponent(name)}`);
+    return upload(uploadUrl, file, name, contentType);
+  }
+  const hash = hashFromAssetName(name);
+  if (!hash) throw new Error("SFTP object name must contain a valid sha256 hash");
+  const client = await sftpClient();
+  const settings = sftpSettings();
+  await client.mkdir(settings.basePath, true);
+  try {
+    await client.stat(sftpObjectPath(hash));
+    const error = new Error("object already exists");
+    error.status = 422;
+    throw error;
+  } catch (error) {
+    if (error.status === 422) throw error;
+    if (!(error.code === 2 || /no such file/i.test(error.message || ""))) throw error;
+  }
+  await client.fastPut(file, sftpObjectPath(hash));
+  return { id: hash, name, size: fs.statSync(file).size, sftp: true };
 }
 
 async function downloadToFile(url, output, options = {}) {
@@ -2026,6 +2127,7 @@ module.exports = {
   fail,
   gh,
   upload,
+  uploadObject,
   entries,
   excludePatterns,
   refName,
