@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
     env:
       NPM_CACHE: ${{ github.workspace }}/.cache/npm
     steps:
@@ -104,6 +104,7 @@ jobs:
       - uses: Ludy87/cache-the-planet@c372df904d8647181fc93c91b0a7c16fec8a5711
         with:
           key: ${{ needs.hash_pr.outputs.files_hash }}
+          token: ${{ github.token }}
           cache-name: npm
           path: .cache/npm
           save-scope: shared
