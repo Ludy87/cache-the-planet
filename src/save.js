@@ -454,4 +454,4 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
     c.fail(error, INPUTS.STRICT_SAVE);
   }
-})();
+})().finally(() => c.closeSftp());

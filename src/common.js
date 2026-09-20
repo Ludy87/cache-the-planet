@@ -354,6 +354,18 @@ async function sftpClient() {
   return sftpClientPromise;
 }
 
+async function closeSftp() {
+  if (!sftpClientPromise) return;
+  const pending = sftpClientPromise;
+  sftpClientPromise = null;
+  try {
+    const client = await pending;
+    await client.end();
+  } catch {
+    // Cleanup must not replace the original cache result or error.
+  }
+}
+
 function sftpObjectPath(hash) {
   validateCacheHash(hash);
   const { basePath } = sftpSettings();
@@ -2128,6 +2140,7 @@ module.exports = {
   gh,
   upload,
   uploadObject,
+  closeSftp,
   entries,
   excludePatterns,
   refName,
