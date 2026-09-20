@@ -306,7 +306,13 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           );
         if (oldHash && oldHash !== hash && !stillReferenced) {
           try {
-            await c.deleteObject(repository, oldHash);
+            c.log(`deleting replaced pull request cache asset: hash=${oldHash}`);
+            const deleted = await c.deleteObject(repository, oldHash);
+            c.log(
+              deleted
+                ? `deleted replaced pull request cache asset: hash=${oldHash}`
+                : `replaced pull request cache asset was already absent: hash=${oldHash}`,
+            );
           } catch (error) {
             c.log(`old cache asset could not be deleted: ${error.message}`);
           }
