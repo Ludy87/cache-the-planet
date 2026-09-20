@@ -60,12 +60,6 @@ jobs:
         uses: $/
         with:
           cache-name: npm
-          storage: sftp
-          sftp-host: ${{ secrets.SFTP_HOST }}
-          sftp-username: ${{ secrets.SFTP_USERNAME }}
-          sftp-port: ${{ secrets.SFTP_PORT }}
-          sftp-password: ${{ secrets.SFTP_PASSWORD }}
-          sftp-base-path: ${{ secrets.SFTP_BASE_PATH }}
           key: ${{ hashFiles('package-lock.json') }}
           path: .cache/npm
           allow-shared-restore: true
