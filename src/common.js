@@ -1458,7 +1458,9 @@ async function release(repository) {
           body: JSON.stringify({
             tag_name: "cache-v1",
             name: "Cache objects (v1)",
-            prerelease: true,
+            draft: false,
+            prerelease: false,
+            make_latest: false,
           }),
         })
       ).body;
