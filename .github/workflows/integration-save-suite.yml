@@ -19,6 +19,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  FILES_TO_HASH: |
+    package-lock.json
+
 jobs:
   should-run:
     name: Determine whether integration suite should run
@@ -58,9 +62,30 @@ jobs:
           else
             echo 'run=true' >> "$GITHUB_OUTPUT"
           fi
+  hash_pr:
+    name: Hash npm files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      files_hash: ${{ steps.hash.outputs.files_hash }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Hash npm files
+        id: hash
+        env:
+          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
+        run: |
+          HASH="$FILES_HASH"
+          echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
 
   test:
-    needs: [build-dist]
+    needs: [build-dist, hash_pr]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     name: Run npm tests and integration tests
     runs-on: ubuntu-latest
@@ -78,7 +103,7 @@ jobs:
       
       - uses: Ludy87/cache-the-planet@c372df904d8647181fc93c91b0a7c16fec8a5711
         with:
-          key: ${{ hashFiles('package-lock.json') }}
+          key: ${{ needs.hash_pr.outputs.files_hash }}
           cache-name: npm
           path: .cache/npm
           save-scope: shared
