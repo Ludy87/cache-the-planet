@@ -1,21 +1,6 @@
 {
   "schema_version": 1,
-  "references": {
-    "untrusted/Ludy87/cache-the-planet/pr-38/uv/linux-x64/ca9c81a79c9bb865554628877e5df6e3eba4bd841188875ad51b0928bc639c8a/v1": {
-      "object": "sha256:baed848cb0f501de7a2f468c89149c62f29310b26a22fc0b01d75a97cd92aa27",
-      "updated_at": "2026-09-18T09:29:17.160Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 4241398
-    },
-    "untrusted/Ludy87/cache-the-planet/pr-38/uv-python-3-13/linux-x64/ca9c81a79c9bb865554628877e5df6e3eba4bd841188875ad51b0928bc639c8a/v1": {
-      "object": "sha256:c5eda4d67938ce71c79c97dfc1d0733062dc948f7841c9843f7a289489e4d10a",
-      "updated_at": "2026-09-18T09:29:27.875Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 175323829
-    }
-  },
+  "references": {},
   "monitoring": {
     "window_started_at": "2026-09-18T09:29:17.154Z",
     "writes": 2
