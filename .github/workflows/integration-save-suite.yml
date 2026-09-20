@@ -115,7 +115,6 @@ jobs:
           sftp-username: ${{ secrets.SFTP_USERNAME }}
           sftp-port: ${{ secrets.SFTP_PORT }}
           sftp-password: ${{ secrets.SFTP_PASSWORD }}
-          # sftp-private-key: ${{ secrets.SFTP_PRIVATE_KEY }}
           sftp-base-path: ${{ secrets.SFTP_BASE_PATH }}
           exclude: |
             .cache/npm/_logs
