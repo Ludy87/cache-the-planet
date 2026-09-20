@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "references": {
-    "untrusted/Ludy87/cache-the-planet/pr-174/npm/linux-x64/68cf1a88d9864721ca0c63ee49ec8c76e1ccdadbcf55de38fc362f53e0197a69-cache-ee039838b25c950a/v1": {
-      "object": "sha256:20bba4d643ab38eda5e2f1adabe5356fe959cbc7f74129c534eb9c99af5c0f0b",
-      "updated_at": "2026-09-20T20:06:38.566Z",
+    "untrusted/Ludy87/cache-the-planet/pr-174/npm/linux-x64/68cf1a88d9864721ca0c63ee49ec8c76e1ccdadbcf55de38fc362f53e0197a69/v1": {
+      "object": "sha256:32e441becdb8c4e8a7dd89e725b02ec09f07da815b97e836723355aca73a8412",
+      "updated_at": "2026-09-20T20:11:53.715Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 7678403
+      "size": 7681379
     }
   },
   "monitoring": {
     "window_started_at": "2026-09-20T20:00:48.554Z",
-    "writes": 4
+    "writes": 5
   }
 }
