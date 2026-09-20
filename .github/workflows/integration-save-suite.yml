@@ -101,7 +101,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      - uses: Ludy87/cache-the-planet@dbbc31204153d0d5ecd3d22c56058fd2678d7583
+      - uses: Ludy87/cache-the-planet@4eba1482a95fd1f7900d1859da375c6fec84ca22
         with:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           token: ${{ github.token }}
