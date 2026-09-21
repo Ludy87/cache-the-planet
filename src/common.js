@@ -1703,7 +1703,8 @@ async function refs(repository, { fresh = false, key, filePath } = {}) {
 }
 
 async function refsForKeys(repository, keys, { fresh = false } = {}) {
-  const paths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const storagePaths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const paths = [];
   // Preserve read compatibility for manifests written before storage was
   // part of the manifest identity. New writes always use the storage-scoped
   // path above; SFTP must never read GitHub-storage references.
@@ -1719,6 +1720,8 @@ async function refsForKeys(repository, keys, { fresh = false } = {}) {
       if (legacy) paths.push(legacy);
     }
   }
+  // Storage-scoped manifests take precedence over legacy references.
+  paths.push(...storagePaths.filter((filePath) => !paths.includes(filePath)));
   const manifests = await Promise.all(
     paths.map((filePath) => refs(repository, { fresh, filePath })),
   );

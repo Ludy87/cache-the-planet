@@ -24,13 +24,23 @@ und Assets nur in einem ausdrücklich autorisierten Verwaltungsjob ändern; der
 Standardmodus ist ein unverbindlicher Dry-Run.
 
 Das Manifest liegt im Cache-Repository unter
-Die Referenzen liegen unter `manifests/v1/`:
+Die Referenzen werden pro Storage getrennt unter `manifests/v1/<storage>/`
+geführt. Dadurch können derselbe logische Cache-Key und unterschiedliche
+Objekte parallel als GitHub-Asset und auf SFTP gespeichert werden:
 
 ```text
-manifests/v1/trusted.json
-manifests/v1/shared.json
-manifests/v1/untrusted/pr-<number>.json
+manifests/v1/github/trusted.json
+manifests/v1/github/shared.json
+manifests/v1/github/untrusted/pr-<number>.json
+manifests/v1/sftp/trusted.json
+manifests/v1/sftp/shared.json
+manifests/v1/sftp/untrusted/pr-<number>.json
 ```
+
+`storage: github-release` verwendet den Storage-Namen `github`, `storage: sftp`
+verwendet `sftp`. Alte GitHub-Manifeste direkt unter `manifests/v1/` werden
+beim Lesen als Legacy-Fallback unterstützt; neue Schreibvorgänge verwenden
+immer den storage-spezifischen Pfad. SFTP liest keine GitHub-Referenzen.
 
 Im Repository dieses Projekts werden diese Dateien im Branch `cache-data` verwaltet.
 Andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH`, dem

@@ -22,6 +22,12 @@ on:
         required: false
         default: false
         type: boolean
+      storage:
+        description: Storage whose manifests and objects should be cleaned
+        required: true
+        default: github-release
+        type: choice
+        options: [github-release, sftp]
   schedule: [{ cron: "0 3 * * *" }]
 jobs:
   gc:
@@ -49,3 +55,9 @@ jobs:
           UNTRUSTED_TTL_HOURS: 24
           GC_OBJECT: ${{ inputs.object || '' }}
           DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || (inputs.dry_run && 'true' || 'false') }}
+          CACHE_STORAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.storage || 'github-release' }}
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_BASE_PATH: ${{ secrets.SFTP_BASE_PATH }}
