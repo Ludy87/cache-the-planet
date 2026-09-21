@@ -20,18 +20,23 @@ const manifestLocks = new Map();
 function manifestPathForKey(key) {
   // Read-only callers that explicitly request the default manifest do not
   // have a cache key. Writes always pass a key or an explicit file path.
+  const storage = storageMode() === "sftp" ? "sftp" : "github";
   if (key === undefined || key === null || key === "")
-    return "manifests/v1/trusted.json";
+    return `manifests/v1/${storage}/trusted.json`;
   if (typeof key !== "string") throw new Error("manifest key must be a string");
-  if (key.startsWith("trusted/")) return "manifests/v1/trusted.json";
-  if (key.startsWith("shared/")) return "manifests/v1/shared.json";
+  if (key.startsWith("trusted/")) return `manifests/v1/${storage}/trusted.json`;
+  if (key.startsWith("shared/")) return `manifests/v1/${storage}/shared.json`;
   const match = key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//);
-  if (match) return `manifests/v1/untrusted/pr-${match[1]}.json`;
+  if (match) return `manifests/v1/${storage}/untrusted/pr-${match[1]}.json`;
   throw new Error("manifest key has an unsupported namespace");
 }
 
 function manifestPaths() {
-  return ["manifests/v1/trusted.json", "manifests/v1/shared.json"];
+  const storage = storageMode() === "sftp" ? "sftp" : "github";
+  return [
+    `manifests/v1/${storage}/trusted.json`,
+    `manifests/v1/${storage}/shared.json`,
+  ];
 }
 
 function parsePositiveSafeInteger(value, name, fallback) {
@@ -1699,6 +1704,21 @@ async function refs(repository, { fresh = false, key, filePath } = {}) {
 
 async function refsForKeys(repository, keys, { fresh = false } = {}) {
   const paths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  // Preserve read compatibility for manifests written before storage was
+  // part of the manifest identity. New writes always use the storage-scoped
+  // path above; SFTP must never read GitHub-storage references.
+  if (storageMode() !== "sftp") {
+    for (const key of keys) {
+      const legacy = key.startsWith("trusted/")
+        ? "manifests/v1/trusted.json"
+        : key.startsWith("shared/")
+          ? "manifests/v1/shared.json"
+          : (key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)
+              ? `manifests/v1/untrusted/pr-${key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)[1]}.json`
+              : null);
+      if (legacy) paths.push(legacy);
+    }
+  }
   const manifests = await Promise.all(
     paths.map((filePath) => refs(repository, { fresh, filePath })),
   );
@@ -1711,7 +1731,7 @@ async function refsAll(repository, { fresh = false } = {}) {
   const paths = [...manifestPaths()];
   try {
     const directory = await gh(
-      `/repos/${repository}/contents/manifests/v1/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
+      `/repos/${repository}/contents/manifests/v1/${storageMode() === "sftp" ? "sftp" : "github"}/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
     );
     if (Array.isArray(directory.body)) {
       for (const item of directory.body) {
