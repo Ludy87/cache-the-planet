@@ -490,7 +490,10 @@ const cacheIdentityFormat = "archive-v1|restore-safety-v1";
 function cacheIdentitySignature() {
   // The publisher repacks downloaded artifacts from a different workspace
   // path. Cache paths are transport details, not cache content identity.
-  const excludes = excludePatterns();
+  // Exclusion order is not semantically relevant. Canonicalize it so that
+  // restore and save produce the same key even when inputs were assembled in
+  // a different order.
+  const excludes = [...new Set(excludePatterns())].sort();
   if (!excludes.length) return "";
   const identity = JSON.stringify({
     format: cacheIdentityFormat,
