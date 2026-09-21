@@ -260,7 +260,8 @@ Restore und Save benötigen `cache-name`, `key` und `path`. `repository` ist
 optional; ohne Angabe werden zuerst `CACHE_REPOSITORY` und anschließend das
 Repository des laufenden Workflows (`GITHUB_REPOSITORY`) verwendet.
 Weitere gemeinsame Inputs sind `scope`, `os`, `arch`, `version`, `token`,
-`encryption-key`, `strict`, `strict-save`, `config-file` und `manifest-branch`.
+`encryption-key`, `strict`, `strict-save`, `config-file`, `manifest-branch` und
+`manifest-path`.
 
 Mit `save-scope` kann der Post-Save einen abweichenden Scope verwenden; ohne
 Angabe wird der Wert von `scope` übernommen.
@@ -296,6 +297,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `strict-save` | `true`/`false`; Standard: Wert von `strict` | Steuert Save-Fehler unabhängig von Restore. Ein neuer Untrusted-PR-Cache ersetzt immer den bisherigen; das alte Asset wird gelöscht, sofern es nicht anderweitig referenziert ist. |
 | `config-file` | Workspace-relative JSON-Datei | Zusätzliche Konfiguration für Repository, Scope, Version, Limits und Allowlists. |
 | `manifest-branch` | Branchname; Standard: `cache-data` | Branch, der die Dateien unter `manifests/v1/` enthält. |
+| `manifest-path` | Relativer Repository-Pfad; Standard: `manifests` | Unterordner für die Manifest-Dateien. Wenn gesetzt und `manifest-branch` nicht gesetzt ist, wird der Default-Branch verwendet. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |
 | `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
 | `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |
