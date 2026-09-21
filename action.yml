@@ -42,6 +42,30 @@ inputs:
   token:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
+  storage:
+    description: "Object storage backend: github-release or sftp"
+    required: false
+    default: "github-release"
+  sftp-host:
+    description: "SFTP hostname"
+    required: false
+  sftp-port:
+    description: "SFTP port"
+    required: false
+    default: "22"
+  sftp-username:
+    description: "SFTP username"
+    required: false
+  sftp-private-key:
+    description: "SFTP private key; preferably supplied from a secret"
+    required: false
+  sftp-password:
+    description: "SFTP password; preferably supplied from a secret"
+    required: false
+  sftp-base-path:
+    description: "Absolute SFTP directory for immutable cache objects"
+    required: false
+    default: "/cache-the-planet"
   encryption-key:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
     required: false

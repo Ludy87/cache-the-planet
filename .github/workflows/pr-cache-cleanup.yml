@@ -12,6 +12,9 @@ permissions:
 
 jobs:
   cleanup:
+    strategy:
+      matrix:
+        storage: [github-release, sftp]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -35,3 +38,9 @@ jobs:
           PR_REPOSITORY: ${{ github.event.repository.full_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ github.token }}
+          CACHE_STORAGE: ${{ matrix.storage }}
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_BASE_PATH: ${{ secrets.SFTP_BASE_PATH }}

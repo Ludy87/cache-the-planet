@@ -286,12 +286,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         const existing = await c.object(repository, hash);
         const name = c.assetName(key, hash);
         if (!existing) {
-          const release = (await c.assets(repository)).release;
-          const uploadUrl = release.upload_url.replace(
-            "{?name,label}",
-            `?name=${encodeURIComponent(name)}`,
-          );
-          await c.upload(uploadUrl, archive.file, name, "application/zstd");
+          await c.uploadObject(repository, archive.file, name, "application/zstd");
           c.invalidateRepositoryCache(repository);
         }
         const updated = await c.replaceRef(
@@ -311,7 +306,13 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           );
         if (oldHash && oldHash !== hash && !stillReferenced) {
           try {
-            await c.deleteObject(repository, oldHash);
+            c.log(`deleting replaced pull request cache asset: hash=${oldHash}`);
+            const deleted = await c.deleteObject(repository, oldHash);
+            c.log(
+              deleted
+                ? `deleted replaced pull request cache asset: hash=${oldHash}`
+                : `replaced pull request cache asset was already absent: hash=${oldHash}`,
+            );
           } catch (error) {
             c.log(`old cache asset could not be deleted: ${error.message}`);
           }
@@ -383,13 +384,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const name = c.assetName(key, hash);
 
     if (!existing) {
-      const release = (await c.assets(repository)).release;
       try {
-        const uploadUrl = release.upload_url.replace(
-          "{?name,label}",
-          `?name=${encodeURIComponent(name)}`,
-        );
-        await c.upload(uploadUrl, archive.file, name, "application/zstd");
+        await c.uploadObject(repository, archive.file, name, "application/zstd");
         c.invalidateRepositoryCache(repository);
         c.log(`uploaded object ${hash}`);
       } catch (error) {
@@ -464,4 +460,4 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
     c.fail(error, INPUTS.STRICT_SAVE);
   }
-})();
+})().finally(() => c.closeSftp());

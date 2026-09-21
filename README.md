@@ -4,8 +4,9 @@
 
 `cache-the-planet` ist ein content-addressed Cache für GitHub Actions. Große,
 immutable Cache-Objekte werden als Assets des GitHub-Pre-Releases `cache-v1`
-gespeichert. Getrennte Dateien unter `manifests/v1/` ordnen logische Keys den
-SHA-256-Objekten zu.
+gespeichert. Storage-getrennte Dateien unter `manifests/v1/<storage>/` ordnen
+logische Keys den SHA-256-Objekten zu. Dadurch können GitHub-Asset- und SFTP-
+Caches denselben logischen Key unabhängig voneinander verwenden.
 
 ## Funktionsweise
 

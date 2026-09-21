@@ -45,7 +45,7 @@ Die Workflows verwenden neben den lokalen Actions `./` und `./save` die folgende
 | `actions/dependency-review-action` | Commit `a1d282b36b6f3519aa1f3fc636f609c47dddb294` (`v5.0.0`) | [GitHub](https://github.com/actions/dependency-review-action) |
 | `aquasecurity/trivy-action` | Commit `ed142fd0673e97e23eac54620cfb913e5ce36c25` (`v0.36.0`) | [GitHub](https://github.com/aquasecurity/trivy-action) |
 | `astral-sh/setup-uv` | Commit `20cfd1bf945f4377ade1205e4dbc17946fc9a30d` (`v10.0.1`) | [GitHub](https://github.com/astral-sh/setup-uv) |
-| `dtolnay/rust-toolchain` | Commit `6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772` (`v1`) | [GitHub](https://github.com/dtolnay/rust-toolchain) |
+| `dtolnay/rust-toolchain` | Commit `02cb101ec7c40f2c49e1d9714d64511d8e1b74de` (`v1`) | [GitHub](https://github.com/dtolnay/rust-toolchain) |
 | `gitleaks/gitleaks-action` | Commit `e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e` (`v3.0.0`) | [GitHub](https://github.com/gitleaks/gitleaks-action) |
 | `google/osv-scanner-action` | Commit `6e4298ebc4db23e847df9b2e2de2939d6f066c67` (`v2.5.1`) | [GitHub](https://github.com/google/osv-scanner-action) |
 | `jimeh/update-tags-action` | Commit `98d6d448de7488acb52bd8db115673541d019521` (`v2`) | [GitHub](https://github.com/jimeh/update-tags-action) |

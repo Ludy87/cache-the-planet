@@ -124,4 +124,4 @@ const { INPUTS } = require("./constants");
   } catch (error) {
     c.fail(error);
   }
-})();
+})().finally(() => c.closeSftp());

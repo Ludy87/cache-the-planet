@@ -10,6 +10,7 @@ const { INPUTS } = require("./constants");
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
 let githubClientPromise;
+let sftpClientPromise;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -19,18 +20,23 @@ const manifestLocks = new Map();
 function manifestPathForKey(key) {
   // Read-only callers that explicitly request the default manifest do not
   // have a cache key. Writes always pass a key or an explicit file path.
+  const storage = storageMode() === "sftp" ? "sftp" : "github";
   if (key === undefined || key === null || key === "")
-    return "manifests/v1/trusted.json";
+    return `manifests/v1/${storage}/trusted.json`;
   if (typeof key !== "string") throw new Error("manifest key must be a string");
-  if (key.startsWith("trusted/")) return "manifests/v1/trusted.json";
-  if (key.startsWith("shared/")) return "manifests/v1/shared.json";
+  if (key.startsWith("trusted/")) return `manifests/v1/${storage}/trusted.json`;
+  if (key.startsWith("shared/")) return `manifests/v1/${storage}/shared.json`;
   const match = key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//);
-  if (match) return `manifests/v1/untrusted/pr-${match[1]}.json`;
+  if (match) return `manifests/v1/${storage}/untrusted/pr-${match[1]}.json`;
   throw new Error("manifest key has an unsupported namespace");
 }
 
 function manifestPaths() {
-  return ["manifests/v1/trusted.json", "manifests/v1/shared.json"];
+  const storage = storageMode() === "sftp" ? "sftp" : "github";
+  return [
+    `manifests/v1/${storage}/trusted.json`,
+    `manifests/v1/${storage}/shared.json`,
+  ];
 }
 
 function parsePositiveSafeInteger(value, name, fallback) {
@@ -316,6 +322,61 @@ function cacheRepository() {
   return value;
 }
 
+function storageMode() {
+  const value = String(
+    input(INPUTS.STORAGE) || process.env.CACHE_STORAGE || configuration().storage || "github-release",
+  ).trim().toLowerCase();
+  if (value !== "github-release" && value !== "sftp")
+    throw new Error("storage must be github-release or sftp");
+  return value;
+}
+
+function sftpSettings() {
+  if (storageMode() !== "sftp") return null;
+  const configured = configuration().sftp || {};
+  const host = input(INPUTS.SFTP_HOST) || process.env.SFTP_HOST || configured.host;
+  const username = input(INPUTS.SFTP_USERNAME) || process.env.SFTP_USERNAME || configured.username;
+  const privateKey = input(INPUTS.SFTP_PRIVATE_KEY) || process.env.SFTP_PRIVATE_KEY || configured.private_key;
+  const password = input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD || configured.password;
+  const port = Number(input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22);
+  const basePath = input(INPUTS.SFTP_BASE_PATH) || process.env.SFTP_BASE_PATH || configured.base_path || "/cache-the-planet";
+  if (!host || !username || (!privateKey && !password))
+    throw new Error("SFTP storage requires host, username, and private-key or password");
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("sftp-port must be valid");
+  if (!basePath.startsWith("/") || basePath.includes("..")) throw new Error("sftp-base-path must be an absolute safe path");
+  return { host, username, port, privateKey, password, basePath };
+}
+
+async function sftpClient() {
+  const settings = sftpSettings();
+  if (!sftpClientPromise) {
+    sftpClientPromise = import("ssh2-sftp-client").then(async ({ default: SftpClient }) => {
+      const client = new SftpClient("cache-the-planet");
+      await client.connect({ host: settings.host, port: settings.port, username: settings.username, ...(settings.privateKey ? { privateKey: settings.privateKey } : { password: settings.password }) });
+      return client;
+    });
+  }
+  return sftpClientPromise;
+}
+
+async function closeSftp() {
+  if (!sftpClientPromise) return;
+  const pending = sftpClientPromise;
+  sftpClientPromise = null;
+  try {
+    const client = await pending;
+    await client.end();
+  } catch {
+    // Cleanup must not replace the original cache result or error.
+  }
+}
+
+function sftpObjectPath(hash) {
+  validateCacheHash(hash);
+  const { basePath } = sftpSettings();
+  return `${basePath.replace(/\/+$/, "")}/${hash.slice(7)}.tar.zst`;
+}
+
 function defaultBranch() {
   if (process.env.GITHUB_DEFAULT_BRANCH)
     return process.env.GITHUB_DEFAULT_BRANCH;
@@ -434,7 +495,10 @@ const cacheIdentityFormat = "archive-v1|restore-safety-v1";
 function cacheIdentitySignature() {
   // The publisher repacks downloaded artifacts from a different workspace
   // path. Cache paths are transport details, not cache content identity.
-  const excludes = excludePatterns();
+  // Exclusion order is not semantically relevant. Canonicalize it so that
+  // restore and save produce the same key even when inputs were assembled in
+  // a different order.
+  const excludes = [...new Set(excludePatterns())].sort();
   if (!excludes.length) return "";
   const identity = JSON.stringify({
     format: cacheIdentityFormat,
@@ -1458,7 +1522,9 @@ async function release(repository) {
           body: JSON.stringify({
             tag_name: "cache-v1",
             name: "Cache objects (v1)",
-            prerelease: true,
+            draft: false,
+            prerelease: false,
+            make_latest: false,
           }),
         })
       ).body;
@@ -1474,6 +1540,18 @@ async function release(repository) {
 }
 
 async function assets(repository) {
+  if (storageMode() === "sftp") {
+    const client = await sftpClient();
+    const settings = sftpSettings();
+    await client.mkdir(settings.basePath, true);
+    const entries = await client.list(settings.basePath);
+    return {
+      release: null,
+      assets: entries
+        .filter((entry) => entry.type === "-" && /^[a-f0-9]{64}\.tar\.zst$/i.test(entry.name))
+        .map((entry) => ({ id: entry.name, name: entry.name, size: entry.size, created_at: entry.modifyTime ? new Date(entry.modifyTime).toISOString() : new Date(0).toISOString(), sftp: true })),
+    };
+  }
   if (assetsCache.has(repository)) return assetsCache.get(repository);
   const pending = (async () => {
     const cacheRelease = await release(repository);
@@ -1502,6 +1580,16 @@ function invalidateRepositoryCache(repository) {
 
 async function object(repository, hash) {
   validateCacheHash(hash);
+  if (storageMode() === "sftp") {
+    try {
+      const client = await sftpClient();
+      const stat = await client.stat(sftpObjectPath(hash));
+      return { id: hash, name: `${hash.slice(7)}.tar.zst`, size: stat.size, sftp: true };
+    } catch (error) {
+      if (error.code === 2 || /no such file/i.test(error.message || "")) return null;
+      throw error;
+    }
+  }
   const result = await assets(repository);
   return result.assets.find(
     (asset) =>
@@ -1615,7 +1703,25 @@ async function refs(repository, { fresh = false, key, filePath } = {}) {
 }
 
 async function refsForKeys(repository, keys, { fresh = false } = {}) {
-  const paths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const storagePaths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const paths = [];
+  // Preserve read compatibility for manifests written before storage was
+  // part of the manifest identity. New writes always use the storage-scoped
+  // path above; SFTP must never read GitHub-storage references.
+  if (storageMode() !== "sftp") {
+    for (const key of keys) {
+      const legacy = key.startsWith("trusted/")
+        ? "manifests/v1/trusted.json"
+        : key.startsWith("shared/")
+          ? "manifests/v1/shared.json"
+          : (key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)
+              ? `manifests/v1/untrusted/pr-${key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)[1]}.json`
+              : null);
+      if (legacy) paths.push(legacy);
+    }
+  }
+  // Storage-scoped manifests take precedence over legacy references.
+  paths.push(...storagePaths.filter((filePath) => !paths.includes(filePath)));
   const manifests = await Promise.all(
     paths.map((filePath) => refs(repository, { fresh, filePath })),
   );
@@ -1628,7 +1734,7 @@ async function refsAll(repository, { fresh = false } = {}) {
   const paths = [...manifestPaths()];
   try {
     const directory = await gh(
-      `/repos/${repository}/contents/manifests/v1/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
+      `/repos/${repository}/contents/manifests/v1/${storageMode() === "sftp" ? "sftp" : "github"}/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
     );
     if (Array.isArray(directory.body)) {
       for (const item of directory.body) {
@@ -1825,6 +1931,11 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
 async function deleteObject(repository, hash, invalidate = true) {
   const asset = await object(repository, hash);
   if (!asset) return false;
+  if (storageMode() === "sftp") {
+    const client = await sftpClient();
+    await client.delete(sftpObjectPath(hash));
+    return true;
+  }
   await gh(`/repos/${repository}/releases/assets/${asset.id}`, {
     method: "DELETE",
   });
@@ -1839,11 +1950,17 @@ async function download(repository, hash) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
   try {
-    await downloadToFile(asset.browser_download_url, file, {
-      maxBytes: maxCompressedBytes,
-      timeoutMs: 120000,
-      headers: authorizationHeaders(),
-    });
+    if (storageMode() === "sftp") {
+      const client = await sftpClient();
+      await client.fastGet(sftpObjectPath(hash), file);
+      if (fs.statSync(file).size > maxCompressedBytes) throw new Error("cache archive exceeds the compressed size limit");
+    } else {
+      await downloadToFile(asset.browser_download_url, file, {
+        maxBytes: maxCompressedBytes,
+        timeoutMs: 120000,
+        headers: authorizationHeaders(),
+      });
+    }
     if (digest(file) !== hash)
       throw new Error("integrity check failed: sha256 mismatch");
     return file;
@@ -1851,6 +1968,30 @@ async function download(repository, hash) {
     removeTemporaryFile(directory);
     throw error;
   }
+}
+
+async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() !== "sftp") {
+    const release = (await assets(repository)).release;
+    const uploadUrl = release.upload_url.replace("{?name,label}", `?name=${encodeURIComponent(name)}`);
+    return upload(uploadUrl, file, name, contentType);
+  }
+  const hash = hashFromAssetName(name);
+  if (!hash) throw new Error("SFTP object name must contain a valid sha256 hash");
+  const client = await sftpClient();
+  const settings = sftpSettings();
+  await client.mkdir(settings.basePath, true);
+  try {
+    await client.stat(sftpObjectPath(hash));
+    const error = new Error("object already exists");
+    error.status = 422;
+    throw error;
+  } catch (error) {
+    if (error.status === 422) throw error;
+    if (!(error.code === 2 || /no such file/i.test(error.message || ""))) throw error;
+  }
+  await client.fastPut(file, sftpObjectPath(hash));
+  return { id: hash, name, size: fs.statSync(file).size, sftp: true };
 }
 
 async function downloadToFile(url, output, options = {}) {
@@ -2024,6 +2165,8 @@ module.exports = {
   fail,
   gh,
   upload,
+  uploadObject,
+  closeSftp,
   entries,
   excludePatterns,
   refName,
