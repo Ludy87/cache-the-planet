@@ -56,6 +56,7 @@ jobs:
           GC_OBJECT: ${{ inputs.object || '' }}
           DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || (inputs.dry_run && 'true' || 'false') }}
           CACHE_STORAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.storage || 'github-release' }}
+          CACHE_MANIFEST_PATH: ${{ vars.CACHE_MANIFEST_PATH || '' }}
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}

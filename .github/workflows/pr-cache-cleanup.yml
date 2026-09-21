@@ -39,6 +39,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ github.token }}
           CACHE_STORAGE: ${{ matrix.storage }}
+          CACHE_MANIFEST_PATH: ${{ vars.CACHE_MANIFEST_PATH || '' }}
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
