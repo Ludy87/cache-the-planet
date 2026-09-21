@@ -168,6 +168,41 @@ jobs:
 
       - name: Run integration tests
         run: bash tests/run.sh
+  test-restore-cache:
+    needs: [test, hash_pr]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    name: Restore npm cache asset for trusted publisher
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    permissions:
+      contents: write
+    env:
+      NPM_CACHE: ${{ github.workspace }}/.cache/npm
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
+          persist-credentials: false
+
+      - uses: Ludy87/cache-the-planet@d9750aee9c38066021a3c5c765838241b631d3ee
+        with:
+          key: ${{ needs.hash_pr.outputs.files_hash }}
+          token: ${{ github.token }}
+          restore-only: true
+          cache-name: npm
+          path: .cache/npm
+          save-scope: shared
+          allow-shared-restore: true
+          strict: true
+          storage: sftp
+          sftp-host: ${{ secrets.SFTP_HOST }}
+          sftp-username: ${{ secrets.SFTP_USERNAME }}
+          sftp-port: ${{ secrets.SFTP_PORT }}
+          sftp-password: ${{ secrets.SFTP_PASSWORD }}
+          sftp-base-path: ${{ secrets.SFTP_BASE_PATH }}
+          exclude: |
+            .cache/npm/_logs
 
   build-dist:
     needs: [should-run]
