@@ -8,6 +8,20 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.8.0](https://github.com/Ludy87/cache-the-planet/compare/v1.7.0...v1.8.0) (2026-09-21)
+
+
+### 🎉 Features
+
+* **storage:** add SFTP cache object backend ([#174](https://github.com/Ludy87/cache-the-planet/issues/174)) ([2378162](https://github.com/Ludy87/cache-the-planet/commit/2378162d2c81b8b63d2d224b78a3f6618d898e8c))
+
+
+### 🐛 Bug Fixes
+
+* **gc:** close SFTP connection after cleanup ([#178](https://github.com/Ludy87/cache-the-planet/issues/178)) ([0b5065f](https://github.com/Ludy87/cache-the-planet/commit/0b5065f169f681a0249cf0bdd25a181869e63731))
+* **gc:** delete SFTP objects through storage backend ([#177](https://github.com/Ludy87/cache-the-planet/issues/177)) ([b9f547c](https://github.com/Ludy87/cache-the-planet/commit/b9f547cb8bd855f4f7b5940818156d5c0adf5767))
+* **workflows:** separate cache storage publishing ([#176](https://github.com/Ludy87/cache-the-planet/issues/176)) ([58dc78c](https://github.com/Ludy87/cache-the-planet/commit/58dc78cb790ee884df6a2b9e68147b429b8d109c))
+
 ## [1.7.0](https://github.com/Ludy87/cache-the-planet/compare/v1.6.0...v1.7.0) (2026-09-18)
 
 
