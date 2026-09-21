@@ -219,5 +219,7 @@ const { INPUTS } = require("./constants");
     report();
   } catch (error) {
     c.fail(error);
+  } finally {
+    await c.closeSftp();
   }
 })();
