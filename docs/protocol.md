@@ -48,6 +48,12 @@ Input `manifest-branch` oder dem Feld `manifest_branch` in
 `.cache-the-planet.json` konfigurieren. Die Priorität ist
 Umgebungsvariable, Action-Input, JSON-Konfiguration und anschließend
 `cache-data`.
+Der Manifest-Unterordner kann mit `CACHE_MANIFEST_PATH`, dem Input
+`manifest-path` oder `manifest_path` in der JSON-Konfiguration gesetzt werden.
+Wenn ein Manifest-Pfad gesetzt ist, aber kein Manifest-Branch, verwendet die
+Action den Default-Branch des Repositorys. Der Pfad ist relativ, darf keine
+absoluten Komponenten oder `..` enthalten und steht standardmäßig auf
+`manifests`.
 Der Branch muss vor dem ersten Save einmalig angelegt werden.
 
 Das Cache-Repository wird über den Input `repository`, `CACHE_REPOSITORY` oder
@@ -79,6 +85,7 @@ Standardwert.
 | --- | --- | --- | --- |
 | `cache_repository` | `CACHE_REPOSITORY` | Ziel-Repository für Manifest und Release-Assets | `GITHUB_REPOSITORY` |
 | `manifest_branch` | `CACHE_MANIFEST_BRANCH` | Branch der Manifestdatei | `cache-data` |
+| `manifest_path` | `CACHE_MANIFEST_PATH` | Relativer Unterordner der Manifestdatei | `manifests` |
 | `scope` | — | Standard-Namespace für Restore und Save | `auto` |
 | `version` | — | Cache-Formatversion | `1` |
 | `compression_level` | `CACHE_COMPRESSION_LEVEL` | zstd-Kompressionsstufe | `3` |

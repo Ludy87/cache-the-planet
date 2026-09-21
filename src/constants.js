@@ -14,6 +14,7 @@ const INPUTS = Object.freeze({
   GRACE_DAYS: "grace-days",
   KEY: "key",
   MANIFEST_BRANCH: "manifest-branch",
+  MANIFEST_PATH: "manifest-path",
   MODE: "mode",
   MULTI_CACHE: "multi-cache",
   OBJECT: "object",
