@@ -75,6 +75,7 @@ jobs:
           package-manager-cache: false
 
       - name: Configure npm cache directory
+        working-directory: ${{ github.workspace }}
         run: npm config set cache "$NPM_CACHE" --global
 
       - name: Install npm dependencies
