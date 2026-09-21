@@ -76,6 +76,15 @@ const { INPUTS } = require("./constants");
     const cacheAssets = allAssets.filter((item) =>
       item.name.endsWith(".tar.zst"),
     );
+    const deleteAsset = async (asset) => {
+      const hash = c.hashFromAssetName(asset.name);
+      if (!hash) return false;
+      if (asset.sftp) return c.deleteObject(repository, hash);
+      await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
+        method: "DELETE",
+      });
+      return true;
+    };
 
     if (mode === "expired") {
       const isDeletableKey = (key) =>
@@ -131,11 +140,7 @@ const { INPUTS } = require("./constants");
         )
           continue;
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun)
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        deletedAssets += 1;
+        if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       }
       report();
       return;
@@ -144,11 +149,7 @@ const { INPUTS } = require("./constants");
     if (mode === "all") {
       for (const asset of cacheAssets) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun)
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        deletedAssets += 1;
+        if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       }
       if (Object.keys(references).length && !dryRun) {
         await updateManifestGroups(
@@ -183,11 +184,7 @@ const { INPUTS } = require("./constants");
       );
       if (asset) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun)
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        deletedAssets += 1;
+        if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       } else {
         console.log(`object not found: ${hash}`);
       }
@@ -216,11 +213,7 @@ const { INPUTS } = require("./constants");
         now - new Date(asset.created_at).getTime() > gracePeriod;
       if (!liveObjects.has(hash) && oldEnough) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun) {
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        }
+        if (!dryRun) await deleteAsset(asset);
       }
     }
     report();
