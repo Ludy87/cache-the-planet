@@ -112,6 +112,7 @@ jobs:
           EXPECTED_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           EXPECTED_WORKFLOW: Cache integration save suite
           CACHE_CONFIG_FILE: .cache-the-planet.json
+          CACHE_STORAGE: github-release
           PR_CACHE_ARTIFACTS_DIR: ${{ github.workspace }}/pr-cache-artifacts
         run: node scripts/publish-pr-cache-artifacts.js
 
