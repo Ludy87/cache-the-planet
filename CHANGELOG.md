@@ -8,6 +8,13 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.9.0](https://github.com/Ludy87/cache-the-planet/compare/v1.8.0...v1.9.0) (2026-09-21)
+
+
+### 🎉 Features
+
+* **manifest:** support configurable manifest paths ([#179](https://github.com/Ludy87/cache-the-planet/issues/179)) ([57c34b2](https://github.com/Ludy87/cache-the-planet/commit/57c34b29f596cd166b5582aefaec5238d74f4e7a))
+
 ## [1.8.0](https://github.com/Ludy87/cache-the-planet/compare/v1.7.0...v1.8.0) (2026-09-21)
 
 
