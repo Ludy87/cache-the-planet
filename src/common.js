@@ -2035,7 +2035,17 @@ async function uploadObject(repository, file, name, contentType) {
     if (error.status === 422) throw error;
     if (!(error.code === 2 || /no such file/i.test(error.message || ""))) throw error;
   }
-  await client.fastPut(file, sftpObjectPath(hash));
+  let lastProgress = -1;
+  await client.fastPut(file, sftpObjectPath(hash), {
+    step: (transferred, chunk, total) => {
+      if (!Number.isFinite(total) || total <= 0) return;
+      const percent = Math.min(100, Math.floor((transferred / total) * 100));
+      if (percent === 100 || percent >= lastProgress + 5) {
+        console.log(`SFTP upload: ${percent}%`);
+        lastProgress = percent;
+      }
+    },
+  });
   return { id: hash, name, size: fs.statSync(file).size, sftp: true };
 }
 
