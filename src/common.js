@@ -912,6 +912,7 @@ function summary(title, fields) {
 
 function fail(error, strictInput = INPUTS.STRICT) {
   const message = error?.message || String(error);
+  setOutput("error", message);
   const debug =
     process.env.ACTIONS_STEP_DEBUG === "true" ||
     process.env.RUNNER_DEBUG === "1";
