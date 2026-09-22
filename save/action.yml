@@ -102,6 +102,8 @@ inputs:
     required: false
     default: "true"
 outputs:
+  error:
+    description: "Error message when cache save fails"
   is-fork:
     description: "true when the save runs for a pull request whose source repository is a fork"
   read-only:

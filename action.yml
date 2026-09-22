@@ -115,6 +115,8 @@ inputs:
     required: false
     default: "true"
 outputs:
+  error:
+    description: "Error message when cache restore or save fails"
   cache-hit:
     description: "true when an exact key was restored"
   matched-key:
