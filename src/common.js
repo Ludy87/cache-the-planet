@@ -1987,7 +1987,17 @@ async function download(repository, hash) {
   try {
     if (storageMode() === "sftp") {
       const client = await sftpClient();
-      await client.fastGet(sftpObjectPath(hash), file);
+      let lastProgress = -1;
+      await client.fastGet(sftpObjectPath(hash), file, {
+        step: (transferred, chunk, total) => {
+          if (!Number.isFinite(total) || total <= 0) return;
+          const percent = Math.min(100, Math.floor((transferred / total) * 100));
+          if (percent === 100 || percent >= lastProgress + 5) {
+            console.log(`SFTP download: ${percent}%`);
+            lastProgress = percent;
+          }
+        },
+      });
       if (fs.statSync(file).size > maxCompressedBytes) throw new Error("cache archive exceeds the compressed size limit");
     } else {
       await downloadToFile(asset.browser_download_url, file, {
