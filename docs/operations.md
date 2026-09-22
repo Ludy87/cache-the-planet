@@ -27,6 +27,10 @@ gesetzt. Der reguläre Zeitplan verwendet diese Option nicht.
 Manifeste und Objekte sind nach Storage getrennt. Der reguläre Zeitplan
 bereinigt `github-release`; SFTP wird separat mit `storage: sftp` und den
 erforderlichen SFTP-Secrets bereinigt.
+Wenn `manifest-path` nicht über die JSON-Konfiguration gesetzt wird, muss der
+gleiche Pfad für die administrativen Workflows als Repository-Variable
+`CACHE_MANIFEST_PATH` hinterlegt werden. `gc` und `pr-cleanup` verwenden diese
+Variable für ihre eigenständigen Läufe.
 
 ### GC-Inputs und Umgebungsvariablen
 
