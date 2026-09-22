@@ -270,9 +270,10 @@ Restore unterstützt zusätzlich `restore-keys` und
 `allow-shared-restore`. Save unterstützt zusätzlich `compression-level`,
 `exclude`, `exclude-path` und `allow-pr-cache`.
 
-Restore-Outputs sind `cache-hit`, `matched-key`, `content-hash`, `asset-name`
-und `cache-size`. Save liefert `is-fork`, `read-only`, `content-hash`,
-`asset-name` und `cache-size`. Die `multi-cache`-Sub-Action verwendet bei
+Restore-Outputs sind `cache-hit`, `matched-key`, `content-hash`, `asset-name`,
+`cache-size` und `error`. Save liefert `is-fork`, `read-only`, `content-hash`,
+`asset-name`, `cache-size` und `error`. `error` enthält bei einem tolerierten
+Cache-Fehler die Fehlermeldung. Die `multi-cache`-Sub-Action verwendet bei
 mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 `assets-name`, `contents-hash` und `cache-sizes`.
 
