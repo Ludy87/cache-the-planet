@@ -8,6 +8,19 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.10.0](https://github.com/Ludy87/cache-the-planet/compare/v1.9.0...v1.10.0) (2026-09-22)
+
+
+### 🎉 Features
+
+* **action:** expose cache errors as output ([#182](https://github.com/Ludy87/cache-the-planet/issues/182)) ([d92dd85](https://github.com/Ludy87/cache-the-planet/commit/d92dd85523a33e2892aabffda2a90f88ba84299a))
+
+
+### 🐛 Bug Fixes
+
+* **action:** allow descriptive cache error outputs ([#184](https://github.com/Ludy87/cache-the-planet/issues/184)) ([8163315](https://github.com/Ludy87/cache-the-planet/commit/816331595214ef3d3ae9d3d7ee95d67331ff1dc1))
+* **workflows:** pass manifest path to cleanup ([#181](https://github.com/Ludy87/cache-the-planet/issues/181)) ([1b5455c](https://github.com/Ludy87/cache-the-planet/commit/1b5455c10c317c050984c8890179b0006e1af035))
+
 ## [1.9.0](https://github.com/Ludy87/cache-the-planet/compare/v1.8.0...v1.9.0) (2026-09-21)
 
 
