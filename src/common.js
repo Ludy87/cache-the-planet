@@ -142,6 +142,16 @@ function token() {
 
 function setOutput(name, value) {
   const stringValue = String(value ?? "");
+  if (name === "error") {
+    if (process.env.GITHUB_OUTPUT) {
+      const delimiter = `cache_error_${crypto.randomBytes(8).toString("hex")}`;
+      fs.appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `${name}<<${delimiter}\n${stringValue}\n${delimiter}\n`,
+      );
+    }
+    return;
+  }
   if (!/^[A-Za-z0-9._:/-]*$/.test(stringValue)) {
     throw new Error(`output ${name} contains unsupported characters`);
   }
