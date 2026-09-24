@@ -18,6 +18,30 @@ inputs:
     description: owner/name of cache repository
     required: false
     default: ""
+  storage:
+    description: Storage backend used by every cache entry
+    required: false
+    default: github-release
+  sftp-host:
+    description: SFTP host
+    required: false
+  sftp-port:
+    description: SFTP port
+    required: false
+    default: "22"
+  sftp-username:
+    description: SFTP username
+    required: false
+  sftp-private-key:
+    description: SFTP private key
+    required: false
+  sftp-password:
+    description: SFTP password
+    required: false
+  sftp-base-path:
+    description: Absolute SFTP directory for immutable cache objects
+    required: false
+    default: /cache-the-planet
   scope:
     description: Cache scope passed to each entry
     required: false
@@ -70,6 +94,10 @@ inputs:
     description: Branch containing the cache manifest
     required: false
     default: ""
+  manifest-path:
+    description: Repository directory containing the cache manifest
+    required: false
+    default: ""
   allow-shared-restore:
     description: Allow pull requests to restore shared caches
     required: false
@@ -79,6 +107,8 @@ inputs:
     required: false
     default: "false"
 outputs:
+  error:
+    description: Error message when a cache entry fails
   cache-results:
     description: JSON object keyed by cache name containing per-cache outputs
   cache-hits:
