@@ -44,14 +44,12 @@ inputs:
   storage:
     description: "Object storage backend: github-release or sftp"
     required: false
-    default: "github-release"
   sftp-host:
     description: "SFTP hostname"
     required: false
   sftp-port:
     description: "SFTP port"
     required: false
-    default: "22"
   sftp-username:
     description: "SFTP username"
     required: false
@@ -64,7 +62,6 @@ inputs:
   sftp-base-path:
     description: "Absolute SFTP directory for immutable cache objects"
     required: false
-    default: "/cache-the-planet"
   encryption-key:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
     required: false
