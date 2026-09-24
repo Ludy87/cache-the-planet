@@ -2127,8 +2127,8 @@ async function uploadObject(repository, file, name, contentType) {
   }
   let lastProgress = -1;
   await client.fastPut(file, sftpObjectPath(hash), {
-    concurrency: 64,
-    chunkSize: 262144,
+    concurrency: 128,
+    chunkSize: 131072,
     step: (transferred, chunk, total) => {
       if (!Number.isFinite(total) || total <= 0) return;
       const percent = Math.min(100, Math.floor((transferred / total) * 100));
