@@ -24,10 +24,13 @@ function manifestPathForKey(key) {
   if (key === undefined || key === null || key === "")
     return `${manifestPath()}/v1/${storage}/trusted.json`;
   if (typeof key !== "string") throw new Error("manifest key must be a string");
-  if (key.startsWith("trusted/")) return `${manifestPath()}/v1/${storage}/trusted.json`;
-  if (key.startsWith("shared/")) return `${manifestPath()}/v1/${storage}/shared.json`;
+  if (key.startsWith("trusted/"))
+    return `${manifestPath()}/v1/${storage}/trusted.json`;
+  if (key.startsWith("shared/"))
+    return `${manifestPath()}/v1/${storage}/shared.json`;
   const match = key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//);
-  if (match) return `${manifestPath()}/v1/${storage}/untrusted/pr-${match[1]}.json`;
+  if (match)
+    return `${manifestPath()}/v1/${storage}/untrusted/pr-${match[1]}.json`;
   throw new Error("manifest key has an unsupported namespace");
 }
 
@@ -334,8 +337,13 @@ function cacheRepository() {
 
 function storageMode() {
   const value = String(
-    input(INPUTS.STORAGE) || process.env.CACHE_STORAGE || configuration().storage || "github-release",
-  ).trim().toLowerCase();
+    input(INPUTS.STORAGE) ||
+      process.env.CACHE_STORAGE ||
+      configuration().storage ||
+      "github-release",
+  )
+    .trim()
+    .toLowerCase();
   if (value !== "github-release" && value !== "sftp")
     throw new Error("storage must be github-release or sftp");
   return value;
@@ -344,27 +352,59 @@ function storageMode() {
 function sftpSettings() {
   if (storageMode() !== "sftp") return null;
   const configured = configuration().sftp || {};
-  const host = input(INPUTS.SFTP_HOST) || process.env.SFTP_HOST || configured.host;
-  const username = input(INPUTS.SFTP_USERNAME) || process.env.SFTP_USERNAME || configured.username;
-  const privateKey = input(INPUTS.SFTP_PRIVATE_KEY) || process.env.SFTP_PRIVATE_KEY || configured.private_key;
-  const password = input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD || configured.password;
-  const port = Number(input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22);
-  const basePath = input(INPUTS.SFTP_BASE_PATH) || process.env.SFTP_BASE_PATH || configured.base_path || "/cache-the-planet";
+  const host =
+    input(INPUTS.SFTP_HOST) || process.env.SFTP_HOST || configured.host;
+  const username =
+    input(INPUTS.SFTP_USERNAME) ||
+    process.env.SFTP_USERNAME ||
+    configured.username;
+  const privateKey =
+    input(INPUTS.SFTP_PRIVATE_KEY) ||
+    process.env.SFTP_PRIVATE_KEY ||
+    configured.private_key;
+  const password =
+    input(INPUTS.SFTP_PASSWORD) ||
+    process.env.SFTP_PASSWORD ||
+    configured.password;
+  const port = Number(
+    input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22,
+  );
+  const basePath =
+    input(INPUTS.SFTP_BASE_PATH) ||
+    process.env.SFTP_BASE_PATH ||
+    configured.base_path ||
+    "/cache-the-planet";
   if (!host || !username || (!privateKey && !password))
-    throw new Error("SFTP storage requires host, username, and private-key or password");
-  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("sftp-port must be valid");
-  if (!basePath.startsWith("/") || basePath.includes("..")) throw new Error("sftp-base-path must be an absolute safe path");
+    throw new Error(
+      "SFTP storage requires host, username, and private-key or password",
+    );
+  if (!Number.isInteger(port) || port < 1 || port > 65535)
+    throw new Error("sftp-port must be valid");
+  if (!basePath.startsWith("/") || basePath.includes(".."))
+    throw new Error("sftp-base-path must be an absolute safe path");
   return { host, username, port, privateKey, password, basePath };
 }
 
 async function sftpClient() {
   const settings = sftpSettings();
   if (!sftpClientPromise) {
-    sftpClientPromise = import("ssh2-sftp-client").then(async ({ default: SftpClient }) => {
-      const client = new SftpClient("cache-the-planet");
-      await client.connect({ host: settings.host, port: settings.port, username: settings.username, ...(settings.privateKey ? { privateKey: settings.privateKey } : { password: settings.password }) });
-      return client;
-    });
+    sftpClientPromise = import("ssh2-sftp-client").then(
+      async ({ default: SftpClient }) => {
+        const client = new SftpClient("cache-the-planet");
+        await client.connect({
+          host: settings.host,
+          port: settings.port,
+          username: settings.username,
+          ...(settings.privateKey
+            ? { privateKey: settings.privateKey }
+            : { password: settings.password }),
+          algorithms: {
+            compress: ["none"],
+          },
+        });
+        return client;
+      },
+    );
   }
   return sftpClientPromise;
 }
@@ -627,8 +667,8 @@ function manifestBranch() {
   const configuredBranch = configuration().manifest_branch;
   const hasManifestPath = Boolean(
     process.env.CACHE_MANIFEST_PATH ||
-      input(INPUTS.MANIFEST_PATH) ||
-      configuration().manifest_path,
+    input(INPUTS.MANIFEST_PATH) ||
+    configuration().manifest_path,
   );
   const branch =
     process.env.CACHE_MANIFEST_BRANCH ||
@@ -660,7 +700,12 @@ function manifestPath() {
     value.startsWith("/") ||
     value.endsWith("/") ||
     value.includes("\\") ||
-    value.split("/").some((part) => !/^[A-Za-z0-9._-]+$/.test(part) || part === "." || part === "..")
+    value
+      .split("/")
+      .some(
+        (part) =>
+          !/^[A-Za-z0-9._-]+$/.test(part) || part === "." || part === "..",
+      )
   ) {
     throw new Error("manifest path is invalid");
   }
@@ -1583,8 +1628,19 @@ async function assets(repository) {
     return {
       release: null,
       assets: entries
-        .filter((entry) => entry.type === "-" && /^[a-f0-9]{64}\.tar\.zst$/i.test(entry.name))
-        .map((entry) => ({ id: entry.name, name: entry.name, size: entry.size, created_at: entry.modifyTime ? new Date(entry.modifyTime).toISOString() : new Date(0).toISOString(), sftp: true })),
+        .filter(
+          (entry) =>
+            entry.type === "-" && /^[a-f0-9]{64}\.tar\.zst$/i.test(entry.name),
+        )
+        .map((entry) => ({
+          id: entry.name,
+          name: entry.name,
+          size: entry.size,
+          created_at: entry.modifyTime
+            ? new Date(entry.modifyTime).toISOString()
+            : new Date(0).toISOString(),
+          sftp: true,
+        })),
     };
   }
   if (assetsCache.has(repository)) return assetsCache.get(repository);
@@ -1619,9 +1675,15 @@ async function object(repository, hash) {
     try {
       const client = await sftpClient();
       const stat = await client.stat(sftpObjectPath(hash));
-      return { id: hash, name: `${hash.slice(7)}.tar.zst`, size: stat.size, sftp: true };
+      return {
+        id: hash,
+        name: `${hash.slice(7)}.tar.zst`,
+        size: stat.size,
+        sftp: true,
+      };
     } catch (error) {
-      if (error.code === 2 || /no such file/i.test(error.message || "")) return null;
+      if (error.code === 2 || /no such file/i.test(error.message || ""))
+        return null;
       throw error;
     }
   }
@@ -1715,7 +1777,8 @@ async function manifest(repository, filePath) {
 }
 
 async function refs(repository, { fresh = false, key, filePath } = {}) {
-  const selectedPath = filePath || (key ? manifestPathForKey(key) : "manifests/v1/trusted.json");
+  const selectedPath =
+    filePath || (key ? manifestPathForKey(key) : "manifests/v1/trusted.json");
   const cacheKey = `${repository}:${selectedPath}`;
   if (!fresh && manifestCache.has(cacheKey)) {
     return manifestCache.get(cacheKey);
@@ -1749,9 +1812,9 @@ async function refsForKeys(repository, keys, { fresh = false } = {}) {
         ? `${manifestPath()}/v1/trusted.json`
         : key.startsWith("shared/")
           ? `${manifestPath()}/v1/shared.json`
-          : (key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)
-              ? `${manifestPath()}/v1/untrusted/pr-${key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)[1]}.json`
-              : null);
+          : key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)
+            ? `${manifestPath()}/v1/untrusted/pr-${key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)[1]}.json`
+            : null;
       if (legacy) paths.push(legacy);
     }
   }
@@ -1761,7 +1824,8 @@ async function refsForKeys(repository, keys, { fresh = false } = {}) {
     paths.map((filePath) => refs(repository, { fresh, filePath })),
   );
   const references = {};
-  for (const current of manifests) Object.assign(references, current.json.references);
+  for (const current of manifests)
+    Object.assign(references, current.json.references);
   return { json: { schema_version: 1, references }, sha: null };
 }
 
@@ -1786,7 +1850,15 @@ async function refsAll(repository, { fresh = false } = {}) {
     for (const [key, reference] of Object.entries(current.json.references))
       entries.push([key, reference, filePath]);
   }
-  return { json: { schema_version: 1, references: Object.fromEntries(entries.map(([key, reference]) => [key, reference])) }, entries };
+  return {
+    json: {
+      schema_version: 1,
+      references: Object.fromEntries(
+        entries.map(([key, reference]) => [key, reference]),
+      ),
+    },
+    entries,
+  };
 }
 
 function invalidateManifestCache(repository) {
@@ -1838,13 +1910,20 @@ async function updateManifestUnlocked(repository, message, update, filePath) {
   throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
 }
 
-async function updateManifest(repository, message, update, { key, filePath } = {}) {
+async function updateManifest(
+  repository,
+  message,
+  update,
+  { key, filePath } = {},
+) {
   const selectedPath = filePath || manifestPathForKey(key);
   const lockKey = `${repository}:${selectedPath}`;
   const previous = manifestLocks.get(lockKey) || Promise.resolve();
   const current = previous
     .catch(() => {})
-    .then(() => updateManifestUnlocked(repository, message, update, selectedPath));
+    .then(() =>
+      updateManifestUnlocked(repository, message, update, selectedPath),
+    );
   manifestLocks.set(lockKey, current);
   try {
     return await current;
@@ -1989,16 +2068,22 @@ async function download(repository, hash) {
       const client = await sftpClient();
       let lastProgress = -1;
       await client.fastGet(sftpObjectPath(hash), file, {
+        concurrency: 64,
+        chunkSize: 262144,
         step: (transferred, chunk, total) => {
           if (!Number.isFinite(total) || total <= 0) return;
-          const percent = Math.min(100, Math.floor((transferred / total) * 100));
+          const percent = Math.min(
+            100,
+            Math.floor((transferred / total) * 100),
+          );
           if (percent === 100 || percent >= lastProgress + 5) {
             console.log(`SFTP download: ${percent}%`);
             lastProgress = percent;
           }
         },
       });
-      if (fs.statSync(file).size > maxCompressedBytes) throw new Error("cache archive exceeds the compressed size limit");
+      if (fs.statSync(file).size > maxCompressedBytes)
+        throw new Error("cache archive exceeds the compressed size limit");
     } else {
       await downloadToFile(asset.browser_download_url, file, {
         maxBytes: maxCompressedBytes,
@@ -2018,11 +2103,15 @@ async function download(repository, hash) {
 async function uploadObject(repository, file, name, contentType) {
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;
-    const uploadUrl = release.upload_url.replace("{?name,label}", `?name=${encodeURIComponent(name)}`);
+    const uploadUrl = release.upload_url.replace(
+      "{?name,label}",
+      `?name=${encodeURIComponent(name)}`,
+    );
     return upload(uploadUrl, file, name, contentType);
   }
   const hash = hashFromAssetName(name);
-  if (!hash) throw new Error("SFTP object name must contain a valid sha256 hash");
+  if (!hash)
+    throw new Error("SFTP object name must contain a valid sha256 hash");
   const client = await sftpClient();
   const settings = sftpSettings();
   await client.mkdir(settings.basePath, true);
@@ -2033,10 +2122,13 @@ async function uploadObject(repository, file, name, contentType) {
     throw error;
   } catch (error) {
     if (error.status === 422) throw error;
-    if (!(error.code === 2 || /no such file/i.test(error.message || ""))) throw error;
+    if (!(error.code === 2 || /no such file/i.test(error.message || "")))
+      throw error;
   }
   let lastProgress = -1;
   await client.fastPut(file, sftpObjectPath(hash), {
+    concurrency: 64,
+    chunkSize: 262144,
     step: (transferred, chunk, total) => {
       if (!Number.isFinite(total) || total <= 0) return;
       const percent = Math.min(100, Math.floor((transferred / total) * 100));
