@@ -20,7 +20,7 @@ const manifestLocks = new Map();
 function manifestPathForKey(key) {
   // Read-only callers that explicitly request the default manifest do not
   // have a cache key. Writes always pass a key or an explicit file path.
-  const storage = storageMode() === "sftp" ? "sftp" : "github";
+  const storage = storageMode() === "github-release" ? "github" : storageMode();
   if (key === undefined || key === null || key === "")
     return `${manifestPath()}/v1/${storage}/trusted.json`;
   if (typeof key !== "string") throw new Error("manifest key must be a string");
@@ -344,9 +344,50 @@ function storageMode() {
   )
     .trim()
     .toLowerCase();
-  if (value !== "github-release" && value !== "sftp")
-    throw new Error("storage must be github-release or sftp");
+  if (!["github-release", "sftp", "rsync"].includes(value))
+    throw new Error("storage must be github-release, sftp, or rsync");
   return value;
+}
+
+function rsyncSettings() {
+  if (storageMode() !== "rsync") return null;
+  const configured = configuration().rsync || {};
+  const host = input(INPUTS.RSYNC_HOST) || process.env.RSYNC_HOST || configured.host;
+  const username = input(INPUTS.RSYNC_USERNAME) || process.env.RSYNC_USERNAME || configured.username;
+  const privateKey = input(INPUTS.RSYNC_PRIVATE_KEY) || process.env.RSYNC_PRIVATE_KEY || configured.private_key;
+  const port = Number(input(INPUTS.RSYNC_PORT) || process.env.RSYNC_PORT || configured.port || 22);
+  const basePath = input(INPUTS.RSYNC_BASE_PATH) || process.env.RSYNC_BASE_PATH || configured.base_path || "/cache-the-planet";
+  if (!host || !username || !privateKey) throw new Error("Rsync storage requires host, username, and private-key");
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("rsync-port must be valid");
+  if (!basePath.startsWith("/") || basePath.includes("..") || !/^\/[A-Za-z0-9._/-]+$/.test(basePath)) throw new Error("rsync-base-path must be an absolute safe path");
+  return { host, username, privateKey, port, basePath };
+}
+
+function rsyncObjectPath(hash) {
+  return `${rsyncSettings().basePath}/${hash.slice(7)}.tar.zst`;
+}
+
+async function rsyncRun(args) {
+  const settings = rsyncSettings();
+  const keyFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cad-key-")), "key");
+  fs.writeFileSync(keyFile, settings.privateKey, { mode: 0o600 });
+  const remote = `${settings.username}@${settings.host}`;
+  const ssh = `ssh -i ${keyFile} -p ${settings.port} -o BatchMode=yes -o StrictHostKeyChecking=yes`;
+  try {
+    return await new Promise((resolve, reject) => {
+      cp.execFile(
+        "rsync",
+        ["--protect-args", "-e", ssh, ...args],
+        { maxBuffer: 1024 * 1024 },
+        (error, stdout, stderr) => {
+          if (error) reject(Object.assign(error, { stderr }));
+          else resolve({ stdout, stderr });
+        },
+      );
+    });
+  } finally {
+    fs.rmSync(path.dirname(keyFile), { recursive: true, force: true });
+  }
 }
 
 function sftpSettings() {
@@ -1620,6 +1661,11 @@ async function release(repository) {
 }
 
 async function assets(repository) {
+  if (storageMode() === "rsync") {
+    const settings = rsyncSettings();
+    await rsyncRun([`${settings.username}@${settings.host}:${settings.basePath}/`]);
+    return { release: null, assets: [] };
+  }
   if (storageMode() === "sftp") {
     const client = await sftpClient();
     const settings = sftpSettings();
@@ -1671,6 +1717,17 @@ function invalidateRepositoryCache(repository) {
 
 async function object(repository, hash) {
   validateCacheHash(hash);
+  if (storageMode() === "rsync") {
+    try {
+      const settings = rsyncSettings();
+      const result = await rsyncRun(["--list-only", `${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`]);
+      const match = result.stdout.match(/\s(\d+)\s+[^ ]+\.tar\.zst\s*$/m);
+      return { id: hash, name: `${hash.slice(7)}.tar.zst`, size: match ? Number(match[1]) : 0, rsync: true };
+    } catch (error) {
+      if (error.code === 23 || error.code === 24 || /No such file|not found/i.test(error.stderr || "")) return null;
+      throw error;
+    }
+  }
   if (storageMode() === "sftp") {
     try {
       const client = await sftpClient();
@@ -2050,6 +2107,11 @@ async function deleteObject(repository, hash, invalidate = true) {
     await client.delete(sftpObjectPath(hash));
     return true;
   }
+  if (storageMode() === "rsync") {
+    const settings = rsyncSettings();
+    await rsyncRun(["--delete", `${settings.username}@${settings.host}:${rsyncSettings().basePath}/`, "--exclude", "*", "--include", `${hash.slice(7)}.tar.zst`]);
+    return true;
+  }
   await gh(`/repos/${repository}/releases/assets/${asset.id}`, {
     method: "DELETE",
   });
@@ -2064,7 +2126,11 @@ async function download(repository, hash) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
   try {
-    if (storageMode() === "sftp") {
+    if (storageMode() === "rsync") {
+      const settings = rsyncSettings();
+      await rsyncRun([`${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`, file]);
+      if (fs.statSync(file).size > maxCompressedBytes) throw new Error("cache archive exceeds the compressed size limit");
+    } else if (storageMode() === "sftp") {
       const client = await sftpClient();
       let lastProgress = -1;
       await client.fastGet(sftpObjectPath(hash), file, {
@@ -2101,6 +2167,15 @@ async function download(repository, hash) {
 }
 
 async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() === "rsync") {
+    const hash = hashFromAssetName(name);
+    if (!hash) throw new Error("Rsync object name must contain a valid sha256 hash");
+    const existing = await object(repository, hash);
+    if (existing) { const error = new Error("object already exists"); error.status = 422; throw error; }
+    const settings = rsyncSettings();
+    await rsyncRun(["--rsync-path", `mkdir -p ${settings.basePath} && rsync`, file, `${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`]);
+    return { id: hash, name, size: fs.statSync(file).size, rsync: true };
+  }
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;
     const uploadUrl = release.upload_url.replace(

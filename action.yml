@@ -43,7 +43,7 @@ inputs:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
   storage:
-    description: "Object storage backend: github-release or sftp"
+    description: "Object storage backend: github-release, sftp, or rsync"
     required: false
   sftp-host:
     description: "SFTP hostname"
@@ -62,6 +62,21 @@ inputs:
     required: false
   sftp-base-path:
     description: "Absolute SFTP directory for immutable cache objects"
+    required: false
+  rsync-host:
+    description: "Rsync SSH hostname"
+    required: false
+  rsync-port:
+    description: "Rsync SSH port"
+    required: false
+  rsync-username:
+    description: "Rsync SSH username"
+    required: false
+  rsync-private-key:
+    description: "Rsync SSH private key; preferably supplied from a secret"
+    required: false
+  rsync-base-path:
+    description: "Absolute remote directory for immutable cache objects"
     required: false
   encryption-key:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
