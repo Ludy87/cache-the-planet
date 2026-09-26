@@ -7,10 +7,17 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
       "size": 7678455
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-195/sftp-integration/linux-x64/sftp-integration-36236348420/v1": {
+      "object": "sha256:97835cecd292314cd11b26581f739bc8c38bff86ea9f58d0dbd8e7ec494d25c4",
+      "updated_at": "2026-09-26T10:39:16.237Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 524301159
     }
   },
   "monitoring": {
-    "window_started_at": "2026-09-26T09:04:53.348Z",
+    "window_started_at": "2026-09-26T10:39:16.237Z",
     "writes": 1
   }
 }
