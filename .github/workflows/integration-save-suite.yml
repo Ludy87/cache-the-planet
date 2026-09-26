@@ -216,6 +216,18 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
+  rsync-cache-asset-integration:
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    uses: $/.github/workflows/rsync-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
   node-save-cache:
     needs: [build-dist]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
