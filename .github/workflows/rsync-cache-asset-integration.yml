@@ -46,7 +46,7 @@ jobs:
           printf 'rsync integration test\n' > .cache/rsync-test/payload.txt
 
       - name: Restore or save through Rsync
-        uses: ./
+        uses: $/
         with:
           token: ${{ github.token }}
           key: rsync-integration-${{ github.run_id }}
