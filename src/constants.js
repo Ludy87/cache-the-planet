@@ -36,6 +36,7 @@ const INPUTS = Object.freeze({
   RSYNC_USERNAME: "rsync-username",
   RSYNC_PRIVATE_KEY: "rsync-private-key",
   RSYNC_BASE_PATH: "rsync-base-path",
+  RSYNC_KNOWN_HOSTS: "rsync-known-hosts",
   REPOSITORY: "repository",
   SAVE_SCOPE: "save-scope",
   SCOPE: "scope",

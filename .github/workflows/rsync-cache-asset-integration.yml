@@ -27,6 +27,8 @@ on:
         required: false
       RSYNC_BASE_PATH:
         required: false
+      RSYNC_KNOWN_HOSTS:
+        required: false
 
 permissions:
   contents: write
@@ -67,6 +69,7 @@ jobs:
           rsync-username: ${{ secrets.RSYNC_USERNAME }}
           rsync-private-key: ${{ secrets.RSYNC_PRIVATE_KEY }}
           rsync-base-path: ${{ secrets.RSYNC_BASE_PATH || '/cache-the-planet/integration' }}
+          rsync-known-hosts: ${{ secrets.RSYNC_KNOWN_HOSTS }}
           path: .cache/rsync-test
           strict: true
 

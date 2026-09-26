@@ -78,6 +78,9 @@ inputs:
   rsync-base-path:
     description: "Absolute remote directory for immutable cache objects"
     required: false
+  rsync-known-hosts:
+    description: "SSH known_hosts entry for the Rsync server; preferably supplied from a secret"
+    required: false
   encryption-key:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
     required: false

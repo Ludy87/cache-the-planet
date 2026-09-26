@@ -355,12 +355,13 @@ function rsyncSettings() {
   const host = input(INPUTS.RSYNC_HOST) || process.env.RSYNC_HOST || configured.host;
   const username = input(INPUTS.RSYNC_USERNAME) || process.env.RSYNC_USERNAME || configured.username;
   const privateKey = input(INPUTS.RSYNC_PRIVATE_KEY) || process.env.RSYNC_PRIVATE_KEY || configured.private_key;
+  const knownHosts = input(INPUTS.RSYNC_KNOWN_HOSTS) || process.env.RSYNC_KNOWN_HOSTS || configured.known_hosts;
   const port = Number(input(INPUTS.RSYNC_PORT) || process.env.RSYNC_PORT || configured.port || 22);
   const basePath = input(INPUTS.RSYNC_BASE_PATH) || process.env.RSYNC_BASE_PATH || configured.base_path || "/cache-the-planet";
   if (!host || !username || !privateKey) throw new Error("Rsync storage requires host, username, and private-key");
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("rsync-port must be valid");
   if (!basePath.startsWith("/") || basePath.includes("..") || !/^\/[A-Za-z0-9._/-]+$/.test(basePath)) throw new Error("rsync-base-path must be an absolute safe path");
-  return { host, username, privateKey, port, basePath };
+  return { host, username, privateKey, knownHosts, port, basePath };
 }
 
 function rsyncObjectPath(hash) {
@@ -371,8 +372,10 @@ async function rsyncRun(args) {
   const settings = rsyncSettings();
   const keyFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cad-key-")), "key");
   fs.writeFileSync(keyFile, settings.privateKey, { mode: 0o600 });
-  const remote = `${settings.username}@${settings.host}`;
-  const ssh = `ssh -i ${keyFile} -p ${settings.port} -o BatchMode=yes -o StrictHostKeyChecking=yes`;
+  const knownHostsFile = path.join(path.dirname(keyFile), "known_hosts");
+  if (!settings.knownHosts) throw new Error("Rsync storage requires rsync-known-hosts");
+  fs.writeFileSync(knownHostsFile, settings.knownHosts, { mode: 0o600 });
+  const ssh = `ssh -i ${keyFile} -p ${settings.port} -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=${knownHostsFile}`;
   try {
     return await new Promise((resolve, reject) => {
       cp.execFile(
