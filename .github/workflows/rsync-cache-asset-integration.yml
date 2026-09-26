@@ -100,19 +100,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install archive and Rsync tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes rsync zstd
-          rsync --version
-          zstd --version
-          tar --version
-
       - name: Prepare test data
         run: |
-          mkdir -p .cache/rsync-test
-          dd if=/dev/urandom of=.cache/rsync-test/payload.bin bs=1M count=500 status=progress
-          printf 'rsync integration test\n' > .cache/rsync-test/payload.txt
+          mkdir -p .cache/sftp-test
+          dd if=/dev/urandom of=.cache/sftp-test/payload.bin bs=1M count=500 status=progress
+          printf 'rsync integration test\n' > .cache/sftp-test/payload.txt
 
       - uses: $/
         with:
