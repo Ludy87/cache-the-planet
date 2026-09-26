@@ -368,7 +368,7 @@ function rsyncObjectPath(hash) {
   return `${rsyncSettings().basePath}/${hash.slice(7)}.tar.zst`;
 }
 
-async function rsyncRun(args) {
+async function rsyncRun(args, { progress = false } = {}) {
   const settings = rsyncSettings();
   const keyFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cad-key-")), "key");
   fs.writeFileSync(keyFile, settings.privateKey, { mode: 0o600 });
@@ -378,15 +378,37 @@ async function rsyncRun(args) {
   const ssh = `ssh -i ${keyFile} -p ${settings.port} -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=${knownHostsFile}`;
   try {
     return await new Promise((resolve, reject) => {
-      cp.execFile(
+      const child = cp.spawn(
         "rsync",
-        ["--protect-args", "-e", ssh, ...args],
-        { maxBuffer: 1024 * 1024 },
-        (error, stdout, stderr) => {
-          if (error) reject(Object.assign(error, { stderr }));
-          else resolve({ stdout, stderr });
-        },
+        [
+          "--protect-args",
+          ...(progress ? ["--info=progress2", "--human-readable"] : []),
+          "-e",
+          ssh,
+          ...args,
+        ],
+        { stdio: ["ignore", "pipe", "pipe"] },
       );
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (chunk) => {
+        stdout += chunk;
+        if (progress) process.stdout.write(chunk);
+      });
+      child.stderr.on("data", (chunk) => {
+        stderr += chunk;
+        process.stderr.write(chunk);
+      });
+      child.on("error", (error) => reject(Object.assign(error, { stdout, stderr })));
+      child.on("close", (code) => {
+        if (code) {
+          const error = new Error(`rsync exited with code ${code}`);
+          error.code = code;
+          error.stdout = stdout;
+          error.stderr = stderr;
+          reject(error);
+        } else resolve({ stdout, stderr });
+      });
     });
   } finally {
     fs.rmSync(path.dirname(keyFile), { recursive: true, force: true });
@@ -2131,7 +2153,7 @@ async function download(repository, hash) {
   try {
     if (storageMode() === "rsync") {
       const settings = rsyncSettings();
-      await rsyncRun([`${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`, file]);
+      await rsyncRun([`${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`, file], { progress: true });
       if (fs.statSync(file).size > maxCompressedBytes) throw new Error("cache archive exceeds the compressed size limit");
     } else if (storageMode() === "sftp") {
       const client = await sftpClient();
@@ -2176,7 +2198,7 @@ async function uploadObject(repository, file, name, contentType) {
     const existing = await object(repository, hash);
     if (existing) { const error = new Error("object already exists"); error.status = 422; throw error; }
     const settings = rsyncSettings();
-    await rsyncRun(["--rsync-path", `mkdir -p ${settings.basePath} && rsync`, file, `${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`]);
+    await rsyncRun(["--rsync-path", `mkdir -p ${settings.basePath} && rsync`, file, `${settings.username}@${settings.host}:${rsyncObjectPath(hash)}`], { progress: true });
     return { id: hash, name, size: fs.statSync(file).size, rsync: true };
   }
   if (storageMode() !== "sftp") {
