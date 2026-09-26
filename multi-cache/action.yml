@@ -28,7 +28,7 @@ inputs:
   sftp-port:
     description: SFTP port
     required: false
-    default: "22"
+    default: ""
   sftp-username:
     description: SFTP username
     required: false
