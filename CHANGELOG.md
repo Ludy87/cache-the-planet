@@ -8,6 +8,36 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [1.11.0](https://github.com/Ludy87/cache-the-planet/compare/v1.10.0...v1.11.0) (2026-09-26)
+
+
+### 🎉 Features
+
+* **sftp:** report download progress ([#185](https://github.com/Ludy87/cache-the-planet/issues/185)) ([0b9d428](https://github.com/Ludy87/cache-the-planet/commit/0b9d42807720992a5869b51cf394762c89d118e7))
+* **sftp:** report upload progress ([#188](https://github.com/Ludy87/cache-the-planet/issues/188)) ([bcda14c](https://github.com/Ludy87/cache-the-planet/commit/bcda14cbbb43a6ad2eac92c6a95b000763355811))
+
+
+### 🐛 Bug Fixes
+
+* **action:** allow environment storage settings ([#193](https://github.com/Ludy87/cache-the-planet/issues/193)) ([fd0ef54](https://github.com/Ludy87/cache-the-planet/commit/fd0ef54df20a249a7531a16792f2702871ad7f47))
+* **action:** preserve SFTP port environment for post-save ([#192](https://github.com/Ludy87/cache-the-planet/issues/192)) ([7b9ea60](https://github.com/Ludy87/cache-the-planet/commit/7b9ea6068e673fbc39033232999574520b7e1aa6))
+* allow cargo crate cache archives ([#197](https://github.com/Ludy87/cache-the-planet/issues/197)) ([d7e5b94](https://github.com/Ludy87/cache-the-planet/commit/d7e5b942d38b35535541441de7cb6cf5735a955f))
+* allow cargo sparse index cache entries ([732bc95](https://github.com/Ludy87/cache-the-planet/commit/732bc958a3b412c8e25880cc6b6d2af3fc461de3))
+* allow cargo sparse index cache entries ([#199](https://github.com/Ludy87/cache-the-planet/issues/199)) ([5b9d25d](https://github.com/Ludy87/cache-the-planet/commit/5b9d25d8c69500a6ca8f091d536def26c84d495f))
+* continue multi-cache after entry failures ([cdc2988](https://github.com/Ludy87/cache-the-planet/commit/cdc2988703447fa04ac6418dc9ddb7cd5ee7a4f1))
+* continue multi-cache after entry failures ([#198](https://github.com/Ludy87/cache-the-planet/issues/198)) ([14c8c04](https://github.com/Ludy87/cache-the-planet/commit/14c8c04b67dd19f2be10e445ace16c8f12d5e06a))
+* force local tar archives ([#200](https://github.com/Ludy87/cache-the-planet/issues/200)) ([5508e7a](https://github.com/Ludy87/cache-the-planet/commit/5508e7ad5e2eb6260319f07ae7c65558e27c2d80))
+* **multi-cache:** expose storage inputs ([#191](https://github.com/Ludy87/cache-the-planet/issues/191)) ([e556ab4](https://github.com/Ludy87/cache-the-planet/commit/e556ab42d592f9576671b98af07d9b9d43ebd3dd))
+* respect configured SFTP port ([#201](https://github.com/Ludy87/cache-the-planet/issues/201)) ([e78baa5](https://github.com/Ludy87/cache-the-planet/commit/e78baa5d79afe91e1848d73449922ffaf303c8c4))
+* respect SFTP cache configuration ([#202](https://github.com/Ludy87/cache-the-planet/issues/202)) ([8603ad7](https://github.com/Ludy87/cache-the-planet/commit/8603ad79afba9b644ea7dd095f57c36103147ea6))
+* **sftp:** show transfer progress details ([#196](https://github.com/Ludy87/cache-the-planet/issues/196)) ([9ee8148](https://github.com/Ludy87/cache-the-planet/commit/9ee814824414cc375eeab77644d19136cf9b440f))
+
+
+### ⚡ Performance
+
+* **sftp:** retune download transfer settings ([#190](https://github.com/Ludy87/cache-the-planet/issues/190)) ([d1193f0](https://github.com/Ludy87/cache-the-planet/commit/d1193f04605d886d4f56303913f95ac17ff459fc))
+* **sftp:** tune transfer performance ([#189](https://github.com/Ludy87/cache-the-planet/issues/189)) ([7ad8048](https://github.com/Ludy87/cache-the-planet/commit/7ad8048c6af4f83eaf97b04a64801e8ecfec6e16))
+
 ## [1.10.0](https://github.com/Ludy87/cache-the-planet/compare/v1.9.0...v1.10.0) (2026-09-22)
 
 
