@@ -92,7 +92,7 @@ jobs:
 
   sftp-cache:
     name: Test sftp cache storage
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Check out repository
