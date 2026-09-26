@@ -17,6 +17,16 @@ on:
         required: false
       APP_PRIVATE_KEY:
         required: false
+      RSYNC_HOST:
+        required: false
+      RSYNC_PORT:
+        required: false
+      RSYNC_USERNAME:
+        required: false
+      RSYNC_PRIVATE_KEY:
+        required: false
+      RSYNC_BASE_PATH:
+        required: false
 
 permissions:
   contents: write

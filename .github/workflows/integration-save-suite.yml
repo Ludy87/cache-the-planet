@@ -227,6 +227,11 @@ jobs:
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      RSYNC_HOST: ${{ secrets.RSYNC_HOST }}
+      RSYNC_PORT: ${{ secrets.RSYNC_PORT }}
+      RSYNC_USERNAME: ${{ secrets.RSYNC_USERNAME }}
+      RSYNC_PRIVATE_KEY: ${{ secrets.RSYNC_PRIVATE_KEY }}
+      RSYNC_BASE_PATH: ${{ secrets.RSYNC_BASE_PATH }}
 
   node-save-cache:
     needs: [build-dist]
