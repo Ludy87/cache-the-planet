@@ -54,6 +54,16 @@ test("security scan allows token-named stylesheet files", () => {
   }
 });
 
+test("security scan allows Cargo crate archives with token-like names", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-crate-"));
+  try {
+    fs.writeFileSync(path.join(root, "match_token-0.1.0.crate"), Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
   const configPath = path.join(workspace, ".cache-the-planet.json");
