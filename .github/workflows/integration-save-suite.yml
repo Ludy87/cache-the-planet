@@ -233,6 +233,11 @@ jobs:
       RSYNC_PRIVATE_KEY: ${{ secrets.RSYNC_PRIVATE_KEY }}
       RSYNC_BASE_PATH: ${{ secrets.RSYNC_BASE_PATH }}
       RSYNC_KNOWN_HOSTS: ${{ secrets.RSYNC_KNOWN_HOSTS }}
+      SFTP_HOST: ${{ secrets.SFTP_HOST }}
+      SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+      SFTP_PORT: ${{ secrets.SFTP_PORT }}
+      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      SFTP_BASE_PATH: ${{ secrets.SFTP_BASE_PATH }}
 
   node-save-cache:
     needs: [build-dist]

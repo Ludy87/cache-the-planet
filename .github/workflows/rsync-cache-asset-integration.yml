@@ -29,6 +29,17 @@ on:
         required: false
       RSYNC_KNOWN_HOSTS:
         required: false
+      SFTP_HOST:
+        required: false
+      SFTP_USERNAME:
+        required: false
+      SFTP_PORT:
+        required: false
+      SFTP_PASSWORD:
+        required: false
+      SFTP_BASE_PATH:
+        required: false
+
 
 permissions:
   contents: write
@@ -78,3 +89,41 @@ jobs:
         run: |
           test -f .cache/rsync-test/payload.txt
           test "$(stat -c %s .cache/rsync-test/payload.bin)" -eq 524288000
+
+  sftp-cache:
+    name: Test sftp cache storage
+    runs-on: ubuntu-lastest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install archive and Rsync tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes rsync zstd
+          rsync --version
+          zstd --version
+          tar --version
+
+      - name: Prepare test data
+        run: |
+          mkdir -p .cache/rsync-test
+          dd if=/dev/urandom of=.cache/rsync-test/payload.bin bs=1M count=500 status=progress
+          printf 'rsync integration test\n' > .cache/rsync-test/payload.txt
+
+      - uses: $/
+        with:
+          token: ${{ github.token }}
+          key: sftp-integration-${{ github.run_id }}
+          cache-name: sftp-integration
+          storage: sftp
+          sftp-host: ${{ secrets.SFTP_HOST }}
+          sftp-username: ${{ secrets.SFTP_USERNAME }}
+          sftp-port: ${{ secrets.SFTP_PORT }}
+          sftp-password: ${{ secrets.SFTP_PASSWORD }}
+          sftp-base-path: ${{ secrets.SFTP_BASE_PATH }}
+          path: .cache/sftp-test
+          strict: true
