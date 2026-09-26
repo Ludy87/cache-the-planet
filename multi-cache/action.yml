@@ -41,7 +41,7 @@ inputs:
   sftp-base-path:
     description: Absolute SFTP directory for immutable cache objects
     required: false
-    default: /cache-the-planet
+    default: ""
   scope:
     description: Cache scope passed to each entry
     required: false
