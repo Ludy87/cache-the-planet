@@ -1510,7 +1510,7 @@ function inspectTar(tarFile) {
   const tarOptions = { encoding: "utf8", env: { ...process.env, LC_ALL: "C" } };
   const listing = cp.spawnSync(
     "tar",
-    ["--quoting-style=escape", "-tf", tarFile],
+    ["--force-local", "--quoting-style=escape", "-tf", tarFile],
     tarOptions,
   );
   if (listing.status) {
@@ -1536,7 +1536,7 @@ function inspectTar(tarFile) {
   }
   const details = cp.spawnSync(
     "tar",
-    ["--quoting-style=escape", "-tvf", tarFile],
+    ["--force-local", "--quoting-style=escape", "-tvf", tarFile],
     tarOptions,
   );
   if (details.status)
@@ -2288,6 +2288,7 @@ async function extract(file, paths = restorePaths()) {
     const extraction = cp.spawnSync(
       "tar",
       [
+        "--force-local",
         "--extract",
         "--file",
         tarFile,
