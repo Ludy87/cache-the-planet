@@ -64,6 +64,28 @@ test("security scan allows Cargo crate archives with token-like names", () => {
   }
 });
 
+test("security scan allows token-like Cargo sparse index entries", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-index-"));
+  const entry = path.join(
+    root,
+    "cargo",
+    "registry",
+    "index",
+    "index.crates.io-1949cf8c6b5b557f",
+    ".cache",
+    "ma",
+    "tc",
+    "match_token",
+  );
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
   const configPath = path.join(workspace, ".cache-the-planet.json");
