@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "references": {
+    "untrusted/Ludy87/cache-the-planet/pr-197/npm/linux-x64/dd25005ba7955a90459d828f44b65c4468622bb36b714ec04a6edade1257a849/v1": {
+      "object": "sha256:1222981259fbeed2aa527b8ec3debc92ef1a7e4ef24a34d0fbde3db21dc6c774",
+      "updated_at": "2026-09-26T12:55:00.447Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 7682650
+    }
+  },
+  "monitoring": {
+    "window_started_at": "2026-09-26T12:55:00.447Z",
+    "writes": 1
+  }
+}
