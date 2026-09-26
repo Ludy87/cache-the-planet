@@ -2,6 +2,21 @@ name: Rsync cache integration
 
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      save-cache:
+        required: false
+        type: boolean
+        default: false
+      restore-cache:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      APP_ID:
+        required: false
+      APP_PRIVATE_KEY:
+        required: false
 
 permissions:
   contents: write
