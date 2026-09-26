@@ -97,7 +97,19 @@ try {
     process.env.MULTI_CACHE_PHASE === CACHE_PHASES.SAVE
       ? "save.js"
       : "restore.js";
-  const results = entries.map((entry) => run(entry, script));
+  const failures = [];
+  const results = entries.map((entry) => {
+    try {
+      return run(entry, script);
+    } catch (error) {
+      failures.push({ entry, error });
+      console.error(`cache ignored for ${entry.name}: ${error.message}`);
+      return {};
+    }
+  });
+  if (failures.length && c.input(INPUTS.STRICT).toLowerCase() === "true") {
+    throw failures[0].error;
+  }
   const values = {
     cacheHit: results.map((result) => result["cache-hit"] || "false"),
     matchedKey: results.map((result) => result["matched-key"] || ""),
