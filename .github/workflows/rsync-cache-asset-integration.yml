@@ -1,0 +1,47 @@
+name: Rsync cache integration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rsync-cache:
+    name: Test Rsync cache storage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install archive and Rsync tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes rsync zstd
+          rsync --version
+          zstd --version
+          tar --version
+
+      - name: Prepare test data
+        run: |
+          mkdir -p .cache/rsync-test
+          printf 'rsync integration test\n' > .cache/rsync-test/payload.txt
+
+      - name: Restore or save through Rsync
+        uses: ./
+        with:
+          token: ${{ github.token }}
+          key: rsync-integration-${{ github.run_id }}
+          cache-name: rsync-integration
+          storage: rsync
+          rsync-host: ${{ secrets.RSYNC_HOST }}
+          rsync-port: ${{ secrets.RSYNC_PORT || 22 }}
+          rsync-username: ${{ secrets.RSYNC_USERNAME }}
+          rsync-private-key: ${{ secrets.RSYNC_PRIVATE_KEY }}
+          rsync-base-path: ${{ secrets.RSYNC_BASE_PATH || '/cache-the-planet/integration' }}
+          path: .cache/rsync-test
+          strict: true
+
+      - name: Verify test data
+        run: test -f .cache/rsync-test/payload.txt
