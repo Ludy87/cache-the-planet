@@ -2057,6 +2057,50 @@ async function deleteObject(repository, hash, invalidate = true) {
   return true;
 }
 
+function formatTransferSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toFixed(unit === 0 ? 0 : 2)}${units[unit]}`;
+}
+
+function formatTransferDuration(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00:00";
+  const total = Math.ceil(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function createSftpProgress(label) {
+  const started = Date.now();
+  let lastRender = 0;
+  let lastLength = 0;
+
+  return (transferred, chunk, total) => {
+    if (!Number.isFinite(total) || total <= 0) return;
+    const now = Date.now();
+    if (transferred < total && now - lastRender < 250) return;
+    lastRender = now;
+    const elapsed = Math.max((now - started) / 1000, 0.001);
+    const rate = transferred / elapsed;
+    const remaining = Math.max(total - transferred, 0);
+    const percent = Math.min(100, Math.floor((transferred / total) * 100));
+    const line = `${formatTransferSize(transferred).padStart(10)} ${String(percent).padStart(3)}% ${formatTransferSize(rate)}/s ${formatTransferDuration(remaining / rate)}`;
+    const output = `${label}: ${line}`;
+    const padding = " ".repeat(Math.max(0, lastLength - output.length));
+    process.stdout.write(`\r${output}${padding}`);
+    lastLength = output.length;
+    if (transferred >= total) process.stdout.write("\n");
+  };
+}
+
 async function download(repository, hash) {
   validateCacheHash(hash);
   const asset = await object(repository, hash);
@@ -2066,21 +2110,10 @@ async function download(repository, hash) {
   try {
     if (storageMode() === "sftp") {
       const client = await sftpClient();
-      let lastProgress = -1;
       await client.fastGet(sftpObjectPath(hash), file, {
         concurrency: 128,
         chunkSize: 131072,
-        step: (transferred, chunk, total) => {
-          if (!Number.isFinite(total) || total <= 0) return;
-          const percent = Math.min(
-            100,
-            Math.floor((transferred / total) * 100),
-          );
-          if (percent === 100 || percent >= lastProgress + 5) {
-            console.log(`SFTP download: ${percent}%`);
-            lastProgress = percent;
-          }
-        },
+        step: createSftpProgress("SFTP download"),
       });
       if (fs.statSync(file).size > maxCompressedBytes)
         throw new Error("cache archive exceeds the compressed size limit");
@@ -2125,18 +2158,10 @@ async function uploadObject(repository, file, name, contentType) {
     if (!(error.code === 2 || /no such file/i.test(error.message || "")))
       throw error;
   }
-  let lastProgress = -1;
   await client.fastPut(file, sftpObjectPath(hash), {
     concurrency: 128,
     chunkSize: 131072,
-    step: (transferred, chunk, total) => {
-      if (!Number.isFinite(total) || total <= 0) return;
-      const percent = Math.min(100, Math.floor((transferred / total) * 100));
-      if (percent === 100 || percent >= lastProgress + 5) {
-        console.log(`SFTP upload: ${percent}%`);
-        lastProgress = percent;
-      }
-    },
+    step: createSftpProgress("SFTP upload"),
   });
   return { id: hash, name, size: fs.statSync(file).size, sftp: true };
 }
