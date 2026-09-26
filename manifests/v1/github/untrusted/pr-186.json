@@ -2,15 +2,15 @@
   "schema_version": 1,
   "references": {
     "untrusted/Ludy87/cache-the-planet/pr-186/npm/linux-x64/f750c2e76fb9f73f8f1a48bcef9beb5f54c807970c8276e324615d50a09d04b8/v1": {
-      "object": "sha256:428784b3a1037229ef3f417659a1fff42f0d6b377abcb50473d4132ac84840c8",
-      "updated_at": "2026-09-24T14:51:37.409Z",
+      "object": "sha256:cc92738be824705070ee398e42777fe6228cff359e0e0592c9e0500ba8c33076",
+      "updated_at": "2026-09-26T10:58:16.049Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
-      "size": 7681267
+      "size": 7681263
     }
   },
   "monitoring": {
-    "window_started_at": "2026-09-24T14:51:37.403Z",
+    "window_started_at": "2026-09-26T10:58:16.042Z",
     "writes": 1
   }
 }
