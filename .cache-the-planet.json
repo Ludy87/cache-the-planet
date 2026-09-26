@@ -10,7 +10,8 @@
       "docker-qemu",
       "task",
       "cargo",
-      "rsync-integration"
+      "rsync-integration",
+      "sftp-integration"
     ]
   }
 }
