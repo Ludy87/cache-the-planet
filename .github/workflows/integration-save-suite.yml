@@ -234,6 +234,9 @@ jobs:
     uses: $/.github/workflows/github-branch-storage-test.yml
     permissions:
       contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   docker-qemu-save-cache:
     needs: [node-save-cache]
