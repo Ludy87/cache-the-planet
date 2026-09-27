@@ -2246,10 +2246,10 @@ async function uploadBranchBlob(repository, buffer) {
         body,
       });
     } catch (error) {
-      if (![500, 502, 503, 504].includes(error.status) || attempt >= 2)
+      if (![500, 502, 503, 504].includes(error.status) || attempt >= 5)
         throw error;
-      const delay = 1000 * 2 ** attempt;
-      log(`Branch blob upload: HTTP ${error.status}; retry ${attempt + 1}/2 in ${delay}ms`);
+      const delay = Math.min(1000 * 2 ** attempt, 8000);
+      log(`Branch blob upload: HTTP ${error.status}; retry ${attempt + 1}/5 in ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -2362,10 +2362,10 @@ async function downloadToFile(url, output, options = {}) {
     });
     if (response.ok) break;
     if (response.body) await response.body.cancel();
-    if (![500, 502, 503, 504].includes(response.status) || attempt >= 2)
+    if (![500, 502, 503, 504].includes(response.status) || attempt >= 5)
       throw new Error(`download failed: ${response.status}`);
-    const delay = 1000 * 2 ** attempt;
-    log(`Cache download: HTTP ${response.status}; retry ${attempt + 1}/2 in ${delay}ms`);
+    const delay = Math.min(1000 * 2 ** attempt, 8000);
+    log(`Cache download: HTTP ${response.status}; retry ${attempt + 1}/5 in ${delay}ms`);
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
   const contentLength = Number(response.headers.get("content-length") || 0);
