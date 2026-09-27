@@ -290,6 +290,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         if (!existing) {
           uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
           c.invalidateRepositoryCache(repository);
+        } else if (c.storageMode() === "github-branch") {
+          uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         }
         const updated = await c.replaceRef(
           repository,
@@ -399,6 +401,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       }
     } else {
       c.log(`object already exists: ${hash}`);
+      if (c.storageMode() === "github-branch") {
+        uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
+      }
     }
 
     let updated = await c.setRef(repository, key, hash, {
