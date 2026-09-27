@@ -67,7 +67,7 @@ const maxCompressedBytes = positiveEnvironmentLimit(
 );
 const maxTarBytes = positiveEnvironmentLimit(
   "CACHE_MAX_TAR_BYTES",
-  8 * 1024 ** 3,
+  12 * 1024 ** 3,
   "max_tar_bytes",
 );
 const maxArchiveEntries = positiveEnvironmentLimit(
