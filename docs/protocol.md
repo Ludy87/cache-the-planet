@@ -42,6 +42,15 @@ verwendet `sftp`. Alte GitHub-Manifeste direkt unter `manifests/v1/` werden
 beim Lesen als Legacy-Fallback unterstützt; neue Schreibvorgänge verwenden
 immer den storage-spezifischen Pfad. SFTP liest keine GitHub-Referenzen.
 
+`storage: github-branch` verwendet ebenfalls den GitHub-Storage-Namespace,
+legt die Objektteile aber als Dateien unter
+`<manifest-path>/objects/v1/<sha256>/part-<index>` im Manifest-Branch ab.
+Die Standardgröße eines Teils beträgt 8 MiB und kann mit
+`CACHE_BRANCH_PART_BYTES` beziehungsweise `security.branch_part_bytes`
+konfiguriert werden. Referenzen enthalten dann zusätzlich eine geordnete
+Liste aus Teil-Hash und Teilgröße. Restore prüft jeden Teil sowie anschließend
+den Hash des zusammengesetzten Archivs.
+
 Im Repository dieses Projekts werden diese Dateien im Branch `cache-data` verwaltet.
 Andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH`, dem
 Input `manifest-branch` oder dem Feld `manifest_branch` in

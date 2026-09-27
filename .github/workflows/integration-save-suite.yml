@@ -228,6 +228,16 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
+  github-branch-storage-save:
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    uses: $/.github/workflows/github-branch-storage-test.yml
+    permissions:
+      contents: write
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
   docker-qemu-save-cache:
     needs: [node-save-cache]
     if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
