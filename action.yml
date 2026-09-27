@@ -43,7 +43,7 @@ inputs:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
   storage:
-    description: "Object storage backend: github-release or sftp"
+    description: "Object storage backend: github-release, github-branch, or sftp"
     required: false
   sftp-host:
     description: "SFTP hostname"
