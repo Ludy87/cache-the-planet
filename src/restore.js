@@ -7,17 +7,7 @@ const { INPUTS } = require("./constants");
     const isFork = c.isForkPullRequest();
     c.setOutput("is-fork", isFork ? "true" : "false");
     c.setOutput("read-only", isFork ? "true" : "false");
-    if (c.cacheDownloadDisabled()) {
-      c.setOutput("cache-hit", "false");
-      c.setOutput("matched-key", "");
-      c.log("Cache restore skipped: disable-download is enabled");
-      c.summary("Cache Restore", {
-        Status: "SKIPPED",
-        Reason: "disable-download is enabled",
-        Storage: c.storageMode(),
-      });
-      return;
-    }
+    const downloadDisabled = c.cacheDownloadDisabled();
     const repository = c.cacheRepository();
     const key = c.scopedKey(c.input(INPUTS.KEY));
     const candidates = [];
@@ -80,7 +70,9 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const asset = await c.object(repository, found[1].object);
+    const asset = downloadDisabled
+      ? await c.probeObject(repository, found[1])
+      : await c.object(repository, found[1].object);
     if (!asset) {
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
@@ -98,7 +90,7 @@ const { INPUTS } = require("./constants");
     }
 
     let archive;
-    if (c.storageMode && c.storageMode() === "github-branch") {
+    if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
       if (!Array.isArray(found[1].parts)) {
         c.setOutput("cache-hit", "false");
         c.setOutput("matched-key", "");
@@ -106,10 +98,10 @@ const { INPUTS } = require("./constants");
         return;
       }
       archive = await c.downloadBranchObject(repository, found[1]);
-    } else {
+    } else if (!downloadDisabled) {
       archive = await c.download(repository, found[1].object);
     }
-    await c.extract(archive);
+    if (!downloadDisabled) await c.extract(archive);
     const cacheIdentity = (value) => {
       const parts = value.split("/");
       if (parts[0] === "shared") return parts.slice(3).join("/");
@@ -128,9 +120,10 @@ const { INPUTS } = require("./constants");
     c.setOutput("matched-key", found[0]);
     c.setOutput("content-hash", found[1].object);
     c.setOutput("asset-name", asset.name);
-    c.setOutput("cache-size", fs.statSync(archive).size);
+    c.setOutput("cache-size", downloadDisabled ? asset.size : fs.statSync(archive).size);
     c.summary("Cache Restore", {
       Status: cacheHit ? "HIT" : "FALLBACK",
+      Download: downloadDisabled ? "disabled (existence check only)" : "completed",
       "Requested key": key,
       "Matched key": found[0],
       Asset: asset.name,

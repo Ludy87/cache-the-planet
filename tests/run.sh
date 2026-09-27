@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 command -v node >/dev/null
+node --test tests/disable-download.test.js tests/probe-object.test.js
 if [[ ! -f dist/common.js || ! -f dist/restore.js || ! -f dist/save.js || ! -f dist/gc.js || ! -f dist/pr-cleanup.js ]]; then
   npm run build
 fi

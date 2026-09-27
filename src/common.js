@@ -1722,6 +1722,35 @@ function invalidateRepositoryCache(repository) {
   releaseCache.delete(repository);
 }
 
+// Metadata-only lookup: never fetch archive bytes. A hit is not an integrity
+// guarantee; the normal download path still verifies hashes before extraction.
+async function probeObject(repository, reference) {
+  validateManifestReference(reference);
+  if (storageMode() !== "github-branch") {
+    const asset = await object(repository, reference.object);
+    if (!asset || (reference.size != null && asset.size !== reference.size)) return null;
+    return asset;
+  }
+  if (!Array.isArray(reference.parts)) return null;
+  const directory = branchObjectPath(reference.object, 0).replace(/\/part-[^/]+$/, "");
+  try {
+    const result = await gh(`/repos/${repository}/contents/${directory}?ref=${encodeURIComponent(manifestBranch())}`);
+    if (!Array.isArray(result.body)) return null;
+    const files = new Map(result.body.map((entry) => [entry.path, entry]));
+    for (const part of reference.parts) {
+      const entry = files.get(branchObjectPath(reference.object, part.index));
+      if (!entry || entry.type !== "file" || entry.size !== part.size) return null;
+    }
+    return {
+      id: reference.object, name: `${reference.object.slice(7)}.branch`,
+      size: reference.parts.reduce((total, part) => total + part.size, 0), branch: true,
+    };
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
+  }
+}
+
 async function object(repository, hash) {
   validateCacheHash(hash);
   if (storageMode() === "github-branch") {
@@ -2506,6 +2535,7 @@ async function extract(file, paths = restorePaths()) {
 }
 
 module.exports = {
+  probeObject,
   input,
   parsePositiveSafeInteger,
   hasInput,

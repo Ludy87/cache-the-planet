@@ -129,6 +129,9 @@ try {
       }
     }
   } else {
+    if (script === "restore.js") {
+      c.setOutput("cache-hit", values.cacheHit.every((value) => value === "true"));
+    }
     setListOutput("cache-hits", values.cacheHit);
     setListOutput("matched-keys", values.matchedKey);
     setListOutput("asset-names", values.assetName);

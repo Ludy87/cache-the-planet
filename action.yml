@@ -3,7 +3,7 @@ description: Immutable, deduplicated cache objects stored as GitHub Release asse
 author: cache-the-planet
 inputs:
   disable-download:
-    description: "Skip github-branch and sftp restores; saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
+    description: "Check cache existence without downloading or extracting for github-branch and sftp. Hits do not mean local files were restored. Saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
     required: false
     default: ""
   repository:
