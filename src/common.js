@@ -367,7 +367,7 @@ function storageMode() {
 
 const githubBranchPartBytes = positiveEnvironmentLimit(
   "CACHE_BRANCH_PART_BYTES",
-  45 * 1024 ** 2,
+  8 * 1024 ** 2,
   "branch_part_bytes",
 );
 
