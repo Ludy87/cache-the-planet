@@ -382,6 +382,17 @@ function branchObjectPath(hash, index) {
   return `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
 }
 
+// Runtime input overrides environment and repository configuration, including
+// an explicit false. This switch affects restore only, never post-save.
+function cacheDownloadDisabled() {
+  const value = input(INPUTS.DISABLE_DOWNLOAD) ||
+    process.env.CACHE_DISABLE_DOWNLOAD || configuration().disable_download || false;
+  const normalized = String(value).trim().toLowerCase();
+  if (!["true", "false"].includes(normalized))
+    throw new Error("disable-download must be true or false");
+  return normalized === "true" && ["github-branch", "sftp"].includes(storageMode());
+}
+
 function sftpSettings() {
   if (storageMode() !== "sftp") return null;
   const configured = configuration().sftp || {};
@@ -2529,6 +2540,7 @@ module.exports = {
   uploadObject,
   uploadBranchBlob,
   closeSftp,
+  cacheDownloadDisabled,
   sftpSettings,
   entries,
   excludePatterns,

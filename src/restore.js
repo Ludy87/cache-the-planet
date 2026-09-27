@@ -7,6 +7,17 @@ const { INPUTS } = require("./constants");
     const isFork = c.isForkPullRequest();
     c.setOutput("is-fork", isFork ? "true" : "false");
     c.setOutput("read-only", isFork ? "true" : "false");
+    if (c.cacheDownloadDisabled()) {
+      c.setOutput("cache-hit", "false");
+      c.setOutput("matched-key", "");
+      c.log("Cache restore skipped: disable-download is enabled");
+      c.summary("Cache Restore", {
+        Status: "SKIPPED",
+        Reason: "disable-download is enabled",
+        Storage: c.storageMode(),
+      });
+      return;
+    }
     const repository = c.cacheRepository();
     const key = c.scopedKey(c.input(INPUTS.KEY));
     const candidates = [];
