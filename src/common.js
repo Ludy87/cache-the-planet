@@ -367,7 +367,7 @@ function storageMode() {
 
 const githubBranchPartBytes = positiveEnvironmentLimit(
   "CACHE_BRANCH_PART_BYTES",
-  8 * 1024 ** 2,
+  24 * 1024 ** 2,
   "branch_part_bytes",
 );
 const githubBranchUploadConcurrency = positiveEnvironmentLimit(
@@ -2237,6 +2237,27 @@ async function downloadBranchObject(repository, reference) {
   }
 }
 
+// Identical blob bytes are content-addressed, so retrying this POST is safe.
+// Do not apply this retry policy to branch-ref writes or permanent API errors.
+async function uploadBranchBlob(repository, buffer) {
+  const body = JSON.stringify({ content: buffer.toString("base64"), encoding: "base64" });
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await gh(`/repos/${repository}/git/blobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+    } catch (error) {
+      if (![500, 502, 503, 504].includes(error.status) || attempt >= 2)
+        throw error;
+      const delay = 1000 * 2 ** attempt;
+      log(`Branch blob upload: HTTP ${error.status}; retry ${attempt + 1}/2 in ${delay}ms`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
 async function uploadObject(repository, file, name, contentType) {
   if (storageMode() === "github-branch") {
     const hash = digest(file);
@@ -2261,10 +2282,7 @@ async function uploadObject(repository, file, name, contentType) {
           fs.closeSync(bytes);
         }
         const partHash = `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`;
-        const blob = await gh(`/repos/${repository}/git/blobs`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: buffer.toString("base64"), encoding: "base64" }),
-        });
+        const blob = await uploadBranchBlob(repository, buffer);
         blobs[index] = { index, sha: blob.body.sha };
         parts[index] = { index, object: partHash, size: length };
         completedParts += 1;
@@ -2337,11 +2355,22 @@ async function downloadToFile(url, output, options = {}) {
     options.timeoutMs ?? 120000,
     "download timeout",
   );
-  const response = await fetch(url, {
-    headers: options.headers || {},
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!response.ok) throw new Error(`download failed: ${response.status}`);
+  // Retry only transient HTTP server failures, before writing any response
+  // bytes. Never retry size/integrity failures or permanent authorization errors.
+  let response;
+  for (let attempt = 0; ; attempt += 1) {
+    response = await fetch(url, {
+      headers: options.headers || {},
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (response.ok) break;
+    if (response.body) await response.body.cancel();
+    if (![500, 502, 503, 504].includes(response.status) || attempt >= 2)
+      throw new Error(`download failed: ${response.status}`);
+    const delay = 1000 * 2 ** attempt;
+    log(`Cache download: HTTP ${response.status}; retry ${attempt + 1}/2 in ${delay}ms`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
   const contentLength = Number(response.headers.get("content-length") || 0);
   if (contentLength > maxBytes)
     throw new Error("cache archive exceeds the compressed size limit");
@@ -2501,6 +2530,7 @@ module.exports = {
   gh,
   upload,
   uploadObject,
+  uploadBranchBlob,
   closeSftp,
   entries,
   excludePatterns,
