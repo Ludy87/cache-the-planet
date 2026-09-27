@@ -370,6 +370,11 @@ const githubBranchPartBytes = positiveEnvironmentLimit(
   8 * 1024 ** 2,
   "branch_part_bytes",
 );
+const githubBranchUploadConcurrency = positiveEnvironmentLimit(
+  "CACHE_BRANCH_UPLOAD_CONCURRENCY",
+  6,
+  "branch_upload_concurrency",
+);
 
 function branchObjectPath(hash, index) {
   validateCacheHash(hash);
@@ -2227,18 +2232,35 @@ async function uploadObject(repository, file, name, contentType) {
     const totalParts = Math.ceil(size / githubBranchPartBytes);
     log(`uploading branch object ${hash}: 0/${totalParts} parts (0%)`);
     const blobs = [];
-    for (let offset = 0, index = 0; offset < size; offset += githubBranchPartBytes, index += 1) {
-      const bytes = fs.readFileSync(file).subarray(offset, Math.min(offset + githubBranchPartBytes, size));
-      const partHash = `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}`;
-      const blob = await gh(`/repos/${repository}/git/blobs`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: bytes.toString("base64"), encoding: "base64" }),
-      });
-      blobs.push({ index, sha: blob.body.sha });
-      parts.push({ index, object: partHash, size: bytes.length });
-      const uploadedBytes = Math.min(offset + bytes.length, size);
-      log(`uploading branch object ${hash}: ${index + 1}/${totalParts} parts (${Math.floor((uploadedBytes / size) * 100)}%)`);
-    }
+    let nextIndex = 0;
+    let completedParts = 0;
+    const uploadPart = async () => {
+      while (true) {
+        const index = nextIndex++;
+        if (index >= totalParts) return;
+        const offset = index * githubBranchPartBytes;
+        const length = Math.min(githubBranchPartBytes, size - offset);
+        const bytes = fs.openSync(file, "r");
+        const buffer = Buffer.allocUnsafe(length);
+        try {
+          fs.readSync(bytes, buffer, 0, length, offset);
+        } finally {
+          fs.closeSync(bytes);
+        }
+        const partHash = `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`;
+        const blob = await gh(`/repos/${repository}/git/blobs`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: buffer.toString("base64"), encoding: "base64" }),
+        });
+        blobs[index] = { index, sha: blob.body.sha };
+        parts[index] = { index, object: partHash, size: length };
+        completedParts += 1;
+        log(`uploading branch object ${hash}: ${completedParts}/${totalParts} parts (${Math.floor((Math.min(completedParts * githubBranchPartBytes, size) / size) * 100)}%)`);
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(githubBranchUploadConcurrency, totalParts) }, uploadPart),
+    );
     const branch = encodeURIComponent(manifestBranch());
     const ref = await gh(`/repos/${repository}/git/ref/heads/${branch}`);
     const commit = await gh(`/repos/${repository}/git/commits/${ref.body.object.sha}`);
