@@ -302,6 +302,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `manifest-path` | Relativer Repository-Pfad; Standard: `manifests` | Unterordner für die Manifest-Dateien. Wenn gesetzt und `manifest-branch` nicht gesetzt ist, wird der Default-Branch verwendet. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |
 | `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
+| `disable-download` | `true`/`false`; Standard: `false` | Überspringt Restore für `github-branch` und `sftp`, auch bei Multi-Cache. Speichern bleibt aktiv; `github-release` ist nicht betroffen. |
 | `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |
 | `exclude` | Zeilenweise Ausschlussmuster | Schließt Dateien beim Speichern aus. Keine Secrets als Ersatz für enge `path`-Angaben behandeln. |
 | `exclude-path` | Zeilenweise Workspace-Dateien | Liest zusätzliche Ausschlussmuster aus vorhandenen Dateien innerhalb des Workspace. |
