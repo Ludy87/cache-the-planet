@@ -44,12 +44,12 @@ jobs:
           manifest-branch: cache-data
           token: ${{ github.token }}
           key: |
-            branch-npm=${{ steps.keys.outputs.run-key }}-npm
-            branch-maven=${{ steps.keys.outputs.run-key }}-maven
+            npm=${{ steps.keys.outputs.run-key }}-npm
+            maven-java17=${{ steps.keys.outputs.run-key }}-maven
           multi-cache: |
-            branch-npm:
+            npm:
               path: .cache/branch-npm
-            branch-maven:
+            maven-java17:
               path: .cache/branch-maven
           strict: true
 
@@ -58,7 +58,7 @@ jobs:
           CACHE_RESULTS: ${{ steps.cache.outputs.cache-results }}
         run: |
           test -n "$CACHE_RESULTS"
-          echo "$CACHE_RESULTS" | jq -e '."branch-npm" and ."branch-maven"' >/dev/null
+          echo "$CACHE_RESULTS" | jq -e '.npm and ."maven-java17"' >/dev/null
 
   restore:
     name: Restore multiple branch-backed caches
@@ -82,12 +82,12 @@ jobs:
           manifest-branch: cache-data
           token: ${{ github.token }}
           key: |
-            branch-npm=${{ needs.save.outputs.run-key }}-npm
-            branch-maven=${{ needs.save.outputs.run-key }}-maven
+            npm=${{ needs.save.outputs.run-key }}-npm
+            maven-java17=${{ needs.save.outputs.run-key }}-maven
           multi-cache: |
-            branch-npm:
+            npm:
               path: .cache/branch-npm
-            branch-maven:
+            maven-java17:
               path: .cache/branch-maven
           restore-only: true
           strict: true
