@@ -1,6 +1,10 @@
 name: Multi cache
 description: Restore and save multiple content-addressed caches
 inputs:
+  disable-download:
+    description: "Skip github-branch and sftp restores; saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
+    required: false
+    default: ""
   key:
     description: Newline separated cache-name=logical-key entries
     required: true

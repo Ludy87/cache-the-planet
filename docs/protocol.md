@@ -80,6 +80,17 @@ ohne Angabe wird die Stufe `3` verwendet.
 
 ## Konfigurationsschalter und Prioritäten
 
+`disable-download: true` überspringt den Restore für `github-branch` und
+`sftp` vor jeder Manifest-Abfrage und Verbindung. Das gilt auch für die
+Multi-Cache-Action. Die Outputs sind `cache-hit: false` und ein leerer
+`matched-key`; `strict: true` macht daraus keinen Fehler. Speichern bleibt
+aktiv. `github-release` ist nicht betroffen. Priorität: Action-Input
+`disable-download`, Umgebungsvariable `CACHE_DISABLE_DOWNLOAD`, JSON-Feld
+`disable_download` in `.cache-the-planet.json`, Standard `false`.
+Explizites `false` überschreibt ein konfiguriertes `true`. Die Save-Sub-Action
+ignoriert den Schalter. Zusammen mit `restore-only: true` wird weder
+heruntergeladen noch gespeichert (bei den beiden betroffenen Backends).
+
 SFTP-Zugangsdaten werden ausschließlich über die Inputs `sftp-private-key`
 und `sftp-password` oder die Umgebungsvariablen `SFTP_PRIVATE_KEY` und
 `SFTP_PASSWORD` übergeben (Input hat Vorrang). Die JSON-Felder

@@ -1,6 +1,10 @@
 name: Content-addressed GitHub cache (save)
 description: Save an immutable content-addressed cache object
 inputs:
+  disable-download:
+    description: "Skip github-branch and sftp restores; saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
+    required: false
+    default: ""
   repository:
     description: "owner/name of cache repository"
     required: false

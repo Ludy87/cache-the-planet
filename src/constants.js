@@ -7,6 +7,7 @@ const INPUTS = Object.freeze({
   CONFIG_FILE: "config-file",
   DELETE_SHARED: "delete-shared",
   DRY_RUN: "dry-run",
+  DISABLE_DOWNLOAD: "disable-download",
   ENCRYPTION_KEY: "encryption-key",
   EXCLUDE: "exclude",
   EXCLUDE_PATH: "exclude-path",
