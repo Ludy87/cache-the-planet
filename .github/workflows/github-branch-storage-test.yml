@@ -38,7 +38,7 @@ jobs:
 
       - name: Save multiple branch-backed caches
         id: cache
-        uses: ./multi-cache
+        uses: $/multi-cache
         with:
           storage: github-branch
           manifest-branch: cache-data
