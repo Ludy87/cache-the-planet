@@ -2224,6 +2224,8 @@ async function uploadObject(repository, file, name, contentType) {
     const hash = digest(file);
     const size = fs.statSync(file).size;
     const parts = [];
+    const totalParts = Math.ceil(size / githubBranchPartBytes);
+    log(`uploading branch object ${hash}: 0/${totalParts} parts (0%)`);
     for (let offset = 0, index = 0; offset < size; offset += githubBranchPartBytes, index += 1) {
       const bytes = fs.readFileSync(file).subarray(offset, Math.min(offset + githubBranchPartBytes, size));
       const partHash = `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}`;
@@ -2237,6 +2239,8 @@ async function uploadObject(repository, file, name, contentType) {
         if (error.status !== 422) throw error;
       }
       parts.push({ index, object: partHash, size: bytes.length });
+      const uploadedBytes = Math.min(offset + bytes.length, size);
+      log(`uploading branch object ${hash}: ${index + 1}/${totalParts} parts (${Math.floor((uploadedBytes / size) * 100)}%)`);
     }
     return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts };
   }
