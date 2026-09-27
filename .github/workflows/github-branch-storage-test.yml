@@ -1,0 +1,117 @@
+name: GitHub branch storage test
+
+on:
+  workflow_call:
+    secrets:
+      APP_ID:
+        required: false
+      APP_PRIVATE_KEY:
+        required: false
+  workflow_dispatch:
+
+concurrency:
+  group: github-branch-storage-test
+  cancel-in-progress: false
+
+jobs:
+  save:
+    name: Save multiple branch-backed caches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      run-key: ${{ steps.keys.outputs.run-key }}
+    steps:
+      - name: Create AstraGermany-Bot token for trusted save
+        if: ${{ github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Create deterministic test data
+        run: |
+          mkdir -p .cache/branch-npm .cache/branch-maven
+          dd if=/dev/urandom of=.cache/branch-npm/cache-500mb.bin bs=1M count=500 status=progress
+          printf 'github-branch npm test\n' > .cache/branch-npm/index.txt
+          printf 'github-branch maven test\n' > .cache/branch-maven/index.txt
+          test "$(stat -c '%s' .cache/branch-npm/cache-500mb.bin)" -eq 524288000
+
+      - name: Generate isolated cache key
+        id: keys
+        run: echo "run-key=branch-test-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
+      - name: Save multiple branch-backed caches
+        id: cache
+        uses: $/multi-cache
+        with:
+          storage: github-branch
+          manifest-branch: cache-data
+          save-scope: shared
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          key: |
+            npm=${{ steps.keys.outputs.run-key }}-npm
+            maven-java17=${{ steps.keys.outputs.run-key }}-maven
+          multi-cache: |
+            npm:
+              path: .cache/branch-npm
+            maven-java17:
+              path: .cache/branch-maven
+          allow-shared-restore: true
+          strict: true
+
+      - name: Verify multi-cache save outputs
+        env:
+          CACHE_RESULTS: ${{ steps.cache.outputs.cache-results }}
+        run: |
+          test -n "$CACHE_RESULTS"
+          echo "$CACHE_RESULTS" | jq -e '.npm and ."maven-java17"' >/dev/null
+
+  restore:
+    name: Restore multiple branch-backed caches
+    needs: save
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Restore multiple branch-backed caches
+        id: cache
+        uses: $/multi-cache
+        with:
+          storage: github-branch
+          manifest-branch: cache-data
+          token: ${{ github.token }}
+          key: |
+            npm=${{ needs.save.outputs.run-key }}-npm
+            maven-java17=${{ needs.save.outputs.run-key }}-maven
+          multi-cache: |
+            npm:
+              path: .cache/branch-npm
+            maven-java17:
+              path: .cache/branch-maven
+          restore-only: true
+          strict: true
+
+      - name: Verify restored multi-cache data
+        run: |
+          test "$(cat .cache/branch-npm/index.txt)" = 'github-branch npm test'
+          test "$(cat .cache/branch-maven/index.txt)" = 'github-branch maven test'
+          test "$(stat -c '%s' .cache/branch-npm/cache-500mb.bin)" -eq 524288000

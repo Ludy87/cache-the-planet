@@ -288,18 +288,19 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           const hash = c.digest(archive.file);
         const existing = await c.object(repository, hash);
         const name = c.assetName(key, hash);
+        let uploaded;
         if (!existing) {
-          await c.uploadObject(repository, archive.file, name, "application/zstd");
+          uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
           c.invalidateRepositoryCache(repository);
+        } else if (c.storageMode() === "github-branch") {
+          uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         }
         const updated = await c.replaceRef(
           repository,
           key,
           hash,
           conflictingKey,
-          {
-            size: fs.statSync(archive.file).size,
-          },
+          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}) },
         );
         const oldHash = current.json.references[conflictingKey]?.object;
         const stillReferenced =
@@ -347,6 +348,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       if (relatedAsset) {
         let updated = await c.setRef(repository, key, relatedReference.object, {
           size: relatedReference.size,
+          ...(relatedReference.parts ? { parts: relatedReference.parts } : {}),
           source: `linked-from:${relatedKey}`,
         });
         if (sharedKey || trustedKey) {
@@ -392,7 +394,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
     if (!existing) {
       try {
-        await c.uploadObject(repository, archive.file, name, "application/zstd");
+        uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         c.invalidateRepositoryCache(repository);
         c.log(`uploaded object ${hash}`);
       } catch (error) {
@@ -401,10 +403,14 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       }
     } else {
       c.log(`object already exists: ${hash}`);
+      if (c.storageMode() === "github-branch") {
+        uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
+      }
     }
 
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
+      ...(uploaded?.parts ? { parts: uploaded.parts } : {}),
     });
     if (sharedKey || trustedKey) {
       const replacement = await replaceOlderReferences(repository, key);
@@ -414,6 +420,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     if (sharedCounterpart) {
       updated = await c.setRef(repository, sharedCounterpart, hash, {
         size: fs.statSync(archive.file).size,
+        ...(uploaded?.parts ? { parts: uploaded.parts } : {}),
         source: `linked-from:${key}`,
       });
       const replacement = await replaceOlderReferences(

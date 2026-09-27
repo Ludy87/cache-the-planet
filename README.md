@@ -293,6 +293,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `restore-keys` | Zeilenweise Prefixe; Standard: leer | Fallback-Suche nach dem exakten Key. Nur validierte Namespaces sind erlaubt. |
 | `path` | Zeilenweise Workspace-Pfade; erforderlich | Dateien oder Verzeichnisse, die gespeichert beziehungsweise wiederhergestellt werden. |
 | `token` | GitHub-Token | Token für Contents- und Release-API; ohne Angabe wird `GITHUB_TOKEN` verwendet. |
+| `storage` | `github-release`, `github-branch` oder `sftp` | Objekt-Backend. `github-branch` speichert die geprüften Archivteile im `manifest-branch`; Standard ist `github-release`. |
 | `encryption-key` | Secret/Passphrase; Standard: leer | Aktiviert AES-256-GCM. Derselbe Schlüssel muss bei Save und Restore verwendet werden und darf nicht an Forks gelangen. |
 | `strict` | `true`/`false`; Standard: `false` | Bei `true` werden Restore-Netzwerk-, Integritäts- und Archivfehler als Step-Fehler gemeldet; Save-Fehler werden über `strict-save` gesteuert. |
 | `strict-save` | `true`/`false`; Standard: Wert von `strict` | Steuert Save-Fehler unabhängig von Restore. Ein neuer Untrusted-PR-Cache ersetzt immer den bisherigen; das alte Asset wird gelöscht, sofern es nicht anderweitig referenziert ist. |
