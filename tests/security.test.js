@@ -86,6 +86,27 @@ test("security scan allows token-like Cargo sparse index entries", () => {
   }
 });
 
+test("security scan allows Cargo sparse index entries from the cargo cache root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-root-"));
+  const entry = path.join(
+    root,
+    "registry",
+    "index",
+    "index.crates.io-1949cf8c6b5b557f",
+    ".cache",
+    "ma",
+    "tc",
+    "match_token",
+  );
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
   const configPath = path.join(workspace, ".cache-the-planet.json");
