@@ -67,7 +67,7 @@ const maxCompressedBytes = positiveEnvironmentLimit(
 );
 const maxTarBytes = positiveEnvironmentLimit(
   "CACHE_MAX_TAR_BYTES",
-  12 * 1024 ** 3,
+  8 * 1024 ** 3,
   "max_tar_bytes",
 );
 const maxArchiveEntries = positiveEnvironmentLimit(
@@ -367,7 +367,7 @@ function storageMode() {
 
 const githubBranchPartBytes = positiveEnvironmentLimit(
   "CACHE_BRANCH_PART_BYTES",
-  12 * 1024 ** 2,
+  8 * 1024 ** 2,
   "branch_part_bytes",
 );
 const githubBranchUploadConcurrency = positiveEnvironmentLimit(
