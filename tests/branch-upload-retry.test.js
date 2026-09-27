@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-test("blob uploads retry server errors twice, preserve bytes, and reject permanent errors", async () => {
+test("blob uploads retry server errors five times, preserve bytes, and reject permanent errors", async () => {
   const originalFetch = global.fetch;
   const saved = new Map(["GITHUB_TOKEN", "INPUT_TOKEN"].map(key => [key, process.env[key]]));
   for (const key of saved.keys()) delete process.env[key];
@@ -20,7 +20,7 @@ test("blob uploads retry server errors twice, preserve bytes, and reject permane
     assert.equal(new Set(requests.map(request => request.body)).size, 1);
     assert.ok(requests.every(request => request.url.endsWith("/git/blobs")));
 
-    for (const [status, expectedCalls] of [[503, 3], [422, 1], [403, 1]]) {
+    for (const [status, expectedCalls] of [[503, 6], [422, 1], [403, 1]]) {
       let calls = 0;
       global.fetch = async () => {
         calls += 1;

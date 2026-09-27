@@ -5,7 +5,7 @@ const os = require("node:os");
 const path = require("node:path");
 const common = require("../src/common");
 
-test("downloads retry server failures twice without writing error bodies", async () => {
+test("downloads retry server failures five times without writing error bodies", async () => {
   const originalFetch = global.fetch;
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cache-download-retry-"));
   const output = path.join(directory, "archive");
@@ -21,7 +21,7 @@ test("downloads retry server failures twice without writing error bodies", async
     assert.equal(calls, 3);
     assert.equal(fs.readFileSync(output, "utf8"), "verified bytes");
     fs.unlinkSync(output);
-    for (const [status, expectedCalls] of [[503, 3], [403, 1], [404, 1]]) {
+    for (const [status, expectedCalls] of [[503, 6], [403, 1], [404, 1]]) {
       calls = 0;
       global.fetch = async () => {
         calls += 1;
