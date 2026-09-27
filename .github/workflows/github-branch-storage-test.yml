@@ -26,8 +26,10 @@ jobs:
       - name: Create deterministic test data
         run: |
           mkdir -p .cache/branch-npm .cache/branch-maven
+          dd if=/dev/urandom of=.cache/branch-npm/cache-500mb.bin bs=1M count=500 status=progress
           printf 'github-branch npm test\n' > .cache/branch-npm/index.txt
           printf 'github-branch maven test\n' > .cache/branch-maven/index.txt
+          test "$(stat -c '%s' .cache/branch-npm/cache-500mb.bin)" -eq 524288000
 
       - name: Generate isolated cache key
         id: keys
@@ -93,3 +95,4 @@ jobs:
         run: |
           test "$(cat .cache/branch-npm/index.txt)" = 'github-branch npm test'
           test "$(cat .cache/branch-maven/index.txt)" = 'github-branch maven test'
+          test "$(stat -c '%s' .cache/branch-npm/cache-500mb.bin)" -eq 524288000
