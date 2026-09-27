@@ -2192,6 +2192,8 @@ async function downloadBranchObject(repository, reference) {
   const file = path.join(directory, "archive.tar.zst");
   try {
     const output = fs.createWriteStream(file, { flags: "wx" });
+    log(`downloading branch object ${reference.object}: 0/${reference.parts.length} parts (0%)`);
+    let downloadedBytes = 0;
     for (const part of reference.parts) {
       const result = await gh(`/repos/${repository}/contents/${branchObjectPath(reference.object, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
       const partFile = path.join(directory, `part-${part.index}`);
@@ -2212,6 +2214,8 @@ async function downloadBranchObject(repository, reference) {
       if (bytes.length > githubBranchPartBytes) throw new Error("branch cache part exceeds size limit");
       output.write(bytes);
       removeTemporaryFile(partFile);
+      downloadedBytes += bytes.length;
+      log(`downloading branch object ${reference.object}: ${part.index + 1}/${reference.parts.length} parts (${Math.floor((downloadedBytes / reference.size) * 100)}%)`);
     }
     output.end();
     await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });

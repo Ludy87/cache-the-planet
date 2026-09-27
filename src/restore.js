@@ -86,9 +86,18 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const archive = c.storageMode && c.storageMode() === "github-branch"
-      ? await c.downloadBranchObject(repository, found[1])
-      : await c.download(repository, found[1].object);
+    let archive;
+    if (c.storageMode && c.storageMode() === "github-branch") {
+      if (!Array.isArray(found[1].parts)) {
+        c.setOutput("cache-hit", "false");
+        c.setOutput("matched-key", "");
+        c.log(`Cache miss: branch reference has no part list: key=${found[0]}`);
+        return;
+      }
+      archive = await c.downloadBranchObject(repository, found[1]);
+    } else {
+      archive = await c.download(repository, found[1].object);
+    }
     await c.extract(archive);
     const cacheIdentity = (value) => {
       const parts = value.split("/");

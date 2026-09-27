@@ -344,6 +344,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       if (relatedAsset) {
         let updated = await c.setRef(repository, key, relatedReference.object, {
           size: relatedReference.size,
+          ...(relatedReference.parts ? { parts: relatedReference.parts } : {}),
           source: `linked-from:${relatedKey}`,
         });
         if (sharedKey || trustedKey) {
