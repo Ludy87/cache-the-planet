@@ -17,6 +17,13 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
 
+Der Workflow `github-branch-storage-test.yml` speichert seine Testreferenzen
+und Objektteile unter `integration-tests/branch-<run-id>-<attempt>/` auf
+`cache-data`. Nach dem Restore entfernt ein eigener Cleanup-Job diesen
+laufbezogenen Ordner, auch wenn der Restore fehlschlägt. Andere Cache-Pfade
+bleiben erhalten. Die Löschung erfolgt durch einen neuen Commit; frühere
+Dateiversionen bleiben in der Git-Historie. Dies ersetzt keine allgemeine GC.
+
 `cache-name` wird nicht automatisch in einen Dateipfad umgewandelt. Die
 Integrations-Workflows verwenden aber bewusst denselben Namensbestandteil für
 `cache-name` und den lokalen Cache-Root; beide Werte müssen deshalb manuell
