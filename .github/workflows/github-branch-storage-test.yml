@@ -1,6 +1,7 @@
 name: GitHub branch storage test
 
 on:
+  workflow_call:
   workflow_dispatch:
 
 concurrency:
