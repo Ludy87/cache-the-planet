@@ -2226,22 +2226,39 @@ async function uploadObject(repository, file, name, contentType) {
     const parts = [];
     const totalParts = Math.ceil(size / githubBranchPartBytes);
     log(`uploading branch object ${hash}: 0/${totalParts} parts (0%)`);
+    const blobs = [];
     for (let offset = 0, index = 0; offset < size; offset += githubBranchPartBytes, index += 1) {
       const bytes = fs.readFileSync(file).subarray(offset, Math.min(offset + githubBranchPartBytes, size));
       const partHash = `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}`;
-      const partPath = branchObjectPath(hash, index);
-      try {
-        await gh(`/repos/${repository}/contents/${partPath}`, {
-          method: "PUT", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: `cache: upload ${hash} part ${index}`, content: bytes.toString("base64"), branch: manifestBranch() }),
-        });
-      } catch (error) {
-        if (error.status !== 422) throw error;
-      }
+      const blob = await gh(`/repos/${repository}/git/blobs`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: bytes.toString("base64"), encoding: "base64" }),
+      });
+      blobs.push({ index, sha: blob.body.sha });
       parts.push({ index, object: partHash, size: bytes.length });
       const uploadedBytes = Math.min(offset + bytes.length, size);
       log(`uploading branch object ${hash}: ${index + 1}/${totalParts} parts (${Math.floor((uploadedBytes / size) * 100)}%)`);
     }
+    const branch = encodeURIComponent(manifestBranch());
+    const ref = await gh(`/repos/${repository}/git/ref/heads/${branch}`);
+    const commit = await gh(`/repos/${repository}/git/commits/${ref.body.object.sha}`);
+    const tree = await gh(`/repos/${repository}/git/trees`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        base_tree: commit.body.tree.sha,
+        tree: blobs.map(({ index, sha }) => ({
+          path: branchObjectPath(hash, index), mode: "100644", type: "blob", sha,
+        })),
+      }),
+    });
+    const createdCommit = await gh(`/repos/${repository}/git/commits`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `cache: upload ${hash}`, tree: tree.body.sha, parents: [ref.body.object.sha] }),
+    });
+    await gh(`/repos/${repository}/git/refs/heads/${branch}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
+    });
     return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts };
   }
   if (storageMode() !== "sftp") {
