@@ -282,7 +282,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `replacing existing pull request cache: old-key=${conflictingKey}; new-key=${key}`,
         );
         const archive = await c.makeArchive();
-        const hash = c.digest(archive.file);
+        try {
+          const hash = c.digest(archive.file);
         const existing = await c.object(repository, hash);
         const name = c.assetName(key, hash);
         if (!existing) {
@@ -331,6 +332,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           "Content hash": hash,
         });
         return;
+        } finally {
+          c.removeTemporaryFile(archive.dir);
+        }
       }
     }
 
@@ -379,7 +383,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
 
     const archive = await c.makeArchive();
-    const hash = c.digest(archive.file);
+    try {
+      const hash = c.digest(archive.file);
     const existing = await c.object(repository, hash);
     const name = c.assetName(key, hash);
 
@@ -439,6 +444,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       "Asset name": existing?.name || name,
       "Content hash": hash,
     });
+    } finally {
+      c.removeTemporaryFile(archive.dir);
+    }
   } catch (error) {
     // Pull-request jobs may receive a valid token without write access to the
     // central cache repository. Saving is optional there, including for
