@@ -80,6 +80,14 @@ ohne Angabe wird die Stufe `3` verwendet.
 
 ## Konfigurationsschalter und Prioritäten
 
+SFTP-Zugangsdaten werden ausschließlich über die Inputs `sftp-private-key`
+und `sftp-password` oder die Umgebungsvariablen `SFTP_PRIVATE_KEY` und
+`SFTP_PASSWORD` übergeben (Input hat Vorrang). Die JSON-Felder
+`sftp.private_key` und `sftp.password` werden nicht mehr ausgewertet.
+Bestehende Konfigurationen müssen diese Werte in GitHub Secrets verlagern
+und im Workflow an die Inputs oder Umgebungsvariablen binden. Host, Port,
+Benutzername und Basispfad bleiben über die JSON-Konfiguration einstellbar.
+
 Die JSON-Datei ist optional und muss innerhalb von `GITHUB_WORKSPACE` liegen.
 Wird keine Datei über den Action-Input `config-file` oder die Variable
 `CACHE_CONFIG_FILE` angegeben, sucht die Action automatisch nach

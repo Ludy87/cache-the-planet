@@ -391,14 +391,11 @@ function sftpSettings() {
     input(INPUTS.SFTP_USERNAME) ||
     process.env.SFTP_USERNAME ||
     configured.username;
+  // Credentials must come from runtime inputs/environment, never repository JSON.
   const privateKey =
-    input(INPUTS.SFTP_PRIVATE_KEY) ||
-    process.env.SFTP_PRIVATE_KEY ||
-    configured.private_key;
+    input(INPUTS.SFTP_PRIVATE_KEY) || process.env.SFTP_PRIVATE_KEY;
   const password =
-    input(INPUTS.SFTP_PASSWORD) ||
-    process.env.SFTP_PASSWORD ||
-    configured.password;
+    input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD;
   const port = Number(
     input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22,
   );
@@ -2532,6 +2529,7 @@ module.exports = {
   uploadObject,
   uploadBranchBlob,
   closeSftp,
+  sftpSettings,
   entries,
   excludePatterns,
   refName,
