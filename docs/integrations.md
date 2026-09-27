@@ -84,7 +84,10 @@ Bei genau einem `multi-cache`-Eintrag werden die Singular-Outputs
 gesetzt. Bei zwei oder mehr Einträgen werden stattdessen die Listen-Outputs
 `cache-hits`, `matched-keys`, `assets-name`, `contents-hash` und `cache-sizes`
 gesetzt. Die Werte stehen in derselben Reihenfolge wie die Einträge in der
-`multi-cache`-Definition.
+`multi-cache`-Definition. Beim Restore gibt es zusätzlich den gemeinsamen
+`cache-hit`: Er ist nur `true`, wenn alle Einträge exakte Treffer sind.
+Mit `disable-download: true` bezeichnet dies für Branch/SFTP nur die
+Existenz, nicht die lokale Wiederherstellung (siehe [Protokoll](protocol.md)).
 
 Für den Zugriff nach Cache-Namen gibt es zusätzlich das JSON-Output
 `cache-results`. GitHub-Expressions müssen den String mit `fromJSON(...)`

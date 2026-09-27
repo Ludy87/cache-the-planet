@@ -80,11 +80,17 @@ ohne Angabe wird die Stufe `3` verwendet.
 
 ## Konfigurationsschalter und Prioritäten
 
-`disable-download: true` überspringt den Restore für `github-branch` und
-`sftp` vor jeder Manifest-Abfrage und Verbindung. Das gilt auch für die
-Multi-Cache-Action. Die Outputs sind `cache-hit: false` und ein leerer
-`matched-key`; `strict: true` macht daraus keinen Fehler. Speichern bleibt
-aktiv. `github-release` ist nicht betroffen. Priorität: Action-Input
+`disable-download: true` prüft für `github-branch` und `sftp` weiterhin
+Manifest, Berechtigungen und Objekt-Metadaten, lädt aber keine Archivdaten
+herunter und entpackt nichts. Verbindungen und Zugangsdaten bleiben nötig.
+Bei Branch-Objekten müssen alle Parts mit passender Größe vorhanden sein.
+Exakte Treffer setzen `cache-hit: true`; Prefix-Fallbacks setzen
+`cache-hit: false`, aber einen `matched-key`. Fehlende Objekte sind Misses.
+Multi-Cache meldet den gemeinsamen Hit nur, wenn alle Einträge exakt treffen.
+Ein Hit bestätigt weder lokal vorhandene Dateien noch die Hash-Integrität;
+diese wird erst beim tatsächlichen Download geprüft. Metadatenfehler folgen
+weiterhin `strict`. Speichern bleibt aktiv. `github-release` ist nicht betroffen.
+Priorität: Action-Input
 `disable-download`, Umgebungsvariable `CACHE_DISABLE_DOWNLOAD`, JSON-Feld
 `disable_download` in `.cache-the-planet.json`, Standard `false`.
 Explizites `false` überschreibt ein konfiguriertes `true`. Die Save-Sub-Action

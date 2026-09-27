@@ -95,10 +95,11 @@ wenn ein Shared-Cache als Fallback gelesen werden soll.
 
 Bei genau einem Eintrag verwendet `multi-cache` die normalen Singular-Outputs
 `cache-hit`, `matched-key`, `asset-name`, `content-hash` und `cache-size`. Bei
-mehreren Einträgen werden ausschließlich die geordneten Listen-Outputs
+mehreren Einträgen werden die geordneten Listen-Outputs
 `cache-hits`, `matched-keys`, `assets-name`, `contents-hash` und `cache-sizes`
 gesetzt. Die Position jedes Werts entspricht der Reihenfolge in
-`multi-cache`.
+`multi-cache`. Beim Restore ist `cache-hit` zusätzlich nur dann `true`,
+wenn alle Einträge exakte Treffer sind.
 
 Zusätzlich stellt `multi-cache` mit `cache-results` ein JSON-Objekt bereit,
 das direkt nach Cache-Namen gelesen werden kann:
@@ -302,7 +303,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `manifest-path` | Relativer Repository-Pfad; Standard: `manifests` | Unterordner für die Manifest-Dateien. Wenn gesetzt und `manifest-branch` nicht gesetzt ist, wird der Default-Branch verwendet. |
 | `allow-shared-restore` | `true`/`false`; Standard: `false` | Erlaubt PRs ausdrücklich, Shared-Caches zu lesen. Nur bewusst aktivieren. |
 | `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
-| `disable-download` | `true`/`false`; Standard: `false` | Überspringt Restore für `github-branch` und `sftp`, auch bei Multi-Cache. Speichern bleibt aktiv; `github-release` ist nicht betroffen. |
+| `disable-download` | `true`/`false`; Standard: `false` | Prüft die Cache-Existenz ohne Download/Entpacken für `github-branch` und `sftp`. Ein Hit bedeutet nur „vorhanden“, nicht „lokal wiederhergestellt“. Multi-Cache meldet insgesamt nur bei ausschließlich exakten Treffern einen Hit. Speichern bleibt aktiv; `github-release` ist nicht betroffen. |
 | `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |
 | `exclude` | Zeilenweise Ausschlussmuster | Schließt Dateien beim Speichern aus. Keine Secrets als Ersatz für enge `path`-Angaben behandeln. |
 | `exclude-path` | Zeilenweise Workspace-Dateien | Liest zusätzliche Ausschlussmuster aus vorhandenen Dateien innerhalb des Workspace. |
