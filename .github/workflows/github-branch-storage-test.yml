@@ -1,0 +1,95 @@
+name: GitHub branch storage test
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: github-branch-storage-test
+  cancel-in-progress: false
+
+jobs:
+  save:
+    name: Save multiple branch-backed caches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      run-key: ${{ steps.keys.outputs.run-key }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Create deterministic test data
+        run: |
+          mkdir -p .cache/branch-npm .cache/branch-maven
+          printf 'github-branch npm test\n' > .cache/branch-npm/index.txt
+          printf 'github-branch maven test\n' > .cache/branch-maven/index.txt
+
+      - name: Generate isolated cache key
+        id: keys
+        run: echo "run-key=branch-test-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
+      - name: Save multiple branch-backed caches
+        id: cache
+        uses: ./
+        with:
+          storage: github-branch
+          manifest-branch: cache-data
+          token: ${{ github.token }}
+          key: |
+            branch-npm=${{ steps.keys.outputs.run-key }}-npm
+            branch-maven=${{ steps.keys.outputs.run-key }}-maven
+          multi-cache: |
+            branch-npm:
+              path: .cache/branch-npm
+            branch-maven:
+              path: .cache/branch-maven
+          strict: true
+
+      - name: Verify multi-cache save outputs
+        env:
+          CACHE_RESULTS: ${{ steps.cache.outputs.cache-results }}
+        run: |
+          test -n "$CACHE_RESULTS"
+          echo "$CACHE_RESULTS" | jq -e '."branch-npm" and ."branch-maven"' >/dev/null
+
+  restore:
+    name: Restore multiple branch-backed caches
+    needs: save
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Restore multiple branch-backed caches
+        id: cache
+        uses: ./
+        with:
+          storage: github-branch
+          manifest-branch: cache-data
+          token: ${{ github.token }}
+          key: |
+            branch-npm=${{ needs.save.outputs.run-key }}-npm
+            branch-maven=${{ needs.save.outputs.run-key }}-maven
+          multi-cache: |
+            branch-npm:
+              path: .cache/branch-npm
+            branch-maven:
+              path: .cache/branch-maven
+          restore-only: true
+          strict: true
+
+      - name: Verify restored multi-cache data
+        run: |
+          test "$(cat .cache/branch-npm/index.txt)" = 'github-branch npm test'
+          test "$(cat .cache/branch-maven/index.txt)" = 'github-branch maven test'
