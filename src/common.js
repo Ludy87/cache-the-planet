@@ -982,6 +982,15 @@ function log(message) {
   console.log(`::notice::${message}`);
 }
 
+function progressLog(action, hash, current, total) {
+  const completed = Math.max(0, Math.min(current, total));
+  const percent = total ? Math.floor((completed / total) * 100) : 100;
+  const width = 20;
+  const filled = Math.round((percent / 100) * width);
+  const bar = `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
+  log(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
+}
+
 function summary(title, fields) {
   if (!process.env.GITHUB_STEP_SUMMARY) return;
   const escape = (value) =>
@@ -2192,7 +2201,7 @@ async function downloadBranchObject(repository, reference) {
   const file = path.join(directory, "archive.tar.zst");
   try {
     const output = fs.createWriteStream(file, { flags: "wx" });
-    log(`downloading branch object ${reference.object}: 0/${reference.parts.length} parts (0%)`);
+    progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
     let downloadedBytes = 0;
     for (const part of reference.parts) {
       const result = await gh(`/repos/${repository}/contents/${branchObjectPath(reference.object, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
@@ -2215,7 +2224,7 @@ async function downloadBranchObject(repository, reference) {
       output.write(bytes);
       removeTemporaryFile(partFile);
       downloadedBytes += bytes.length;
-      log(`downloading branch object ${reference.object}: ${part.index + 1}/${reference.parts.length} parts (${Math.floor((downloadedBytes / reference.size) * 100)}%)`);
+      progressLog("📥 Restoring branch object", reference.object, part.index + 1, reference.parts.length);
     }
     output.end();
     await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });
@@ -2234,7 +2243,7 @@ async function uploadObject(repository, file, name, contentType) {
     const size = fs.statSync(file).size;
     const parts = [];
     const totalParts = Math.ceil(size / githubBranchPartBytes);
-    log(`uploading branch object ${hash}: 0/${totalParts} parts (0%)`);
+    progressLog("📤 Saving branch object", hash, 0, totalParts);
     const blobs = [];
     let nextIndex = 0;
     let completedParts = 0;
@@ -2259,7 +2268,7 @@ async function uploadObject(repository, file, name, contentType) {
         blobs[index] = { index, sha: blob.body.sha };
         parts[index] = { index, object: partHash, size: length };
         completedParts += 1;
-        log(`uploading branch object ${hash}: ${completedParts}/${totalParts} parts (${Math.floor((Math.min(completedParts * githubBranchPartBytes, size) / size) * 100)}%)`);
+        progressLog("📤 Saving branch object", hash, completedParts, totalParts);
       }
     };
     await Promise.all(

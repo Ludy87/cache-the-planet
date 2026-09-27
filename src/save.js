@@ -10,6 +10,7 @@ function saveSummary(status, fields = {}) {
 }
 
 async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
+  if (c.storageMode() === "github-branch") return;
   // Every scope is content-addressed, but an upload can still race with
   // another publisher.  In particular, PR artifacts are published by a
   // separate trusted workflow and may be processed more than once.  Remove
@@ -74,6 +75,7 @@ async function replaceOlderReferences(repository, key) {
 }
 
 async function deleteUnreferencedObjects(repository, hashes, manifest) {
+  if (c.storageMode() === "github-branch") return;
   const liveHashes = new Set(
     Object.values(manifest.references || {})
       .map((reference) => reference?.object)
