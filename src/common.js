@@ -227,6 +227,22 @@ function validateManifestReference(reference) {
   if (reference.size !== null && reference.size !== undefined) {
     parsePositiveSafeInteger(reference.size, "manifest reference size");
   }
+  if (reference.parts !== undefined) {
+    if (!Array.isArray(reference.parts) || reference.parts.length < 1)
+      throw new Error("manifest reference parts must be a non-empty array");
+    let total = 0;
+    for (const [index, part] of reference.parts.entries()) {
+      if (!part || typeof part !== "object" || part.index !== index)
+        throw new Error("manifest reference parts must be ordered");
+      validateCacheHash(part.object);
+      const size = parsePositiveSafeInteger(part.size, "manifest part size");
+      if (size > githubBranchPartBytes) throw new Error("manifest part exceeds branch size limit");
+      total += size;
+      if (total > maxCompressedBytes) throw new Error("manifest parts exceed compressed size limit");
+    }
+    if (reference.size !== null && reference.size !== undefined && total !== reference.size)
+      throw new Error("manifest reference size does not match parts");
+  }
   if (
     reference.updated_at !== undefined &&
     !Number.isFinite(Date.parse(reference.updated_at))
@@ -344,9 +360,21 @@ function storageMode() {
   )
     .trim()
     .toLowerCase();
-  if (value !== "github-release" && value !== "sftp")
-    throw new Error("storage must be github-release or sftp");
+  if (!["github-release", "github-branch", "sftp"].includes(value))
+    throw new Error("storage must be github-release, github-branch, or sftp");
   return value;
+}
+
+const githubBranchPartBytes = positiveEnvironmentLimit(
+  "CACHE_BRANCH_PART_BYTES",
+  45 * 1024 ** 2,
+  "branch_part_bytes",
+);
+
+function branchObjectPath(hash, index) {
+  validateCacheHash(hash);
+  if (!Number.isSafeInteger(index) || index < 0) throw new Error("invalid branch object part");
+  return `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
 }
 
 function sftpSettings() {
@@ -1674,6 +1702,17 @@ function invalidateRepositoryCache(repository) {
 
 async function object(repository, hash) {
   validateCacheHash(hash);
+  if (storageMode() === "github-branch") {
+    try {
+      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(hash, 0)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const size = Number(result.body.size);
+      if (!Number.isSafeInteger(size) || size < 1 || size > githubBranchPartBytes) return null;
+      return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true };
+    } catch (error) {
+      if (error.status === 404) return null;
+      throw error;
+    }
+  }
   if (storageMode() === "sftp") {
     try {
       const client = await sftpClient();
@@ -2002,6 +2041,7 @@ async function setRef(repository, key, hash, metadata = {}) {
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
+        ...(metadata.parts ? { parts: metadata.parts } : {}),
       };
       return true;
     },
@@ -2033,6 +2073,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
+        ...(metadata.parts ? { parts: metadata.parts } : {}),
       };
       return true;
     },
@@ -2111,6 +2152,9 @@ async function download(repository, hash) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
   try {
+    if (storageMode() === "github-branch") {
+      throw new Error("branch storage requires the manifest part list");
+    }
     if (storageMode() === "sftp") {
       const client = await sftpClient();
       await client.fastGet(sftpObjectPath(hash), file, {
@@ -2136,7 +2180,66 @@ async function download(repository, hash) {
   }
 }
 
+async function downloadBranchObject(repository, reference) {
+  validateManifestReference(reference);
+  if (!Array.isArray(reference.parts)) throw new Error("branch object has no part list");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-branch-"));
+  const file = path.join(directory, "archive.tar.zst");
+  try {
+    const output = fs.createWriteStream(file, { flags: "wx" });
+    for (const part of reference.parts) {
+      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(reference.object, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const partFile = path.join(directory, `part-${part.index}`);
+      if (result.body.download_url) {
+        await downloadToFile(result.body.download_url, partFile, {
+          maxBytes: githubBranchPartBytes,
+          timeoutMs: githubApiTimeoutMs,
+          headers: authorizationHeaders(),
+        });
+      } else if (typeof result.body.content === "string") {
+        fs.writeFileSync(partFile, Buffer.from(result.body.content.replace(/\s/g, ""), "base64"), { flag: "wx" });
+      } else {
+        throw new Error("branch cache part has no downloadable content");
+      }
+      const bytes = fs.readFileSync(partFile);
+      if (bytes.length !== part.size || `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}` !== part.object)
+        throw new Error("branch cache part integrity check failed");
+      if (bytes.length > githubBranchPartBytes) throw new Error("branch cache part exceeds size limit");
+      output.write(bytes);
+      removeTemporaryFile(partFile);
+    }
+    output.end();
+    await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });
+    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+      throw new Error("branch cache object integrity check failed");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
 async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() === "github-branch") {
+    const hash = digest(file);
+    const size = fs.statSync(file).size;
+    const parts = [];
+    for (let offset = 0, index = 0; offset < size; offset += githubBranchPartBytes, index += 1) {
+      const bytes = fs.readFileSync(file).subarray(offset, Math.min(offset + githubBranchPartBytes, size));
+      const partHash = `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}`;
+      const partPath = branchObjectPath(hash, index);
+      try {
+        await gh(`/repos/${repository}/contents/${partPath}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: `cache: upload ${hash} part ${index}`, content: bytes.toString("base64"), branch: manifestBranch() }),
+        });
+      } catch (error) {
+        if (error.status !== 422) throw error;
+      }
+      parts.push({ index, object: partHash, size: bytes.length });
+    }
+    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts };
+  }
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;
     const uploadUrl = release.upload_url.replace(
@@ -2348,6 +2451,7 @@ module.exports = {
   refName,
   manifestBranch,
   manifestPath,
+  storageMode,
   securityScan,
   makeArchive,
   inspectTar,
@@ -2381,6 +2485,7 @@ module.exports = {
   deleteObject,
   manifestWriteGuard,
   download,
+  downloadBranchObject,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,

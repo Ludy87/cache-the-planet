@@ -86,7 +86,9 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const archive = await c.download(repository, found[1].object);
+    const archive = c.storageMode && c.storageMode() === "github-branch"
+      ? await c.downloadBranchObject(repository, found[1])
+      : await c.download(repository, found[1].object);
     await c.extract(archive);
     const cacheIdentity = (value) => {
       const parts = value.split("/");
