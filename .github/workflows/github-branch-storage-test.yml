@@ -58,6 +58,8 @@ jobs:
         with:
           storage: github-branch
           manifest-branch: cache-data
+          repository: ${{ github.repository }}
+          manifest-path: integration-tests/branch-${{ github.run_id }}-${{ github.run_attempt }}
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: |
@@ -98,6 +100,8 @@ jobs:
         with:
           storage: github-branch
           manifest-branch: cache-data
+          repository: ${{ github.repository }}
+          manifest-path: integration-tests/branch-${{ github.run_id }}-${{ github.run_attempt }}
           token: ${{ github.token }}
           key: |
             npm=${{ needs.save.outputs.run-key }}-npm
@@ -115,3 +119,34 @@ jobs:
           test "$(cat .cache/branch-npm/index.txt)" = 'github-branch npm test'
           test "$(cat .cache/branch-maven/index.txt)" = 'github-branch maven test'
           test "$(stat -c '%s' .cache/branch-npm/cache-500mb.bin)" -eq 524288000
+
+  cleanup:
+    name: Remove this run's branch cache
+    needs: [save, restore]
+    if: ${{ always() && needs.save.result != 'skipped' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Create cleanup token for trusted run
+        if: ${{ github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+
+      - name: Delete isolated test references and parts
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token || github.token }}
+        run: node scripts/cleanup-branch-storage-test.js
