@@ -949,6 +949,15 @@ function log(message) {
   console.log(`::notice::${message}`);
 }
 
+function progressLog(action, hash, current, total) {
+  const completed = Math.max(0, Math.min(current, total));
+  const percent = total ? Math.floor((completed / total) * 100) : 100;
+  const width = 20;
+  const filled = Math.round((percent / 100) * width);
+  const bar = `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
+  log(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
+}
+
 function summary(title, fields) {
   if (!process.env.GITHUB_STEP_SUMMARY) return;
   const escape = (value) =>
@@ -2136,7 +2145,108 @@ async function download(repository, hash) {
   }
 }
 
+async function downloadBranchObject(repository, reference) {
+  validateManifestReference(reference);
+  if (!Array.isArray(reference.parts)) throw new Error("branch object has no part list");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-branch-"));
+  const file = path.join(directory, "archive.tar.zst");
+  try {
+    const output = fs.createWriteStream(file, { flags: "wx" });
+    progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
+    let downloadedBytes = 0;
+    for (const part of reference.parts) {
+      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(reference.object, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const partFile = path.join(directory, `part-${part.index}`);
+      if (result.body.download_url) {
+        await downloadToFile(result.body.download_url, partFile, {
+          maxBytes: githubBranchPartBytes,
+          timeoutMs: githubApiTimeoutMs,
+          headers: authorizationHeaders(),
+        });
+      } else if (typeof result.body.content === "string") {
+        fs.writeFileSync(partFile, Buffer.from(result.body.content.replace(/\s/g, ""), "base64"), { flag: "wx" });
+      } else {
+        throw new Error("branch cache part has no downloadable content");
+      }
+      const bytes = fs.readFileSync(partFile);
+      if (bytes.length !== part.size || `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}` !== part.object)
+        throw new Error("branch cache part integrity check failed");
+      if (bytes.length > githubBranchPartBytes) throw new Error("branch cache part exceeds size limit");
+      output.write(bytes);
+      removeTemporaryFile(partFile);
+      downloadedBytes += bytes.length;
+      progressLog("📥 Restoring branch object", reference.object, part.index + 1, reference.parts.length);
+    }
+    output.end();
+    await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });
+    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+      throw new Error("branch cache object integrity check failed");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
 async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() === "github-branch") {
+    const hash = digest(file);
+    const size = fs.statSync(file).size;
+    const parts = [];
+    const totalParts = Math.ceil(size / githubBranchPartBytes);
+    progressLog("📤 Saving branch object", hash, 0, totalParts);
+    const blobs = [];
+    let nextIndex = 0;
+    let completedParts = 0;
+    const uploadPart = async () => {
+      while (true) {
+        const index = nextIndex++;
+        if (index >= totalParts) return;
+        const offset = index * githubBranchPartBytes;
+        const length = Math.min(githubBranchPartBytes, size - offset);
+        const bytes = fs.openSync(file, "r");
+        const buffer = Buffer.allocUnsafe(length);
+        try {
+          fs.readSync(bytes, buffer, 0, length, offset);
+        } finally {
+          fs.closeSync(bytes);
+        }
+        const partHash = `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`;
+        const blob = await gh(`/repos/${repository}/git/blobs`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: buffer.toString("base64"), encoding: "base64" }),
+        });
+        blobs[index] = { index, sha: blob.body.sha };
+        parts[index] = { index, object: partHash, size: length };
+        completedParts += 1;
+        progressLog("📤 Saving branch object", hash, completedParts, totalParts);
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(githubBranchUploadConcurrency, totalParts) }, uploadPart),
+    );
+    const branch = encodeURIComponent(manifestBranch());
+    const ref = await gh(`/repos/${repository}/git/ref/heads/${branch}`);
+    const commit = await gh(`/repos/${repository}/git/commits/${ref.body.object.sha}`);
+    const tree = await gh(`/repos/${repository}/git/trees`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        base_tree: commit.body.tree.sha,
+        tree: blobs.map(({ index, sha }) => ({
+          path: branchObjectPath(hash, index), mode: "100644", type: "blob", sha,
+        })),
+      }),
+    });
+    const createdCommit = await gh(`/repos/${repository}/git/commits`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `cache: upload ${hash}`, tree: tree.body.sha, parents: [ref.body.object.sha] }),
+    });
+    await gh(`/repos/${repository}/git/refs/heads/${branch}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
+    });
+    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts };
+  }
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;
     const uploadUrl = release.upload_url.replace(
