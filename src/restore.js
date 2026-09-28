@@ -70,9 +70,11 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const asset = downloadDisabled
+    const asset = c.storageMode && c.storageMode() === "github-branch"
       ? await c.probeObject(repository, found[1])
-      : await c.object(repository, found[1].object);
+      : downloadDisabled
+        ? await c.probeObject(repository, found[1])
+        : await c.object(repository, found[1].object);
     if (!asset) {
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
@@ -87,6 +89,13 @@ const { INPUTS } = require("./constants");
         `Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`,
       );
       return;
+    }
+
+    if (c.storageMode && c.storageMode() === "github-branch") {
+      const branchPath = found[1].path
+        ? `${c.manifestPath()}/objects/v1/${found[1].path}/${found[1].object.slice(7)}`
+        : `${c.manifestPath()}/objects/v1/${found[1].object.slice(7)}`;
+      c.log(`📍 Branch cache object path: ${branchPath}/part-000000`);
     }
 
     let archive;

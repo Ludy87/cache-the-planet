@@ -300,7 +300,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           key,
           hash,
           conflictingKey,
-          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}) },
+          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}) },
         );
         const oldHash = current.json.references[conflictingKey]?.object;
         const stillReferenced =
@@ -391,12 +391,13 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       const hash = c.digest(archive.file);
     const existing = await c.object(repository, hash);
     const name = c.assetName(key, hash);
+    let uploaded;
 
     if (!existing) {
       try {
         uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         c.invalidateRepositoryCache(repository);
-        c.log(`uploaded object ${hash}`);
+        c.normalLog(`uploaded object ${hash}`);
       } catch (error) {
         if (error.status !== 422) throw error;
         c.log(`deduplicated object ${hash}`);
@@ -410,7 +411,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
-      ...(uploaded?.parts ? { parts: uploaded.parts } : {}),
+      ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}),
     });
     if (sharedKey || trustedKey) {
       const replacement = await replaceOlderReferences(repository, key);

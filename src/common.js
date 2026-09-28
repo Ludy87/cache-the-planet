@@ -376,10 +376,16 @@ const githubBranchUploadConcurrency = positiveEnvironmentLimit(
   "branch_upload_concurrency",
 );
 
-function branchObjectPath(hash, index) {
+function branchObjectPath(hash, index, directory = null) {
   validateCacheHash(hash);
   if (!Number.isSafeInteger(index) || index < 0) throw new Error("invalid branch object part");
-  return `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
+  return directory
+    ? `${manifestPath()}/objects/v1/${directory}/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`
+    : `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
+}
+
+function branchReferencePath(reference, index) {
+  return branchObjectPath(reference.object, index, reference.path || null);
 }
 
 // Runtime input overrides environment and repository configuration, including
@@ -810,7 +816,7 @@ function scopedKey(
     scope === "auto" ? (pullRequest ? "untrusted" : "trusted") : scope;
   if (selectedScope === "shared") {
     if (pullRequest) {
-      log("scope=shared is mapped to an isolated untrusted PR cache");
+      normalLog("scope=shared is mapped to an isolated untrusted PR cache");
       const number = pullRequestNumber();
       if (!number)
         throw new Error(
@@ -990,13 +996,17 @@ function log(message) {
   console.log(`::notice::${message}`);
 }
 
+function normalLog(message) {
+  console.log(message);
+}
+
 function progressLog(action, hash, current, total) {
   const completed = Math.max(0, Math.min(current, total));
   const percent = total ? Math.floor((completed / total) * 100) : 100;
   const width = 20;
   const filled = Math.round((percent / 100) * width);
   const bar = `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
-  log(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
+  normalLog(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
 }
 
 function summary(title, fields) {
@@ -1766,13 +1776,10 @@ async function probeObject(repository, reference) {
     return asset;
   }
   if (!Array.isArray(reference.parts)) return null;
-  const directory = branchObjectPath(reference.object, 0).replace(/\/part-[^/]+$/, "");
   try {
-    const result = await gh(`/repos/${repository}/contents/${directory}?ref=${encodeURIComponent(manifestBranch())}`);
-    if (!Array.isArray(result.body)) return null;
-    const files = new Map(result.body.map((entry) => [entry.path, entry]));
     for (const part of reference.parts) {
-      const entry = files.get(branchObjectPath(reference.object, part.index));
+      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const entry = result.body;
       if (!entry || entry.type !== "file" || entry.size !== part.size) return null;
     }
     return {
@@ -2127,6 +2134,7 @@ async function setRef(repository, key, hash, metadata = {}) {
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
         ...(metadata.parts ? { parts: metadata.parts } : {}),
+        ...(metadata.path ? { path: metadata.path } : {}),
       };
       return true;
     },
@@ -2159,6 +2167,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
         ...(metadata.parts ? { parts: metadata.parts } : {}),
+        ...(metadata.path ? { path: metadata.path } : {}),
       };
       return true;
     },
@@ -2275,7 +2284,7 @@ async function downloadBranchObject(repository, reference) {
     progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
     let downloadedBytes = 0;
     for (const part of reference.parts) {
-      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(reference.object, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
       const partFile = path.join(directory, `part-${part.index}`);
       if (result.body.download_url) {
         await downloadToFile(result.body.download_url, partFile, {
@@ -2333,6 +2342,7 @@ async function uploadObject(repository, file, name, contentType) {
   if (storageMode() === "github-branch") {
     const hash = digest(file);
     const size = fs.statSync(file).size;
+    const branchPath = name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "");
     const parts = [];
     const totalParts = Math.ceil(size / githubBranchPartBytes);
     progressLog("📤 Saving branch object", hash, 0, totalParts);
@@ -2371,7 +2381,7 @@ async function uploadObject(repository, file, name, contentType) {
       body: JSON.stringify({
         base_tree: commit.body.tree.sha,
         tree: blobs.map(({ index, sha }) => ({
-          path: branchObjectPath(hash, index), mode: "100644", type: "blob", sha,
+          path: branchObjectPath(hash, index, branchPath), mode: "100644", type: "blob", sha,
         })),
       }),
     });
@@ -2383,7 +2393,9 @@ async function uploadObject(repository, file, name, contentType) {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
     });
-    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts };
+    log(`📍 Branch cache object path: ${manifestPath()}/objects/v1/${branchPath}/${hash.slice(7)}/part-000000`);
+    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
+      path: branchPath };
   }
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;
@@ -2597,6 +2609,7 @@ module.exports = {
   sharedRestorePrefix,
   assertTrustedRestoreAllowed,
   log,
+  normalLog,
   summary,
   fail,
   gh,
