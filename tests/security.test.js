@@ -61,6 +61,7 @@ test("security scan allows credential-like source filenames", () => {
     fs.mkdirSync(cargoSource, { recursive: true });
     fs.writeFileSync(path.join(cargoSource, "credential.rs"), "pub struct Credential;\n");
     fs.writeFileSync(path.join(cargoSource, "credentials.java"), "final class Credentials {}\n");
+    fs.writeFileSync(path.join(cargoSource, "sample.rsa"), "example certificate data\n");
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
