@@ -2130,6 +2130,7 @@ async function setRef(repository, key, hash, metadata = {}) {
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
         ...(metadata.parts ? { parts: metadata.parts } : {}),
+        ...(metadata.path ? { path: metadata.path } : {}),
       };
       return true;
     },
@@ -2162,6 +2163,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
         ...(metadata.parts ? { parts: metadata.parts } : {}),
+        ...(metadata.path ? { path: metadata.path } : {}),
       };
       return true;
     },
