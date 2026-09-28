@@ -1369,8 +1369,42 @@ const knownTokenContent =
 const credentialAssignment =
   /(?:password|passwd|secret|api[_-]?key)\s*[:=]\s*(?:"[^"\r\n]{8,}"|'[^'\r\n]{8,}'|[A-Za-z0-9_+/=.-]{20,})/i;
 
-function securityScan(root) {
+function globToRegExp(pattern) {
+  let result = "^";
+  for (let index = 0; index < pattern.length; index += 1) {
+    const character = pattern[index];
+    if (character === "*" && pattern[index + 1] === "*") {
+      result += ".*";
+      index += 1;
+    } else if (character === "*") {
+      result += "[^/]*";
+    } else if (character === "?") {
+      result += "[^/]";
+    } else {
+      result += character.replace(/[\\^$+{}()|.\[\]]/g, "\\$&");
+    }
+  }
+  return new RegExp(`${result}$`, "i");
+}
+
+function isExcludedPath(file, root, patterns, workspace) {
+  if (!patterns.length) return false;
+  const candidates = [
+    path.relative(workspace, file),
+    path.relative(root, file),
+  ].map((value) => value.split(path.sep).join("/").replace(/^\.\//, ""));
+  return patterns.some((pattern) => {
+    const normalized = pattern.replace(/\\/g, "/").replace(/^\.\//, "");
+    const matcher = globToRegExp(normalized);
+    return candidates.some((candidate) => matcher.test(candidate));
+  });
+}
+
+function securityScan(root, options = {}) {
+  const workspace = options.workspace || process.env.GITHUB_WORKSPACE || process.cwd();
+  const excludes = options.excludes || [];
   const walk = (file) => {
+    if (isExcludedPath(file, root, excludes, workspace)) return;
     const stat = fs.lstatSync(file);
     if (stat.isSymbolicLink()) {
       const target = path.resolve(path.dirname(file), fs.readlinkSync(file));
@@ -1461,7 +1495,7 @@ async function makeArchive() {
           `cache path must not contain a virtual environment: ${value}`,
         );
       }
-      securityScan(absolute);
+      securityScan(absolute, { excludes: excludePatterns(), workspace });
       paths.push(relative || ".");
     } else log(`cache path missing: ${value}`);
   }

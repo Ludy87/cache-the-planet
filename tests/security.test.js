@@ -107,6 +107,29 @@ test("security scan allows Cargo sparse index entries from the cargo cache root"
   }
 });
 
+test("security scan skips explicitly excluded credential-like files", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-exclude-"));
+  const file = path.join(workspace, ".cache", "cargo", "registry", "src", "crate", "examples", "sample.rsa");
+  const previousWorkspace = process.env.GITHUB_WORKSPACE;
+  const previousExclude = process.env["INPUT_EXCLUDE"];
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, "-----BEGIN RSA PRIVATE KEY-----\n");
+    process.env.GITHUB_WORKSPACE = workspace;
+    process.env["INPUT_EXCLUDE"] = ".cache/cargo/registry/src/**/examples/*.rsa";
+    assert.doesNotThrow(() => common.securityScan(path.join(workspace, ".cache", "cargo"), {
+      excludes: common.excludePatterns(),
+      workspace,
+    }));
+  } finally {
+    if (previousWorkspace === undefined) delete process.env.GITHUB_WORKSPACE;
+    else process.env.GITHUB_WORKSPACE = previousWorkspace;
+    if (previousExclude === undefined) delete process.env["INPUT_EXCLUDE"];
+    else process.env["INPUT_EXCLUDE"] = previousExclude;
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
   const configPath = path.join(workspace, ".cache-the-planet.json");

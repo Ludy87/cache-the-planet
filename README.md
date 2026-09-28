@@ -305,7 +305,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 | `restore-only` | `true`/`false`; Standard: `false` | Unterdrückt das Speichern und ist für reine Restore-/Post-Save-Szenarien vorgesehen. |
 | `disable-download` | `true`/`false`; Standard: `false` | Prüft die Cache-Existenz ohne Download/Entpacken für `github-branch` und `sftp`. Ein Hit bedeutet nur „vorhanden“, nicht „lokal wiederhergestellt“. Multi-Cache meldet insgesamt nur bei ausschließlich exakten Treffern einen Hit. Speichern bleibt aktiv; `github-release` ist nicht betroffen. |
 | `compression-level` | zstd-Level; Standard: Konfiguration oder `3` | Steuert die Kompressionsgeschwindigkeit gegenüber der Archivgröße. |
-| `exclude` | Zeilenweise Ausschlussmuster | Schließt Dateien beim Speichern aus. Keine Secrets als Ersatz für enge `path`-Angaben behandeln. |
+| `exclude` | Zeilenweise Ausschlussmuster | Schließt Dateien bereits vor dem Security-Scan und beim Speichern aus. Keine Secrets als Ersatz für enge `path`-Angaben behandeln. |
 | `exclude-path` | Zeilenweise Workspace-Dateien | Liest zusätzliche Ausschlussmuster aus vorhandenen Dateien innerhalb des Workspace. |
 | `allow-pr-cache` | `true`/`false`; Standard: `true` | Erlaubt das Speichern isolierter Untrusted-PR-Caches. Forks bleiben schreibgeschützt. |
 
