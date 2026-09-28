@@ -376,10 +376,16 @@ const githubBranchUploadConcurrency = positiveEnvironmentLimit(
   "branch_upload_concurrency",
 );
 
-function branchObjectPath(hash, index) {
+function branchObjectPath(hash, index, directory = null) {
   validateCacheHash(hash);
   if (!Number.isSafeInteger(index) || index < 0) throw new Error("invalid branch object part");
-  return `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
+  return directory
+    ? `${manifestPath()}/objects/v1/${directory}/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`
+    : `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
+}
+
+function branchReferencePath(reference, index) {
+  return branchObjectPath(reference.object, index, reference.path || null);
 }
 
 // Runtime input overrides environment and repository configuration, including
@@ -1766,13 +1772,13 @@ async function probeObject(repository, reference) {
     return asset;
   }
   if (!Array.isArray(reference.parts)) return null;
-  const directory = branchObjectPath(reference.object, 0).replace(/\/part-[^/]+$/, "");
+  const directory = branchReferencePath(reference, 0).replace(/\/(?:[a-f0-9]{64}\/)?part-[^/]+$/, "");
   try {
     const result = await gh(`/repos/${repository}/contents/${directory}?ref=${encodeURIComponent(manifestBranch())}`);
     if (!Array.isArray(result.body)) return null;
     const files = new Map(result.body.map((entry) => [entry.path, entry]));
     for (const part of reference.parts) {
-      const entry = files.get(branchObjectPath(reference.object, part.index));
+      const entry = files.get(branchReferencePath(reference, part.index));
       if (!entry || entry.type !== "file" || entry.size !== part.size) return null;
     }
     return {
@@ -2275,7 +2281,7 @@ async function downloadBranchObject(repository, reference) {
     progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
     let downloadedBytes = 0;
     for (const part of reference.parts) {
-      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(reference.object, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
       const partFile = path.join(directory, `part-${part.index}`);
       if (result.body.download_url) {
         await downloadToFile(result.body.download_url, partFile, {
@@ -2371,7 +2377,7 @@ async function uploadObject(repository, file, name, contentType) {
       body: JSON.stringify({
         base_tree: commit.body.tree.sha,
         tree: blobs.map(({ index, sha }) => ({
-          path: branchObjectPath(hash, index), mode: "100644", type: "blob", sha,
+          path: branchObjectPath(hash, index, name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "")), mode: "100644", type: "blob", sha,
         })),
       }),
     });
@@ -2383,7 +2389,8 @@ async function uploadObject(repository, file, name, contentType) {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
     });
-    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts };
+    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
+      path: name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "") };
   }
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;

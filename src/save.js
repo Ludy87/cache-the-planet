@@ -300,7 +300,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           key,
           hash,
           conflictingKey,
-          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}) },
+          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}) },
         );
         const oldHash = current.json.references[conflictingKey]?.object;
         const stillReferenced =
@@ -410,7 +410,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
-      ...(uploaded?.parts ? { parts: uploaded.parts } : {}),
+      ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}),
     });
     if (sharedKey || trustedKey) {
       const replacement = await replaceOlderReferences(repository, key);
