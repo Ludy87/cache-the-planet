@@ -2275,7 +2275,6 @@ async function downloadBranchObject(repository, reference) {
   const file = path.join(directory, "archive.tar.zst");
   try {
     const output = fs.createWriteStream(file, { flags: "wx" });
-    progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
     let downloadedBytes = 0;
     for (const part of reference.parts) {
       const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
@@ -2298,7 +2297,6 @@ async function downloadBranchObject(repository, reference) {
       output.write(bytes);
       removeTemporaryFile(partFile);
       downloadedBytes += bytes.length;
-      progressLog("📥 Restoring branch object", reference.object, part.index + 1, reference.parts.length);
     }
     output.end();
     await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });
@@ -2339,7 +2337,6 @@ async function uploadObject(repository, file, name, contentType) {
     const branchPath = name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "");
     const parts = [];
     const totalParts = Math.ceil(size / githubBranchPartBytes);
-    progressLog("📤 Saving branch object", hash, 0, totalParts);
     const blobs = [];
     let nextIndex = 0;
     let completedParts = 0;
@@ -2361,7 +2358,6 @@ async function uploadObject(repository, file, name, contentType) {
         blobs[index] = { index, sha: blob.body.sha };
         parts[index] = { index, object: partHash, size: length };
         completedParts += 1;
-        progressLog("📤 Saving branch object", hash, completedParts, totalParts);
       }
     };
     await Promise.all(
