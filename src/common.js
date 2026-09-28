@@ -1772,7 +1772,9 @@ async function probeObject(repository, reference) {
     return asset;
   }
   if (!Array.isArray(reference.parts)) return null;
-  const directory = branchReferencePath(reference, 0).replace(/\/(?:[a-f0-9]{64}\/)?part-[^/]+$/, "");
+  const directory = reference.path
+    ? branchReferencePath(reference, 0).replace(/\/[a-f0-9]{64}\/part-[^/]+$/, "")
+    : branchReferencePath(reference, 0).replace(/\/part-[^/]+$/, "");
   try {
     const result = await gh(`/repos/${repository}/contents/${directory}?ref=${encodeURIComponent(manifestBranch())}`);
     if (!Array.isArray(result.body)) return null;
