@@ -816,7 +816,7 @@ function scopedKey(
     scope === "auto" ? (pullRequest ? "untrusted" : "trusted") : scope;
   if (selectedScope === "shared") {
     if (pullRequest) {
-      log("scope=shared is mapped to an isolated untrusted PR cache");
+      normalLog("scope=shared is mapped to an isolated untrusted PR cache");
       const number = pullRequestNumber();
       if (!number)
         throw new Error(
@@ -2609,6 +2609,7 @@ module.exports = {
   sharedRestorePrefix,
   assertTrustedRestoreAllowed,
   log,
+  normalLog,
   summary,
   fail,
   gh,
