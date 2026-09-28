@@ -70,9 +70,11 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const asset = downloadDisabled
+    const asset = c.storageMode && c.storageMode() === "github-branch"
       ? await c.probeObject(repository, found[1])
-      : await c.object(repository, found[1].object);
+      : downloadDisabled
+        ? await c.probeObject(repository, found[1])
+        : await c.object(repository, found[1].object);
     if (!asset) {
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
