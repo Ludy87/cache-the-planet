@@ -391,6 +391,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       const hash = c.digest(archive.file);
     const existing = await c.object(repository, hash);
     const name = c.assetName(key, hash);
+    let uploaded;
 
     if (!existing) {
       try {
