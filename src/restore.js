@@ -91,6 +91,13 @@ const { INPUTS } = require("./constants");
       return;
     }
 
+    if (c.storageMode && c.storageMode() === "github-branch") {
+      const branchPath = found[1].path
+        ? `${c.manifestPath()}/objects/v1/${found[1].path}/${found[1].object.slice(7)}`
+        : `${c.manifestPath()}/objects/v1/${found[1].object.slice(7)}`;
+      c.log(`📍 Branch cache object path: ${branchPath}/part-000000`);
+    }
+
     let archive;
     if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
       if (!Array.isArray(found[1].parts)) {
