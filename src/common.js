@@ -2339,6 +2339,7 @@ async function uploadObject(repository, file, name, contentType) {
   if (storageMode() === "github-branch") {
     const hash = digest(file);
     const size = fs.statSync(file).size;
+    const branchPath = name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "");
     const parts = [];
     const totalParts = Math.ceil(size / githubBranchPartBytes);
     progressLog("📤 Saving branch object", hash, 0, totalParts);
@@ -2377,7 +2378,7 @@ async function uploadObject(repository, file, name, contentType) {
       body: JSON.stringify({
         base_tree: commit.body.tree.sha,
         tree: blobs.map(({ index, sha }) => ({
-          path: branchObjectPath(hash, index, name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "")), mode: "100644", type: "blob", sha,
+          path: branchObjectPath(hash, index, branchPath), mode: "100644", type: "blob", sha,
         })),
       }),
     });
@@ -2389,8 +2390,9 @@ async function uploadObject(repository, file, name, contentType) {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
     });
+    log(`📍 Branch cache object path: ${manifestPath()}/objects/v1/${branchPath}/${hash.slice(7)}/part-000000`);
     return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
-      path: name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "") };
+      path: branchPath };
   }
   if (storageMode() !== "sftp") {
     const release = (await assets(repository)).release;
