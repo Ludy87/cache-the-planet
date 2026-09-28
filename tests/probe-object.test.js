@@ -20,20 +20,14 @@ test("branch probe checks every part using metadata only", async () => {
       { index: 0, object: hash, size: 10 },
       { index: 1, object: hash, size: 10 },
     ] };
-    const entries = reference.parts.map((part) => ({
-      path: `manifests/objects/v1/${hash.slice(7)}/part-${String(part.index).padStart(6, "0")}`,
-      type: "file", size: part.size,
-    }));
-    let body = entries;
+    let body = { type: "file", size: 10 };
     let status = 200;
     global.fetch = async (url) => {
-      assert.match(String(url), /\/contents\/manifests\/objects\/v1\/a{64}\?ref=cache-data$/);
+      assert.match(String(url), /\/contents\/manifests\/objects\/v1\/a{64}\/part-00000[01]\?ref=cache-data$/);
       return new Response(JSON.stringify(body), { status });
     };
     assert.equal((await c.probeObject("owner/repo", reference)).size, 20);
-    body = entries.slice(0, 1);
-    assert.equal(await c.probeObject("owner/repo", reference), null);
-    body = entries.map((entry) => ({ ...entry, size: 11 }));
+    body = { type: "file", size: 11 };
     assert.equal(await c.probeObject("owner/repo", reference), null);
     status = 404;
     assert.equal(await c.probeObject("owner/repo", reference), null);
