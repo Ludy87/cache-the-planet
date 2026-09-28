@@ -1447,6 +1447,7 @@ function securityScan(root, options = {}) {
           packageSourcePath.test(relative))) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
+        !packageSourcePath.test(relative) &&
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
     ) {
