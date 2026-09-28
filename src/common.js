@@ -996,13 +996,17 @@ function log(message) {
   console.log(`::notice::${message}`);
 }
 
+function normalLog(message) {
+  console.log(message);
+}
+
 function progressLog(action, hash, current, total) {
   const completed = Math.max(0, Math.min(current, total));
   const percent = total ? Math.floor((completed / total) * 100) : 100;
   const width = 20;
   const filled = Math.round((percent / 100) * width);
   const bar = `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
-  log(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
+  normalLog(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
 }
 
 function summary(title, fields) {
