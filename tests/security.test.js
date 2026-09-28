@@ -54,6 +54,29 @@ test("security scan allows token-named stylesheet files", () => {
   }
 });
 
+test("security scan allows credential-like source filenames", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-source-name-"));
+  try {
+    const cargoSource = path.join(root, "registry", "src", "crate", "src");
+    fs.mkdirSync(cargoSource, { recursive: true });
+    fs.writeFileSync(path.join(cargoSource, "credential.rs"), "pub struct Credential;\n");
+    fs.writeFileSync(path.join(cargoSource, "credentials.java"), "final class Credentials {}\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan still rejects credential files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-credential-file-"));
+  try {
+    fs.writeFileSync(path.join(root, ".git-credentials"), "https://user:password@example.invalid\n");
+    assert.throws(() => common.securityScan(root), /sensitive-looking file/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows Cargo crate archives with token-like names", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-crate-"));
   try {

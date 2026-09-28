@@ -1370,6 +1370,7 @@ const packageMetadataPath =
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath =
   /(?:^|\/)(?:cargo\/)?registry\/index\/[^/]+\/\.cache(?:\/|$)/i;
+const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1441,7 +1442,9 @@ function securityScan(root, options = {}) {
     }
     if (
       sensitiveDirectory.test(relative) ||
-      sensitiveName.test(path.basename(file)) ||
+      (sensitiveName.test(path.basename(file)) &&
+        !(sourceFileName.test(path.basename(file)) &&
+          packageSourcePath.test(relative))) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
         !sourceFileName.test(path.basename(file)) &&
