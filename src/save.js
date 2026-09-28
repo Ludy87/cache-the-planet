@@ -396,7 +396,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       try {
         uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         c.invalidateRepositoryCache(repository);
-        c.log(`uploaded object ${hash}`);
+        c.normalLog(`uploaded object ${hash}`);
       } catch (error) {
         if (error.status !== 422) throw error;
         c.log(`deduplicated object ${hash}`);
