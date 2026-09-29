@@ -19,7 +19,7 @@ permissions:
 env:
   CACHE_PATH: .cache/github-artifact
   CACHE_KEY: github-artifact-integration-v1
-  # CACHE_BRANCH_PART_BYTES: 16
+  CACHE_BRANCH_PART_BYTES: 16
 
 jobs:
   save-cache:
@@ -74,7 +74,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Restore cache from GitHub artifact
