@@ -1032,19 +1032,20 @@ function progressLog(action, hash, current, total) {
 }
 
 function summary(title, fields) {
-  if (!process.env.GITHUB_STEP_SUMMARY) return;
-  const escape = (value) =>
-    String(value ?? "—")
-      .replace(/\\/g, "\\\\")
-      .replace(/\|/g, "\\|")
-      .replace(/\r?\n/g, " ");
-  const rows = Object.entries(fields)
-    .map(([name, value]) => `| ${escape(name)} | ${escape(value)} |`)
-    .join("\n");
-  fs.appendFileSync(
-    process.env.GITHUB_STEP_SUMMARY,
-    `### ${escape(title)}\n\n| Feld | Wert |\n| --- | --- |\n${rows}\n\n`,
-  );
+  return;
+  // if (!process.env.GITHUB_STEP_SUMMARY) return;
+  // const escape = (value) =>
+  //   String(value ?? "—")
+  //     .replace(/\\/g, "\\\\")
+  //     .replace(/\|/g, "\\|")
+  //     .replace(/\r?\n/g, " ");
+  // const rows = Object.entries(fields)
+  //   .map(([name, value]) => `| ${escape(name)} | ${escape(value)} |`)
+  //   .join("\n");
+  // fs.appendFileSync(
+  //   process.env.GITHUB_STEP_SUMMARY,
+  //   `### ${escape(title)}\n\n| Feld | Wert |\n| --- | --- |\n${rows}\n\n`,
+  // );
 }
 
 function fail(error, strictInput = INPUTS.STRICT) {
