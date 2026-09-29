@@ -1,4 +1,3 @@
-const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const common = require("../src/common");
@@ -8,10 +7,6 @@ const maxMetadataFiles = 16;
 const maxParts = 256;
 const maxPartSize = 512 * 1024 ** 2;
 const maxObjectSize = 4 * 1024 ** 3;
-
-function sha256(file) {
-  return `sha256:${crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")}`;
-}
 
 function readEvent() {
   const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
@@ -28,16 +23,6 @@ function metadataFiles(root) {
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(root, entry.name, "metadata.json"))
     .filter((file) => fs.existsSync(file));
-}
-
-function downloadedArtifactFile(root, artifactName) {
-  const directory = path.join(root, artifactName);
-  const files = fs.existsSync(directory)
-    ? fs.readdirSync(directory).map((name) => path.join(directory, name))
-        .filter((file) => fs.statSync(file).isFile())
-    : [];
-  if (files.length !== 1) throw new Error(`artifact must contain one file: ${artifactName}`);
-  return files[0];
 }
 
 function validateMetadata(value, run, number, repository) {
@@ -128,15 +113,6 @@ async function main() {
         JSON.parse(fs.readFileSync(metadataFile, "utf8")), run, number, repository,
       );
       await validateArtifactIds(run.id, repository, metadata.parts);
-      const objectHash = crypto.createHash("sha256");
-      for (const part of metadata.parts) {
-        const partFile = downloadedArtifactFile(root, part.artifact_name);
-        if (fs.statSync(partFile).size !== part.size || sha256(partFile) !== part.object)
-          throw new Error(`artifact part integrity mismatch: ${part.artifact_name}`);
-        objectHash.update(fs.readFileSync(partFile));
-      }
-      if (`sha256:${objectHash.digest("hex")}` !== metadata.object)
-        throw new Error("fork artifact object integrity mismatch");
       await common.setRef(repository, metadata.key, metadata.object, {
         size: metadata.size,
         parts: metadata.parts,

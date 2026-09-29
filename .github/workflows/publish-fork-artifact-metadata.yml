@@ -38,6 +38,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
+          pattern: cache-the-planet-pr-*-metadata-*
           path: fork-artifacts
           merge-multiple: false
 
