@@ -19,6 +19,7 @@ function readEvent() {
 }
 
 function metadataFiles(root) {
+  if (!fs.existsSync(root)) return [];
   return fs.readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(root, entry.name, "metadata.json"))
