@@ -87,15 +87,20 @@ const { INPUTS } = require("./constants");
     };
     const deleteArtifactReferences = async (referencesToDelete, liveReferences) => {
       if (c.storageMode() !== "github-artifact" || dryRun) return 0;
+      const artifactIds = (reference) =>
+        Array.isArray(reference.parts)
+          ? reference.parts.map((part) => part.artifact_id)
+          : [reference.artifact_id];
       const liveArtifactIds = new Set(
-        Object.values(liveReferences).map((reference) => reference.artifact_id),
+        Object.values(liveReferences).flatMap(artifactIds),
       );
       let deleted = 0;
       const attempted = new Set();
       for (const reference of referencesToDelete) {
-        if (liveArtifactIds.has(reference.artifact_id)) continue;
-        if (attempted.has(reference.artifact_id)) continue;
-        attempted.add(reference.artifact_id);
+        const ids = artifactIds(reference);
+        if (ids.some((id) => liveArtifactIds.has(id))) continue;
+        if (ids.some((id) => attempted.has(id))) continue;
+        ids.forEach((id) => attempted.add(id));
         if (await c.deleteArtifactReference(reference)) deleted += 1;
       }
       return deleted;

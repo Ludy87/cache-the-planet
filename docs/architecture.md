@@ -15,9 +15,10 @@ Referenzen:
 4. Die Action prüft, lädt und entpackt Assets direkt, ohne das Repository zu
    klonen oder große Dateien in der Git-Historie abzulegen.
 
-Für `github-artifact` verweist die Manifest-Referenz zusätzlich auf ein
-GitHub-Actions-Artefakt und den ursprünglichen Workflow-Run. Die Nutzdaten
-liegen nicht im Git-Tree; Restore lädt sie aus diesem Run und validiert die
+Für `github-artifact` verweist die Manifest-Referenz zusätzlich auf ein oder
+mehrere GitHub-Actions-Artefakte und die ursprünglichen Workflow-Runs. Große
+Archive werden in begrenzte Teile zerlegt. Die Nutzdaten liegen nicht im
+Git-Tree; Restore validiert jeden Teil und anschließend die zusammengesetzten
 Archivbytes weiterhin per SHA-256.
 
 ## Speichern

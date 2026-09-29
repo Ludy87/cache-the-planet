@@ -100,7 +100,9 @@ const { INPUTS } = require("./constants");
 
     let archive;
     if (!downloadDisabled && c.storageMode && c.storageMode() === "github-artifact") {
-      archive = await c.downloadArtifactObject(found[1]);
+      archive = found[1].parts
+        ? await c.downloadArtifactParts(found[1])
+        : await c.downloadArtifactObject(found[1]);
     } else if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
       if (!Array.isArray(found[1].parts)) {
         c.setOutput("cache-hit", "false");

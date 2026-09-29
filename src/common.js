@@ -1797,6 +1797,11 @@ function invalidateRepositoryCache(repository) {
 async function probeObject(repository, reference) {
   validateManifestReference(reference);
   if (storageMode() === "github-artifact") {
+    if (Array.isArray(reference.parts)) {
+      if (reference.parts.some((part) => !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)) return null;
+      return { id: reference.object, name: reference.artifact_name || reference.object,
+        size: reference.size, artifact: true, parts: reference.parts };
+    }
     if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1) return null;
     return { id: reference.artifact_id, name: reference.artifact_name || String(reference.artifact_id),
       size: reference.size, artifact: true };
@@ -2234,6 +2239,13 @@ async function deleteObject(repository, hash, invalidate = true) {
 
 async function deleteArtifactReference(reference) {
   if (storageMode() !== "github-artifact") return false;
+  if (Array.isArray(reference?.parts)) {
+    let deleted = false;
+    for (const part of reference.parts) {
+      if (await deleteArtifactReference(part)) deleted = true;
+    }
+    return deleted;
+  }
   if (!Number.isSafeInteger(reference?.artifact_id) || reference.artifact_id < 1)
     return false;
   if (!Number.isSafeInteger(reference?.workflow_run_id) || reference.workflow_run_id < 1)
@@ -2353,6 +2365,56 @@ async function downloadArtifactObject(reference) {
   }
 }
 
+async function downloadArtifactPart(part, directory) {
+  if (!Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)
+    throw new Error("artifact part has no valid artifact id");
+  if (!Number.isSafeInteger(part.workflow_run_id) || part.workflow_run_id < 1)
+    throw new Error("artifact part has no valid workflow run id");
+  if (typeof part.artifact_name !== "string" || !part.artifact_name)
+    throw new Error("artifact part has no valid artifact name");
+  const partDirectory = path.join(directory, `part-${part.index}`);
+  fs.mkdirSync(partDirectory);
+  await (await artifactClient()).downloadArtifact(part.artifact_id, {
+    path: partDirectory,
+    findBy: artifactFindBy(part.workflow_run_id),
+  });
+  const files = fs.readdirSync(partDirectory);
+  if (files.length !== 1) throw new Error("artifact part must contain exactly one file");
+  const file = path.join(partDirectory, files[0]);
+  if (fs.statSync(file).size !== part.size)
+    throw new Error("artifact part size mismatch");
+  if (digest(file) !== part.object)
+    throw new Error("artifact part integrity check failed: sha256 mismatch");
+  return file;
+}
+
+async function downloadArtifactParts(reference) {
+  validateManifestReference(reference);
+  if (!Array.isArray(reference.parts))
+    throw new Error("artifact object has no part list");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
+  const file = path.join(directory, "archive.tar.zst");
+  try {
+    const output = fs.createWriteStream(file, { flags: "wx" });
+    for (const part of reference.parts) {
+      const partFile = await downloadArtifactPart(part, directory);
+      output.write(fs.readFileSync(partFile));
+      removeTemporaryFile(path.dirname(partFile));
+    }
+    output.end();
+    await new Promise((resolve, reject) => {
+      output.once("finish", resolve);
+      output.once("error", reject);
+    });
+    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+      throw new Error("artifact cache object integrity check failed");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
 async function downloadBranchObject(repository, reference) {
   validateManifestReference(reference);
   if (!Array.isArray(reference.parts)) throw new Error("branch object has no part list");
@@ -2419,17 +2481,43 @@ async function uploadBranchBlob(repository, buffer) {
 
 async function uploadObject(repository, file, name, contentType) {
   if (storageMode() === "github-artifact") {
-    const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}`.slice(0, 180);
-    const result = await (await artifactClient()).uploadArtifact(
-      artifactName,
-      [file],
-      path.dirname(file),
-      { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
-    );
-    if (!Number.isSafeInteger(result.id) || result.id < 1)
-      throw new Error("artifact upload returned no valid artifact id");
-    return { id: result.id, name: artifactName, size: fs.statSync(file).size,
-      artifact: true, artifactName, digest: result.digest };
+    const size = fs.statSync(file).size;
+    const hash = digest(file);
+    const totalParts = Math.ceil(size / githubBranchPartBytes);
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-upload-"));
+    const parts = [];
+    try {
+      for (let index = 0; index < totalParts; index += 1) {
+        const offset = index * githubBranchPartBytes;
+        const length = Math.min(githubBranchPartBytes, size - offset);
+        const partFile = path.join(directory, `part-${String(index).padStart(6, "0")}.bin`);
+        const descriptor = fs.openSync(file, "r");
+        const buffer = Buffer.allocUnsafe(length);
+        try { fs.readSync(descriptor, buffer, 0, length, offset); }
+        finally { fs.closeSync(descriptor); }
+        fs.writeFileSync(partFile, buffer, { flag: "wx" });
+        const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}-part-${String(index).padStart(6, "0")}`.slice(0, 180);
+        const result = await (await artifactClient()).uploadArtifact(
+          artifactName,
+          [partFile],
+          directory,
+          { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
+        );
+        if (!Number.isSafeInteger(result.id) || result.id < 1)
+          throw new Error("artifact upload returned no valid artifact id");
+        parts.push({
+          index,
+          object: `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`,
+          size: length,
+          artifact_id: result.id,
+          artifact_name: artifactName,
+          workflow_run_id: Number(process.env.GITHUB_RUN_ID),
+        });
+      }
+      return { id: parts[0].artifact_id, name: parts[0].artifact_name, size, artifact: true, parts };
+    } finally {
+      removeTemporaryFile(directory);
+    }
   }
   if (storageMode() === "github-branch") {
     const hash = digest(file);
@@ -2753,6 +2841,7 @@ module.exports = {
   download,
   downloadBranchObject,
   downloadArtifactObject,
+  downloadArtifactParts,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
