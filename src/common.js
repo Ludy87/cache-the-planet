@@ -1727,7 +1727,7 @@ async function release(repository) {
             name: "Cache objects (v1)",
             draft: false,
             prerelease: false,
-            make_latest: false,
+            make_latest: "false",
           }),
         })
       ).body;
