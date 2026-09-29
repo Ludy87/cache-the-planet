@@ -2497,12 +2497,28 @@ async function uploadObject(repository, file, name, contentType) {
         finally { fs.closeSync(descriptor); }
         fs.writeFileSync(partFile, buffer, { flag: "wx" });
         const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}-part-${String(index).padStart(6, "0")}`.slice(0, 180);
-        const result = await (await artifactClient()).uploadArtifact(
-          artifactName,
-          [partFile],
-          directory,
-          { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
-        );
+        let result;
+        try {
+          result = await (await artifactClient()).uploadArtifact(
+            artifactName,
+            [partFile],
+            directory,
+            { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
+          );
+        } catch (error) {
+          if (error.status !== 409)
+            throw error;
+          const artifacts = (await gh(
+            `/repos/${repository}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
+          )).body.artifacts || [];
+          const existing = artifacts.find(
+            (artifact) => !artifact.expired && artifact.name === artifactName,
+          );
+          if (!existing || !Number.isSafeInteger(existing.id) || existing.id < 1)
+            throw error;
+          result = { id: existing.id };
+          log(`reusing existing artifact ${artifactName}: ${existing.id}`);
+        }
         if (!Number.isSafeInteger(result.id) || result.id < 1)
           throw new Error("artifact upload returned no valid artifact id");
         parts.push({
