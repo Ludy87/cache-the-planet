@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const common = require("../src/common");
+const { resolveWorkflowPullRequest } = require("./publish-pr-cache-artifacts");
 
 const maxMetadataFiles = 16;
 const maxParts = 256;
@@ -95,8 +96,6 @@ async function validateArtifactIds(runId, repository, parts) {
 async function main() {
   const run = readEvent();
   const repository = process.env.GITHUB_REPOSITORY;
-  const number = run.pull_requests?.[0]?.number || process.env.PR_NUMBER;
-  if (!number) throw new Error("pull request number is missing");
   const root = process.env.FORK_ARTIFACT_METADATA_DIR;
   if (!root) throw new Error("FORK_ARTIFACT_METADATA_DIR is required");
   const files = metadataFiles(root);
@@ -105,6 +104,18 @@ async function main() {
     return;
   }
   if (files.length > maxMetadataFiles) throw new Error("too many fork metadata artifacts");
+  const metadataNumbers = new Set();
+  for (const metadataFile of files) {
+    const value = JSON.parse(fs.readFileSync(metadataFile, "utf8"));
+    if (!Number.isSafeInteger(value.pull_request) || value.pull_request < 1)
+      throw new Error("fork cache metadata has an invalid pull request number");
+    metadataNumbers.add(value.pull_request);
+  }
+  const number = run.pull_requests?.[0]?.number || process.env.PR_NUMBER ||
+    (metadataNumbers.size === 1 ? [...metadataNumbers][0] : undefined);
+  if (!number) throw new Error("pull request number is missing");
+  if (!run.pull_requests?.length)
+    await resolveWorkflowPullRequest(run, repository, number, run.head_sha);
   const eventFile = path.join(process.env.RUNNER_TEMP || root, "fork-publisher-event.json");
   fs.writeFileSync(eventFile, JSON.stringify({ pull_request: { number } }));
   process.env.GITHUB_EVENT_NAME = "pull_request";
