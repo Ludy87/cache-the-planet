@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const crypto = require("crypto");
-const { DefaultArtifactClient } = require("@actions/artifact");
 const cp = require("child_process");
 const { Readable, Transform } = require("stream");
 const { pipeline } = require("stream/promises");
@@ -12,6 +11,7 @@ const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
 let githubClientPromise;
 let sftpClientPromise;
+let artifactClientPromise;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -373,8 +373,13 @@ function artifactRetentionDays() {
   return value;
 }
 
-function artifactClient() {
-  return new DefaultArtifactClient();
+async function artifactClient() {
+  if (!artifactClientPromise) {
+    artifactClientPromise = import("@actions/artifact").then(
+      ({ DefaultArtifactClient }) => new DefaultArtifactClient(),
+    );
+  }
+  return artifactClientPromise;
 }
 
 function artifactFindBy(workflowRunId) {
@@ -2315,7 +2320,7 @@ async function downloadArtifactObject(reference) {
     throw new Error("artifact reference has no valid workflow run id");
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
   try {
-    await artifactClient().downloadArtifact(reference.artifact_id, {
+    await (await artifactClient()).downloadArtifact(reference.artifact_id, {
       path: directory,
       findBy: artifactFindBy(reference.workflow_run_id),
     });
@@ -2400,7 +2405,7 @@ async function uploadBranchBlob(repository, buffer) {
 async function uploadObject(repository, file, name, contentType) {
   if (storageMode() === "github-artifact") {
     const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}`.slice(0, 180);
-    const result = await artifactClient().uploadArtifact(
+    const result = await (await artifactClient()).uploadArtifact(
       artifactName,
       [file],
       path.dirname(file),
