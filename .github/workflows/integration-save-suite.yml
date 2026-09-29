@@ -94,7 +94,7 @@ jobs:
     permissions:
       contents: write
     env:
-      NPM_CACHE: ${{ github.workspace }}/.cache/npm
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -127,7 +127,7 @@ jobs:
           package-manager-cache: false
 
       - name: Configure npm cache directory
-        run: npm config set cache "$NPM_CACHE" --global
+        run: npm config set cache "$NPM_CONFIG_CACHE" --global
 
       - name: Install npm dependencies
         run: npm ci --no-audit --no-fund
@@ -177,7 +177,7 @@ jobs:
     permissions:
       contents: write
     env:
-      NPM_CACHE: ${{ github.workspace }}/.cache/npm
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -237,6 +237,16 @@ jobs:
     secrets:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  github-artifact-storage-save:
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    uses: $/.github/workflows/github-artifact-storage-test.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+      actions: read
 
   docker-qemu-save-cache:
     needs: [node-save-cache]

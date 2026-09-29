@@ -40,6 +40,7 @@ const INPUTS = Object.freeze({
   STRICT_SAVE: "strict-save",
   UNTRUSTED_TTL_HOURS: "untrusted-ttl-hours",
   VERSION: "version",
+  ARTIFACT_RETENTION_DAYS: "artifact-retention-days",
 });
 
 const OUTPUTS = Object.freeze({

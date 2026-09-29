@@ -18,7 +18,7 @@ on:
         required: false
 
 env:
-  NPM_CACHE: ${{ github.workspace }}/.cache/npm
+  NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
   MAVEN_CACHE: ${{ github.workspace }}/.cache/maven-java17
 
 permissions:
@@ -129,7 +129,7 @@ jobs:
 
       - name: Configure cache directories
         run: |
-          npm config set cache "$NPM_CACHE" --global
+          npm config set cache "$NPM_CONFIG_CACHE" --global
           mkdir -p "$MAVEN_CACHE"
 
       - name: Install npm dependencies

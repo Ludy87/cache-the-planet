@@ -42,6 +42,14 @@ verwendet `sftp`. Alte GitHub-Manifeste direkt unter `manifests/v1/` werden
 beim Lesen als Legacy-Fallback unterstützt; neue Schreibvorgänge verwenden
 immer den storage-spezifischen Pfad. SFTP liest keine GitHub-Referenzen.
 
+`storage: github-artifact` speichert die Archivdatei als GitHub-Actions-Artefakt.
+Die Manifest-Referenz enthält dafür `artifact_id`, `artifact_name` und
+`workflow_run_id` zusätzlich zu Hash und Größe. Große Archive werden in
+mehrere Artefakt-Teile zerlegt; jedes `parts`-Element enthält zusätzlich
+`artifact_id`, `artifact_name` und `workflow_run_id`. Restore prüft jeden Teil
+und anschließend den Hash des zusammengesetzten Archivs. Cross-Run-Restores
+benötigen ein Token mit `actions: read`.
+
 `storage: github-branch` verwendet ebenfalls den GitHub-Storage-Namespace,
 legt die Objektteile aber als Dateien unter
 `<manifest-path>/objects/v1/<sha256>/part-<index>` im Manifest-Branch ab.

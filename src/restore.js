@@ -70,7 +70,7 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const asset = c.storageMode && c.storageMode() === "github-branch"
+    const asset = c.storageMode && ["github-branch", "github-artifact"].includes(c.storageMode())
       ? await c.probeObject(repository, found[1])
       : downloadDisabled
         ? await c.probeObject(repository, found[1])
@@ -99,7 +99,11 @@ const { INPUTS } = require("./constants");
     }
 
     let archive;
-    if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
+    if (!downloadDisabled && c.storageMode && c.storageMode() === "github-artifact") {
+      archive = found[1].parts
+        ? await c.downloadArtifactParts(found[1])
+        : await c.downloadArtifactObject(found[1]);
+    } else if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
       if (!Array.isArray(found[1].parts)) {
         c.setOutput("cache-hit", "false");
         c.setOutput("matched-key", "");

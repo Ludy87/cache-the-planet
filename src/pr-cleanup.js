@@ -53,6 +53,29 @@ const { INPUTS } = require("./constants");
         (reference) => reference.object,
       ),
     );
+    if (c.storageMode() === "github-artifact") {
+      const artifactIds = (reference) =>
+        Array.isArray(reference.parts)
+          ? reference.parts.map((part) => part.artifact_id)
+          : [reference.artifact_id];
+      const liveArtifactIds = new Set(
+        Object.values(updatedManifest.json.references).flatMap(artifactIds),
+      );
+      const deletedArtifactIds = new Set();
+      for (const [, reference] of removed) {
+        const ids = artifactIds(reference);
+        if (
+          ids.some((id) => liveArtifactIds.has(id)) ||
+          ids.some((id) => deletedArtifactIds.has(id))
+        )
+          continue;
+        if (await c.deleteArtifactReference(reference)) {
+          ids.forEach((id) => deletedArtifactIds.add(id));
+          deletedAssets += ids.length;
+          console.log(`deleted PR cache artifact ${reference.artifact_name}`);
+        }
+      }
+    }
     const assetPrefix = prefix.replace(/[^A-Za-z0-9._-]+/g, "-");
     const assets = (await c.assets(repository)).assets;
     for (const asset of assets.filter((item) =>

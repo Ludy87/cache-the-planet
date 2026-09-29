@@ -9,6 +9,12 @@ function saveSummary(status, fields = {}) {
   });
 }
 
+async function objectForReference(repository, reference) {
+  if (c.storageMode() === "github-artifact")
+    return c.probeObject(repository, reference);
+  return c.object(repository, reference.object);
+}
+
 async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
   if (c.storageMode() === "github-branch") return;
   // Every scope is content-addressed, but an upload can still race with
@@ -209,10 +215,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       }
     }
     if (existingReference?.object) {
-      const existingAsset = await c.object(
-        repository,
-        existingReference.object,
-      );
+      const existingAsset = await objectForReference(repository, existingReference);
       if (!existingAsset) {
         c.log(
           `orphaned cache reference detected for key=${key}; recreating asset`,
@@ -300,7 +303,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           key,
           hash,
           conflictingKey,
-          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}) },
+          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}), ...(uploaded?.artifact ? { artifact_id: uploaded.id, artifact_name: uploaded.artifactName, workflow_run_id: Number(process.env.GITHUB_RUN_ID) } : {}) },
         );
         const oldHash = current.json.references[conflictingKey]?.object;
         const stillReferenced =
@@ -344,7 +347,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const relatedKey = c.scopeCounterpartKey(key);
     const relatedReference = relatedKey && current.json.references[relatedKey];
     if (relatedReference?.object) {
-      const relatedAsset = await c.object(repository, relatedReference.object);
+      const relatedAsset = await objectForReference(repository, relatedReference);
       if (relatedAsset) {
         let updated = await c.setRef(repository, key, relatedReference.object, {
           size: relatedReference.size,
@@ -411,7 +414,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
-      ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}),
+      ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}), ...(uploaded?.artifact ? { artifact_id: uploaded.id, artifact_name: uploaded.artifactName, workflow_run_id: Number(process.env.GITHUB_RUN_ID) } : {}),
     });
     if (sharedKey || trustedKey) {
       const replacement = await replaceOlderReferences(repository, key);

@@ -11,6 +11,7 @@ const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
 let githubClientPromise;
 let sftpClientPromise;
+let artifactClientPromise;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -360,9 +361,30 @@ function storageMode() {
   )
     .trim()
     .toLowerCase();
-  if (!["github-release", "github-branch", "sftp"].includes(value))
-    throw new Error("storage must be github-release, github-branch, or sftp");
+  if (!["github-release", "github-branch", "github-artifact", "sftp"].includes(value))
+    throw new Error("storage must be github-release, github-branch, github-artifact, or sftp");
   return value;
+}
+
+function artifactRetentionDays() {
+  const value = Number(input(INPUTS.ARTIFACT_RETENTION_DAYS, process.env.CACHE_ARTIFACT_RETENTION_DAYS || "0"));
+  if (!Number.isInteger(value) || value < 0 || value > 90)
+    throw new Error("artifact-retention-days must be an integer from 0 to 90");
+  return value;
+}
+
+async function artifactClient() {
+  if (!artifactClientPromise) {
+    artifactClientPromise = import("@actions/artifact").then(
+      ({ DefaultArtifactClient }) => new DefaultArtifactClient(),
+    );
+  }
+  return artifactClientPromise;
+}
+
+function artifactFindBy(workflowRunId) {
+  const [repositoryOwner, repositoryName] = cacheRepository().split("/");
+  return { workflowRunId, repositoryOwner, repositoryName, token: token() };
 }
 
 const githubBranchPartBytes = positiveEnvironmentLimit(
@@ -396,7 +418,7 @@ function cacheDownloadDisabled() {
   const normalized = String(value).trim().toLowerCase();
   if (!["true", "false"].includes(normalized))
     throw new Error("disable-download must be true or false");
-  return normalized === "true" && ["github-branch", "sftp"].includes(storageMode());
+  return normalized === "true" && ["github-branch", "github-artifact", "sftp"].includes(storageMode());
 }
 
 function sftpSettings() {
@@ -1774,6 +1796,16 @@ function invalidateRepositoryCache(repository) {
 // guarantee; the normal download path still verifies hashes before extraction.
 async function probeObject(repository, reference) {
   validateManifestReference(reference);
+  if (storageMode() === "github-artifact") {
+    if (Array.isArray(reference.parts)) {
+      if (reference.parts.some((part) => !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)) return null;
+      return { id: reference.object, name: reference.artifact_name || reference.object,
+        size: reference.size, artifact: true, parts: reference.parts };
+    }
+    if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1) return null;
+    return { id: reference.artifact_id, name: reference.artifact_name || String(reference.artifact_id),
+      size: reference.size, artifact: true };
+  }
   if (storageMode() !== "github-branch") {
     const asset = await object(repository, reference.object);
     if (!asset || (reference.size != null && asset.size !== reference.size)) return null;
@@ -2139,6 +2171,9 @@ async function setRef(repository, key, hash, metadata = {}) {
         size: Number.isFinite(metadata.size) ? metadata.size : null,
         ...(metadata.parts ? { parts: metadata.parts } : {}),
         ...(metadata.path ? { path: metadata.path } : {}),
+        ...(metadata.artifact_id ? { artifact_id: metadata.artifact_id } : {}),
+        ...(metadata.artifact_name ? { artifact_name: metadata.artifact_name } : {}),
+        ...(metadata.workflow_run_id ? { workflow_run_id: metadata.workflow_run_id } : {}),
       };
       return true;
     },
@@ -2172,6 +2207,9 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
         size: Number.isFinite(metadata.size) ? metadata.size : null,
         ...(metadata.parts ? { parts: metadata.parts } : {}),
         ...(metadata.path ? { path: metadata.path } : {}),
+        ...(metadata.artifact_id ? { artifact_id: metadata.artifact_id } : {}),
+        ...(metadata.artifact_name ? { artifact_name: metadata.artifact_name } : {}),
+        ...(metadata.workflow_run_id ? { workflow_run_id: metadata.workflow_run_id } : {}),
       };
       return true;
     },
@@ -2196,6 +2234,28 @@ async function deleteObject(repository, hash, invalidate = true) {
     method: "DELETE",
   });
   if (invalidate) invalidateRepositoryCache(repository);
+  return true;
+}
+
+async function deleteArtifactReference(reference) {
+  if (storageMode() !== "github-artifact") return false;
+  if (Array.isArray(reference?.parts)) {
+    let deleted = false;
+    for (const part of reference.parts) {
+      if (await deleteArtifactReference(part)) deleted = true;
+    }
+    return deleted;
+  }
+  if (!Number.isSafeInteger(reference?.artifact_id) || reference.artifact_id < 1)
+    return false;
+  if (!Number.isSafeInteger(reference?.workflow_run_id) || reference.workflow_run_id < 1)
+    return false;
+  if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
+    return false;
+  await (await artifactClient()).deleteArtifact(
+    reference.artifact_name,
+    artifactFindBy(reference.workflow_run_id),
+  );
   return true;
 }
 
@@ -2250,6 +2310,8 @@ async function download(repository, hash) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
   try {
+    if (storageMode() === "github-artifact")
+      throw new Error("artifact storage requires the manifest artifact reference");
     if (storageMode() === "github-branch") {
       throw new Error("branch storage requires the manifest part list");
     }
@@ -2271,6 +2333,81 @@ async function download(repository, hash) {
     }
     if (digest(file) !== hash)
       throw new Error("integrity check failed: sha256 mismatch");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
+async function downloadArtifactObject(reference) {
+  if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1)
+    throw new Error("artifact reference has no valid artifact id");
+  if (!Number.isSafeInteger(reference.workflow_run_id) || reference.workflow_run_id < 1)
+    throw new Error("artifact reference has no valid workflow run id");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
+  try {
+    await (await artifactClient()).downloadArtifact(reference.artifact_id, {
+      path: directory,
+      findBy: artifactFindBy(reference.workflow_run_id),
+    });
+    const files = fs.readdirSync(directory);
+    if (files.length !== 1) throw new Error("artifact must contain exactly one archive");
+    const file = path.join(directory, files[0]);
+    if (reference.size != null && fs.statSync(file).size !== reference.size)
+      throw new Error("artifact cache size mismatch");
+    if (digest(file) !== reference.object)
+      throw new Error("artifact cache integrity check failed: sha256 mismatch");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
+async function downloadArtifactPart(part, directory) {
+  if (!Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)
+    throw new Error("artifact part has no valid artifact id");
+  if (!Number.isSafeInteger(part.workflow_run_id) || part.workflow_run_id < 1)
+    throw new Error("artifact part has no valid workflow run id");
+  if (typeof part.artifact_name !== "string" || !part.artifact_name)
+    throw new Error("artifact part has no valid artifact name");
+  const partDirectory = path.join(directory, `part-${part.index}`);
+  fs.mkdirSync(partDirectory);
+  await (await artifactClient()).downloadArtifact(part.artifact_id, {
+    path: partDirectory,
+    findBy: artifactFindBy(part.workflow_run_id),
+  });
+  const files = fs.readdirSync(partDirectory);
+  if (files.length !== 1) throw new Error("artifact part must contain exactly one file");
+  const file = path.join(partDirectory, files[0]);
+  if (fs.statSync(file).size !== part.size)
+    throw new Error("artifact part size mismatch");
+  if (digest(file) !== part.object)
+    throw new Error("artifact part integrity check failed: sha256 mismatch");
+  return file;
+}
+
+async function downloadArtifactParts(reference) {
+  validateManifestReference(reference);
+  if (!Array.isArray(reference.parts))
+    throw new Error("artifact object has no part list");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
+  const file = path.join(directory, "archive.tar.zst");
+  try {
+    const output = fs.createWriteStream(file, { flags: "wx" });
+    for (const part of reference.parts) {
+      const partFile = await downloadArtifactPart(part, directory);
+      output.write(fs.readFileSync(partFile));
+      removeTemporaryFile(path.dirname(partFile));
+    }
+    output.end();
+    await new Promise((resolve, reject) => {
+      output.once("finish", resolve);
+      output.once("error", reject);
+    });
+    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+      throw new Error("artifact cache object integrity check failed");
     return file;
   } catch (error) {
     removeTemporaryFile(directory);
@@ -2343,6 +2480,45 @@ async function uploadBranchBlob(repository, buffer) {
 }
 
 async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() === "github-artifact") {
+    const size = fs.statSync(file).size;
+    const hash = digest(file);
+    const totalParts = Math.ceil(size / githubBranchPartBytes);
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-upload-"));
+    const parts = [];
+    try {
+      for (let index = 0; index < totalParts; index += 1) {
+        const offset = index * githubBranchPartBytes;
+        const length = Math.min(githubBranchPartBytes, size - offset);
+        const partFile = path.join(directory, `part-${String(index).padStart(6, "0")}.bin`);
+        const descriptor = fs.openSync(file, "r");
+        const buffer = Buffer.allocUnsafe(length);
+        try { fs.readSync(descriptor, buffer, 0, length, offset); }
+        finally { fs.closeSync(descriptor); }
+        fs.writeFileSync(partFile, buffer, { flag: "wx" });
+        const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}-part-${String(index).padStart(6, "0")}`.slice(0, 180);
+        const result = await (await artifactClient()).uploadArtifact(
+          artifactName,
+          [partFile],
+          directory,
+          { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
+        );
+        if (!Number.isSafeInteger(result.id) || result.id < 1)
+          throw new Error("artifact upload returned no valid artifact id");
+        parts.push({
+          index,
+          object: `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`,
+          size: length,
+          artifact_id: result.id,
+          artifact_name: artifactName,
+          workflow_run_id: Number(process.env.GITHUB_RUN_ID),
+        });
+      }
+      return { id: parts[0].artifact_id, name: parts[0].artifact_name, size, artifact: true, parts };
+    } finally {
+      removeTemporaryFile(directory);
+    }
+  }
   if (storageMode() === "github-branch") {
     const hash = digest(file);
     const size = fs.statSync(file).size;
@@ -2660,9 +2836,12 @@ module.exports = {
   setRef,
   replaceRef,
   deleteObject,
+  deleteArtifactReference,
   manifestWriteGuard,
   download,
   downloadBranchObject,
+  downloadArtifactObject,
+  downloadArtifactParts,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,

@@ -127,6 +127,11 @@ Empfohlen wird ein zufälliger 64-stelliger Hex-Schlüssel. Eine Passphrase ist 
 Cache-Daten gelten als nicht vertrauenswürdige Eingaben. Bevor ein Archiv
 erstellt wird, lehnt die Action Folgendes ab:
 
+Auch GitHub-Actions-Artefakte gelten beim Restore als untrusted input. Der
+Artifact-Run und die Artifact-ID stammen aus dem Manifest, die geladenen Bytes
+werden aber unabhängig davon gegen den gespeicherten SHA-256-Hash und die
+Manifestgröße geprüft, bevor Dekompression oder Extraktion beginnt.
+
 - externe symbolische Links; relative symbolische Links, deren Ziele innerhalb des Cache-Pfads liegen, sind erlaubt und werden beim Erstellen des Archivs aufgelöst;
 - Hardlinks werden beim Erstellen des Archivs in separate reguläre Dateien umgewandelt; symbolische Links, Hardlinks und spezielle Dateien in einem Eingabearchiv werden bei der Validierung und beim Restore abgelehnt;
 - Pfade außerhalb von `GITHUB_WORKSPACE`;
