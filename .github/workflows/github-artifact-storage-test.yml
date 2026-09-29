@@ -1,0 +1,97 @@
+name: github artifact storage integration
+
+on:
+  workflow_call:
+    inputs:
+      save-cache:
+        required: false
+        type: boolean
+        default: false
+      restore-cache:
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  CACHE_PATH: .cache/github-artifact
+  CACHE_KEY: github-artifact-integration-v1
+
+jobs:
+  save-cache:
+    if: ${{ inputs.save-cache }}
+    name: Save GitHub artifact cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Create cache payload
+        run: |
+          mkdir -p "$CACHE_PATH"
+          printf 'github-artifact integration payload\n' > "$CACHE_PATH/payload.txt"
+
+      - name: Save cache as GitHub artifact
+        id: cache
+        uses: $/
+        with:
+          cache-name: github-artifact-test
+          key: ${{ env.CACHE_KEY }}
+          path: ${{ env.CACHE_PATH }}
+          storage: github-artifact
+          save-scope: shared
+          artifact-retention-days: 1
+          token: ${{ github.token }}
+          strict: true
+
+      - name: Verify artifact save metadata
+        env:
+          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+          CONTENT_HASH: ${{ steps.cache.outputs.content-hash }}
+        run: |
+          test "$CACHE_HIT" = true || test "$CACHE_HIT" = false
+          test -n "$CONTENT_HASH"
+
+  restore-cache:
+    if: ${{ inputs.restore-cache }}
+    name: Restore GitHub artifact cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Restore cache from GitHub artifact
+        id: cache
+        uses: $/
+        with:
+          cache-name: github-artifact-test
+          key: ${{ env.CACHE_KEY }}
+          path: ${{ env.CACHE_PATH }}
+          storage: github-artifact
+          restore-only: true
+          token: ${{ github.token }}
+          strict: true
+
+      - name: Verify restored artifact payload
+        env:
+          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+        run: |
+          test "$CACHE_HIT" = true
+          test "$(cat "$CACHE_PATH/payload.txt")" = 'github-artifact integration payload'

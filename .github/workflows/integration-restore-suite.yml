@@ -28,6 +28,16 @@ jobs:
     permissions:
       contents: read
 
+  github-artifact-storage-restore:
+    needs: [node-restore-cache]
+    if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}
+    uses: $/.github/workflows/github-artifact-storage-test.yml
+    with:
+      restore-cache: true
+    permissions:
+      contents: read
+      actions: read
+
   docker-qemu-restore-cache:
     needs: [node-restore-cache]
     if: ${{ !cancelled() && needs.node-restore-cache.result == 'success' }}

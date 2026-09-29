@@ -238,6 +238,16 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
+  github-artifact-storage-save:
+    needs: [build-dist]
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
+    uses: $/.github/workflows/github-artifact-storage-test.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+      actions: read
+
   docker-qemu-save-cache:
     needs: [node-save-cache]
     if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
