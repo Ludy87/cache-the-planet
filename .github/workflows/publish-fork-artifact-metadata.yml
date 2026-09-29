@@ -38,7 +38,6 @@ jobs:
         with:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
-          pattern: cache-*
           path: fork-artifacts
           merge-multiple: false
 
