@@ -26,6 +26,10 @@ inputs:
     description: Storage backend used by every cache entry
     required: false
     default: github-release
+  artifact-retention-days:
+    description: Retention in days for github-artifact storage; 0 uses repository default
+    required: false
+    default: "0"
   sftp-host:
     description: SFTP host
     required: false
