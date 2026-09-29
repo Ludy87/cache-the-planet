@@ -45,5 +45,6 @@ jobs:
       - name: Publish validated metadata references
         env:
           GITHUB_TOKEN: ${{ steps.token.outputs.token }}
+          SOURCE_ARTIFACT_TOKEN: ${{ github.token }}
           FORK_ARTIFACT_METADATA_DIR: ${{ github.workspace }}/fork-artifacts
         run: node scripts/publish-fork-artifact-metadata.js
