@@ -85,6 +85,21 @@ const { INPUTS } = require("./constants");
       });
       return true;
     };
+    const deleteArtifactReferences = async (referencesToDelete, liveReferences) => {
+      if (c.storageMode() !== "github-artifact" || dryRun) return 0;
+      const liveArtifactIds = new Set(
+        Object.values(liveReferences).map((reference) => reference.artifact_id),
+      );
+      let deleted = 0;
+      const attempted = new Set();
+      for (const reference of referencesToDelete) {
+        if (liveArtifactIds.has(reference.artifact_id)) continue;
+        if (attempted.has(reference.artifact_id)) continue;
+        attempted.add(reference.artifact_id);
+        if (await c.deleteArtifactReference(reference)) deleted += 1;
+      }
+      return deleted;
+    };
 
     if (mode === "expired") {
       const isDeletableKey = (key) =>
@@ -121,6 +136,12 @@ const { INPUTS } = require("./constants");
           dryRun ? references : (await c.refsAll(repository)).json.references,
         ).map((reference) => reference.object),
       );
+      const liveReferencesAfterExpiry =
+        dryRun ? references : (await c.refsAll(repository)).json.references;
+      deletedAssets += await deleteArtifactReferences(
+        expired.map(([, reference]) => reference),
+        liveReferencesAfterExpiry,
+      );
       for (const asset of cacheAssets) {
         const hash = c.hashFromAssetName(asset.name);
         const isUntrustedAsset = asset.name.startsWith("untrusted-");
@@ -147,6 +168,10 @@ const { INPUTS } = require("./constants");
     }
 
     if (mode === "all") {
+      deletedAssets += await deleteArtifactReferences(
+        Object.values(references),
+        {},
+      );
       for (const asset of cacheAssets) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
         if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
@@ -187,6 +212,17 @@ const { INPUTS } = require("./constants");
         if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       } else {
         console.log(`object not found: ${hash}`);
+      }
+      if (!dryRun) {
+        const matchingReferences = Object.entries(references)
+          .filter(([, reference]) => reference.object === hash)
+          .map(([, reference]) => reference);
+        deletedAssets += await deleteArtifactReferences(
+          matchingReferences,
+          Object.fromEntries(
+            Object.entries(references).filter(([, reference]) => reference.object !== hash),
+          ),
+        );
       }
       const matchingKeys = Object.entries(references)
         .filter(([, reference]) => reference.object === hash)

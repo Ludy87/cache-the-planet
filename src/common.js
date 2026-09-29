@@ -2232,6 +2232,21 @@ async function deleteObject(repository, hash, invalidate = true) {
   return true;
 }
 
+async function deleteArtifactReference(reference) {
+  if (storageMode() !== "github-artifact") return false;
+  if (!Number.isSafeInteger(reference?.artifact_id) || reference.artifact_id < 1)
+    return false;
+  if (!Number.isSafeInteger(reference?.workflow_run_id) || reference.workflow_run_id < 1)
+    return false;
+  if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
+    return false;
+  await (await artifactClient()).deleteArtifact(
+    reference.artifact_name,
+    artifactFindBy(reference.workflow_run_id),
+  );
+  return true;
+}
+
 function formatTransferSize(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
   const units = ["B", "KB", "MB", "GB", "TB"];
@@ -2733,6 +2748,7 @@ module.exports = {
   setRef,
   replaceRef,
   deleteObject,
+  deleteArtifactReference,
   manifestWriteGuard,
   download,
   downloadBranchObject,
