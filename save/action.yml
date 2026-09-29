@@ -2,7 +2,7 @@ name: Content-addressed GitHub cache (save)
 description: Save an immutable content-addressed cache object
 inputs:
   disable-download:
-    description: "Check cache existence without downloading or extracting for github-branch and sftp. Hits do not mean local files were restored. Saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
+    description: "Check cache existence without downloading or extracting for github-branch, github-artifact and sftp. Hits do not mean local files were restored. Saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
     required: false
     default: ""
   repository:
@@ -46,7 +46,10 @@ inputs:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
   storage:
-    description: "Object storage backend: github-release, github-branch, or sftp"
+    description: "Object storage backend: github-release, github-branch, github-artifact, or sftp"
+  artifact-retention-days:
+    description: "Retention in days for github-artifact storage; 0 uses repository default"
+    default: "0"
     required: false
   sftp-host:
     description: "SFTP hostname"
