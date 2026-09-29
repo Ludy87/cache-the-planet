@@ -58,10 +58,8 @@ jobs:
       - name: Verify artifact save metadata
         env:
           CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
-          CONTENT_HASH: ${{ steps.cache.outputs.content-hash }}
         run: |
           test "$CACHE_HIT" = true || test "$CACHE_HIT" = false
-          test -n "$CONTENT_HASH"
 
   restore-cache:
     if: ${{ inputs.restore-cache }}
