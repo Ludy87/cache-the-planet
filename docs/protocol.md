@@ -24,13 +24,40 @@ und Assets nur in einem ausdrücklich autorisierten Verwaltungsjob ändern; der
 Standardmodus ist ein unverbindlicher Dry-Run.
 
 Das Manifest liegt im Cache-Repository unter
-Die Referenzen liegen unter `manifests/v1/`:
+Die Referenzen werden pro Storage getrennt unter `manifests/v1/<storage>/`
+geführt. Dadurch können derselbe logische Cache-Key und unterschiedliche
+Objekte parallel als GitHub-Asset und auf SFTP gespeichert werden:
 
 ```text
-manifests/v1/trusted.json
-manifests/v1/shared.json
-manifests/v1/untrusted/pr-<number>.json
+manifests/v1/github/trusted.json
+manifests/v1/github/shared.json
+manifests/v1/github/untrusted/pr-<number>.json
+manifests/v1/sftp/trusted.json
+manifests/v1/sftp/shared.json
+manifests/v1/sftp/untrusted/pr-<number>.json
 ```
+
+`storage: github-release` verwendet den Storage-Namen `github`, `storage: sftp`
+verwendet `sftp`. Alte GitHub-Manifeste direkt unter `manifests/v1/` werden
+beim Lesen als Legacy-Fallback unterstützt; neue Schreibvorgänge verwenden
+immer den storage-spezifischen Pfad. SFTP liest keine GitHub-Referenzen.
+
+`storage: github-artifact` speichert die Archivdatei als GitHub-Actions-Artefakt.
+Die Manifest-Referenz enthält dafür `artifact_id`, `artifact_name` und
+`workflow_run_id` zusätzlich zu Hash und Größe. Große Archive werden in
+mehrere Artefakt-Teile zerlegt; jedes `parts`-Element enthält zusätzlich
+`artifact_id`, `artifact_name` und `workflow_run_id`. Restore prüft jeden Teil
+und anschließend den Hash des zusammengesetzten Archivs. Cross-Run-Restores
+benötigen ein Token mit `actions: read`.
+
+`storage: github-branch` verwendet ebenfalls den GitHub-Storage-Namespace,
+legt die Objektteile aber als Dateien unter
+`<manifest-path>/objects/v1/<sha256>/part-<index>` im Manifest-Branch ab.
+Die Standardgröße eines Teils beträgt 24 MiB und kann mit
+`CACHE_BRANCH_PART_BYTES` beziehungsweise `security.branch_part_bytes`
+konfiguriert werden. Referenzen enthalten dann zusätzlich eine geordnete
+Liste aus Teil-Hash und Teilgröße. Restore prüft jeden Teil sowie anschließend
+den Hash des zusammengesetzten Archivs.
 
 Im Repository dieses Projekts werden diese Dateien im Branch `cache-data` verwaltet.
 Andere Nutzer können den Manifest-Branch mit `CACHE_MANIFEST_BRANCH`, dem
@@ -38,6 +65,12 @@ Input `manifest-branch` oder dem Feld `manifest_branch` in
 `.cache-the-planet.json` konfigurieren. Die Priorität ist
 Umgebungsvariable, Action-Input, JSON-Konfiguration und anschließend
 `cache-data`.
+Der Manifest-Unterordner kann mit `CACHE_MANIFEST_PATH`, dem Input
+`manifest-path` oder `manifest_path` in der JSON-Konfiguration gesetzt werden.
+Wenn ein Manifest-Pfad gesetzt ist, aber kein Manifest-Branch, verwendet die
+Action den Default-Branch des Repositorys. Der Pfad ist relativ, darf keine
+absoluten Komponenten oder `..` enthalten und steht standardmäßig auf
+`manifests`.
 Der Branch muss vor dem ersten Save einmalig angelegt werden.
 
 Das Cache-Repository wird über den Input `repository`, `CACHE_REPOSITORY` oder
@@ -55,6 +88,31 @@ ohne Angabe wird die Stufe `3` verwendet.
 
 ## Konfigurationsschalter und Prioritäten
 
+`disable-download: true` prüft für `github-branch` und `sftp` weiterhin
+Manifest, Berechtigungen und Objekt-Metadaten, lädt aber keine Archivdaten
+herunter und entpackt nichts. Verbindungen und Zugangsdaten bleiben nötig.
+Bei Branch-Objekten müssen alle Parts mit passender Größe vorhanden sein.
+Exakte Treffer setzen `cache-hit: true`; Prefix-Fallbacks setzen
+`cache-hit: false`, aber einen `matched-key`. Fehlende Objekte sind Misses.
+Multi-Cache meldet den gemeinsamen Hit nur, wenn alle Einträge exakt treffen.
+Ein Hit bestätigt weder lokal vorhandene Dateien noch die Hash-Integrität;
+diese wird erst beim tatsächlichen Download geprüft. Metadatenfehler folgen
+weiterhin `strict`. Speichern bleibt aktiv. `github-release` ist nicht betroffen.
+Priorität: Action-Input
+`disable-download`, Umgebungsvariable `CACHE_DISABLE_DOWNLOAD`, JSON-Feld
+`disable_download` in `.cache-the-planet.json`, Standard `false`.
+Explizites `false` überschreibt ein konfiguriertes `true`. Die Save-Sub-Action
+ignoriert den Schalter. Zusammen mit `restore-only: true` wird weder
+heruntergeladen noch gespeichert (bei den beiden betroffenen Backends).
+
+SFTP-Zugangsdaten werden ausschließlich über die Inputs `sftp-private-key`
+und `sftp-password` oder die Umgebungsvariablen `SFTP_PRIVATE_KEY` und
+`SFTP_PASSWORD` übergeben (Input hat Vorrang). Die JSON-Felder
+`sftp.private_key` und `sftp.password` werden nicht mehr ausgewertet.
+Bestehende Konfigurationen müssen diese Werte in GitHub Secrets verlagern
+und im Workflow an die Inputs oder Umgebungsvariablen binden. Host, Port,
+Benutzername und Basispfad bleiben über die JSON-Konfiguration einstellbar.
+
 Die JSON-Datei ist optional und muss innerhalb von `GITHUB_WORKSPACE` liegen.
 Wird keine Datei über den Action-Input `config-file` oder die Variable
 `CACHE_CONFIG_FILE` angegeben, sucht die Action automatisch nach
@@ -69,6 +127,7 @@ Standardwert.
 | --- | --- | --- | --- |
 | `cache_repository` | `CACHE_REPOSITORY` | Ziel-Repository für Manifest und Release-Assets | `GITHUB_REPOSITORY` |
 | `manifest_branch` | `CACHE_MANIFEST_BRANCH` | Branch der Manifestdatei | `cache-data` |
+| `manifest_path` | `CACHE_MANIFEST_PATH` | Relativer Unterordner der Manifestdatei | `manifests` |
 | `scope` | — | Standard-Namespace für Restore und Save | `auto` |
 | `version` | — | Cache-Formatversion | `1` |
 | `compression_level` | `CACHE_COMPRESSION_LEVEL` | zstd-Kompressionsstufe | `3` |

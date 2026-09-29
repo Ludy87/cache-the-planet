@@ -24,10 +24,18 @@ Referenzen ablaufen sollen. Shared-Referenzen werden durch `expired` nicht
 entfernt, außer `delete-shared: true` wird in einem manuellen `expired`-Lauf
 gesetzt. Der reguläre Zeitplan verwendet diese Option nicht.
 
+Manifeste und Objekte sind nach Storage getrennt. Der reguläre Zeitplan
+bereinigt `github-release`; SFTP wird separat mit `storage: sftp` und den
+erforderlichen SFTP-Secrets bereinigt.
+Wenn `manifest-path` nicht über die JSON-Konfiguration gesetzt wird, muss der
+gleiche Pfad für die administrativen Workflows als Repository-Variable
+`CACHE_MANIFEST_PATH` hinterlegt werden. `gc` und `pr-cleanup` verwenden diese
+Variable für ihre eigenständigen Läufe.
+
 ### GC-Inputs und Umgebungsvariablen
 
 Die administrativen Inputs sind `mode`, `object`, `dry-run`, `grace-days`,
-`untrusted-ttl-hours`, `expire-all-untrusted` und `delete-shared`. Die
+`untrusted-ttl-hours`, `expire-all-untrusted`, `delete-shared` und `storage`. Die
 Standardwerte sind `orphan`, kein Objekt, `dry-run: true`, `grace-days: 7`
 und `untrusted-ttl-hours: 24`.
 

@@ -8,6 +8,112 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [2.0.0](https://github.com/Ludy87/cache-the-planet/compare/v1.10.0...v2.0.0) (2026-09-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sftp:** remove JSON credential fallbacks ([#207](https://github.com/Ludy87/cache-the-planet/issues/207))
+
+### 🎉 Features
+
+* **cache:** add download disable switch ([#208](https://github.com/Ludy87/cache-the-planet/issues/208)) ([d7205e1](https://github.com/Ludy87/cache-the-planet/commit/d7205e1a2cd8248369b50c83e6d3bce762f39c8c))
+* **sftp:** report download progress ([#185](https://github.com/Ludy87/cache-the-planet/issues/185)) ([0b9d428](https://github.com/Ludy87/cache-the-planet/commit/0b9d42807720992a5869b51cf394762c89d118e7))
+* **sftp:** report upload progress ([#188](https://github.com/Ludy87/cache-the-planet/issues/188)) ([bcda14c](https://github.com/Ludy87/cache-the-planet/commit/bcda14cbbb43a6ad2eac92c6a95b000763355811))
+* **storage:** add github branch object storage ([#204](https://github.com/Ludy87/cache-the-planet/issues/204)) ([37d2ffe](https://github.com/Ludy87/cache-the-planet/commit/37d2ffe5d5e38ac3b56c18991818b929aaebc694))
+* **storage:** support branch cache multipart metadata ([#205](https://github.com/Ludy87/cache-the-planet/issues/205)) ([5f8725a](https://github.com/Ludy87/cache-the-planet/commit/5f8725a4723e8d3d0b10b4727af6119d08bc55be))
+
+
+### 🐛 Bug Fixes
+
+* **action:** allow environment storage settings ([#193](https://github.com/Ludy87/cache-the-planet/issues/193)) ([fd0ef54](https://github.com/Ludy87/cache-the-planet/commit/fd0ef54df20a249a7531a16792f2702871ad7f47))
+* **action:** preserve SFTP port environment for post-save ([#192](https://github.com/Ludy87/cache-the-planet/issues/192)) ([7b9ea60](https://github.com/Ludy87/cache-the-planet/commit/7b9ea6068e673fbc39033232999574520b7e1aa6))
+* allow cargo crate cache archives ([#197](https://github.com/Ludy87/cache-the-planet/issues/197)) ([d7e5b94](https://github.com/Ludy87/cache-the-planet/commit/d7e5b942d38b35535541441de7cb6cf5735a955f))
+* allow cargo sparse index cache entries ([732bc95](https://github.com/Ludy87/cache-the-planet/commit/732bc958a3b412c8e25880cc6b6d2af3fc461de3))
+* allow cargo sparse index cache entries ([#199](https://github.com/Ludy87/cache-the-planet/issues/199)) ([5b9d25d](https://github.com/Ludy87/cache-the-planet/commit/5b9d25d8c69500a6ca8f091d536def26c84d495f))
+* **cache:** report cache hits when downloads are disabled ([#210](https://github.com/Ludy87/cache-the-planet/issues/210)) ([0ad886d](https://github.com/Ludy87/cache-the-planet/commit/0ad886dd728d00b28d154130481f1eb52f55a8c7))
+* **cache:** retry transient transfer failures five times ([94ece5c](https://github.com/Ludy87/cache-the-planet/commit/94ece5c636e0353f89420e956ae50e2d95b7f3ce))
+* **cache:** retry transient transfer failures five times ([#209](https://github.com/Ludy87/cache-the-planet/issues/209)) ([183a6ae](https://github.com/Ludy87/cache-the-planet/commit/183a6aef6e297f26c23731fd943e45d7897f08e7))
+* clean up save temporary archives ([#203](https://github.com/Ludy87/cache-the-planet/issues/203)) ([1305996](https://github.com/Ludy87/cache-the-planet/commit/1305996e3f06988468efd9b76a4190f1857da41c))
+* continue multi-cache after entry failures ([cdc2988](https://github.com/Ludy87/cache-the-planet/commit/cdc2988703447fa04ac6418dc9ddb7cd5ee7a4f1))
+* continue multi-cache after entry failures ([#198](https://github.com/Ludy87/cache-the-planet/issues/198)) ([14c8c04](https://github.com/Ludy87/cache-the-planet/commit/14c8c04b67dd19f2be10e445ace16c8f12d5e06a))
+* force local tar archives ([#200](https://github.com/Ludy87/cache-the-planet/issues/200)) ([5508e7a](https://github.com/Ludy87/cache-the-planet/commit/5508e7ad5e2eb6260319f07ae7c65558e27c2d80))
+* **multi-cache:** expose storage inputs ([#191](https://github.com/Ludy87/cache-the-planet/issues/191)) ([e556ab4](https://github.com/Ludy87/cache-the-planet/commit/e556ab42d592f9576671b98af07d9b9d43ebd3dd))
+* respect configured SFTP port ([77e0dfa](https://github.com/Ludy87/cache-the-planet/commit/77e0dfa271b42bd4fafcf64e1c4022550fd807a8))
+* respect configured SFTP port ([#201](https://github.com/Ludy87/cache-the-planet/issues/201)) ([e78baa5](https://github.com/Ludy87/cache-the-planet/commit/e78baa5d79afe91e1848d73449922ffaf303c8c4))
+* respect SFTP cache configuration ([#202](https://github.com/Ludy87/cache-the-planet/issues/202)) ([8603ad7](https://github.com/Ludy87/cache-the-planet/commit/8603ad79afba9b644ea7dd095f57c36103147ea6))
+* **sftp:** show transfer progress details ([#196](https://github.com/Ludy87/cache-the-planet/issues/196)) ([9ee8148](https://github.com/Ludy87/cache-the-planet/commit/9ee814824414cc375eeab77644d19136cf9b440f))
+* **storage:** set branch part default to 24 mib ([a31d0fc](https://github.com/Ludy87/cache-the-planet/commit/a31d0fc3c399e3643d98e2ef9d936c0cd17943d4))
+* **storage:** set branch part default to 24 mib ([#206](https://github.com/Ludy87/cache-the-planet/issues/206)) ([49161e4](https://github.com/Ludy87/cache-the-planet/commit/49161e4c6c89a1509929cad9cd0715ccad926d71))
+
+
+### ⚡ Performance
+
+* **sftp:** retune download transfer settings ([#190](https://github.com/Ludy87/cache-the-planet/issues/190)) ([d1193f0](https://github.com/Ludy87/cache-the-planet/commit/d1193f04605d886d4f56303913f95ac17ff459fc))
+* **sftp:** tune transfer performance ([#189](https://github.com/Ludy87/cache-the-planet/issues/189)) ([7ad8048](https://github.com/Ludy87/cache-the-planet/commit/7ad8048c6af4f83eaf97b04a64801e8ecfec6e16))
+
+
+### 🔒 Security
+
+* **sftp:** remove JSON credential fallbacks ([#207](https://github.com/Ludy87/cache-the-planet/issues/207)) ([42e007f](https://github.com/Ludy87/cache-the-planet/commit/42e007f3763acaf96f0ebeb68dc17abd14ef9799))
+
+## [1.10.0](https://github.com/Ludy87/cache-the-planet/compare/v1.9.0...v1.10.0) (2026-09-22)
+
+
+### 🎉 Features
+
+* **action:** expose cache errors as output ([#182](https://github.com/Ludy87/cache-the-planet/issues/182)) ([d92dd85](https://github.com/Ludy87/cache-the-planet/commit/d92dd85523a33e2892aabffda2a90f88ba84299a))
+
+
+### 🐛 Bug Fixes
+
+* **action:** allow descriptive cache error outputs ([#184](https://github.com/Ludy87/cache-the-planet/issues/184)) ([8163315](https://github.com/Ludy87/cache-the-planet/commit/816331595214ef3d3ae9d3d7ee95d67331ff1dc1))
+* **workflows:** pass manifest path to cleanup ([#181](https://github.com/Ludy87/cache-the-planet/issues/181)) ([1b5455c](https://github.com/Ludy87/cache-the-planet/commit/1b5455c10c317c050984c8890179b0006e1af035))
+
+## [1.9.0](https://github.com/Ludy87/cache-the-planet/compare/v1.8.0...v1.9.0) (2026-09-21)
+
+
+### 🎉 Features
+
+* **manifest:** support configurable manifest paths ([#179](https://github.com/Ludy87/cache-the-planet/issues/179)) ([57c34b2](https://github.com/Ludy87/cache-the-planet/commit/57c34b29f596cd166b5582aefaec5238d74f4e7a))
+
+## [1.8.0](https://github.com/Ludy87/cache-the-planet/compare/v1.7.0...v1.8.0) (2026-09-21)
+
+
+### 🎉 Features
+
+* **storage:** add SFTP cache object backend ([#174](https://github.com/Ludy87/cache-the-planet/issues/174)) ([2378162](https://github.com/Ludy87/cache-the-planet/commit/2378162d2c81b8b63d2d224b78a3f6618d898e8c))
+
+
+### 🐛 Bug Fixes
+
+* **gc:** close SFTP connection after cleanup ([#178](https://github.com/Ludy87/cache-the-planet/issues/178)) ([0b5065f](https://github.com/Ludy87/cache-the-planet/commit/0b5065f169f681a0249cf0bdd25a181869e63731))
+* **gc:** delete SFTP objects through storage backend ([#177](https://github.com/Ludy87/cache-the-planet/issues/177)) ([b9f547c](https://github.com/Ludy87/cache-the-planet/commit/b9f547cb8bd855f4f7b5940818156d5c0adf5767))
+* **workflows:** separate cache storage publishing ([#176](https://github.com/Ludy87/cache-the-planet/issues/176)) ([58dc78c](https://github.com/Ludy87/cache-the-planet/commit/58dc78cb790ee884df6a2b9e68147b429b8d109c))
+
+## [1.7.0](https://github.com/Ludy87/cache-the-planet/compare/v1.6.0...v1.7.0) (2026-09-18)
+
+
+### 🎉 Features
+
+* **manifests:** split cache references by scope and pull request ([#166](https://github.com/Ludy87/cache-the-planet/issues/166)) ([1f42a7f](https://github.com/Ludy87/cache-the-planet/commit/1f42a7fd53fca68ba6ee1ced042f5e3b442d2b37))
+
+
+### 🐛 Bug Fixes
+
+* **cache:** keep PR cache identity stable during publishing ([#157](https://github.com/Ludy87/cache-the-planet/issues/157)) ([5bd7b0b](https://github.com/Ludy87/cache-the-planet/commit/5bd7b0b97f4a766c615c9ca6f3499d3813d2a297))
+* **cargo:** align cached paths across shared and PR jobs ([#159](https://github.com/Ludy87/cache-the-planet/issues/159)) ([1588027](https://github.com/Ludy87/cache-the-planet/commit/158802718dcbc77957c780c604c1140b8b507c2c))
+* **cargo:** restore shared cache with matching paths ([5d2eb78](https://github.com/Ludy87/cache-the-planet/commit/5d2eb789063e3cc1934b894222fde6f581859c04))
+* **ci:** align integration cache paths with cache names ([#163](https://github.com/Ludy87/cache-the-planet/issues/163)) ([b01622f](https://github.com/Ludy87/cache-the-planet/commit/b01622fcc03c96367996a2959e2a0e5683370d87))
+* **ci:** correct task cache temp directory path ([#165](https://github.com/Ludy87/cache-the-planet/issues/165)) ([ce5ef0c](https://github.com/Ludy87/cache-the-planet/commit/ce5ef0c96ea53b36df44911f533c5547649454de))
+* **ci:** keep Gradle cache paths inside workspace ([#161](https://github.com/Ludy87/cache-the-planet/issues/161)) ([c5fa877](https://github.com/Ludy87/cache-the-planet/commit/c5fa877652a13972a2f5a4ffe1ced9d2d5aad7e8))
+* **ci:** use detected Java version for Gradle cache paths ([#151](https://github.com/Ludy87/cache-the-planet/issues/151)) ([2c8921a](https://github.com/Ludy87/cache-the-planet/commit/2c8921a92c830d3c0e3c8a7257b95105f371b56d))
+* **ci:** use relative Gradle cache paths ([#162](https://github.com/Ludy87/cache-the-planet/issues/162)) ([538c18e](https://github.com/Ludy87/cache-the-planet/commit/538c18e1c8dd2e30d7e9bfc6e348523326afad71))
+* clean up untrusted PR references across manifests ([#170](https://github.com/Ludy87/cache-the-planet/issues/170)) ([c9a952e](https://github.com/Ludy87/cache-the-planet/commit/c9a952e3009a2bad5a2b1c8d939e743e537d2a43))
+* **manifests:** allow default read-only manifest lookup ([#167](https://github.com/Ludy87/cache-the-planet/issues/167)) ([a0d6507](https://github.com/Ludy87/cache-the-planet/commit/a0d6507ccc222d0a8aa7086940bb79a018780889))
+* **pr:** cleanup untrusted manifests v2 ([#171](https://github.com/Ludy87/cache-the-planet/issues/171)) ([15e22d1](https://github.com/Ludy87/cache-the-planet/commit/15e22d1a4cdd711c839b10ef0e4b01e656496097))
+* **restore:** nested cache paths ([#164](https://github.com/Ludy87/cache-the-planet/issues/164)) ([f8e05e0](https://github.com/Ludy87/cache-the-planet/commit/f8e05e0283f392d402188b4fb574945b04e634f0))
+
 ## [1.6.0](https://github.com/Ludy87/cache-the-planet/compare/v1.5.0...v1.6.0) (2026-09-16)
 
 

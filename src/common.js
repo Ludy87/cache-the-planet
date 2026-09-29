@@ -10,6 +10,8 @@ const { INPUTS } = require("./constants");
 const apiVersion = "2022-11-28";
 const encryptionMagic = Buffer.from("CTPENC1\0");
 let githubClientPromise;
+let sftpClientPromise;
+let artifactClientPromise;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -19,18 +21,26 @@ const manifestLocks = new Map();
 function manifestPathForKey(key) {
   // Read-only callers that explicitly request the default manifest do not
   // have a cache key. Writes always pass a key or an explicit file path.
+  const storage = storageMode() === "sftp" ? "sftp" : "github";
   if (key === undefined || key === null || key === "")
-    return "manifests/v1/trusted.json";
+    return `${manifestPath()}/v1/${storage}/trusted.json`;
   if (typeof key !== "string") throw new Error("manifest key must be a string");
-  if (key.startsWith("trusted/")) return "manifests/v1/trusted.json";
-  if (key.startsWith("shared/")) return "manifests/v1/shared.json";
+  if (key.startsWith("trusted/"))
+    return `${manifestPath()}/v1/${storage}/trusted.json`;
+  if (key.startsWith("shared/"))
+    return `${manifestPath()}/v1/${storage}/shared.json`;
   const match = key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//);
-  if (match) return `manifests/v1/untrusted/pr-${match[1]}.json`;
+  if (match)
+    return `${manifestPath()}/v1/${storage}/untrusted/pr-${match[1]}.json`;
   throw new Error("manifest key has an unsupported namespace");
 }
 
 function manifestPaths() {
-  return ["manifests/v1/trusted.json", "manifests/v1/shared.json"];
+  const storage = storageMode() === "sftp" ? "sftp" : "github";
+  return [
+    `${manifestPath()}/v1/${storage}/trusted.json`,
+    `${manifestPath()}/v1/${storage}/shared.json`,
+  ];
 }
 
 function parsePositiveSafeInteger(value, name, fallback) {
@@ -136,6 +146,16 @@ function token() {
 
 function setOutput(name, value) {
   const stringValue = String(value ?? "");
+  if (name === "error") {
+    if (process.env.GITHUB_OUTPUT) {
+      const delimiter = `cache_error_${crypto.randomBytes(8).toString("hex")}`;
+      fs.appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `${name}<<${delimiter}\n${stringValue}\n${delimiter}\n`,
+      );
+    }
+    return;
+  }
   if (!/^[A-Za-z0-9._:/-]*$/.test(stringValue)) {
     throw new Error(`output ${name} contains unsupported characters`);
   }
@@ -207,6 +227,22 @@ function validateManifestReference(reference) {
   validateCacheHash(reference.object);
   if (reference.size !== null && reference.size !== undefined) {
     parsePositiveSafeInteger(reference.size, "manifest reference size");
+  }
+  if (reference.parts !== undefined) {
+    if (!Array.isArray(reference.parts) || reference.parts.length < 1)
+      throw new Error("manifest reference parts must be a non-empty array");
+    let total = 0;
+    for (const [index, part] of reference.parts.entries()) {
+      if (!part || typeof part !== "object" || part.index !== index)
+        throw new Error("manifest reference parts must be ordered");
+      validateCacheHash(part.object);
+      const size = parsePositiveSafeInteger(part.size, "manifest part size");
+      if (size > githubBranchPartBytes) throw new Error("manifest part exceeds branch size limit");
+      total += size;
+      if (total > maxCompressedBytes) throw new Error("manifest parts exceed compressed size limit");
+    }
+    if (reference.size !== null && reference.size !== undefined && total !== reference.size)
+      throw new Error("manifest reference size does not match parts");
   }
   if (
     reference.updated_at !== undefined &&
@@ -314,6 +350,150 @@ function cacheRepository() {
     throw new Error("cache repository must be an owner/name repository");
   }
   return value;
+}
+
+function storageMode() {
+  const value = String(
+    input(INPUTS.STORAGE) ||
+      process.env.CACHE_STORAGE ||
+      configuration().storage ||
+      "github-release",
+  )
+    .trim()
+    .toLowerCase();
+  if (!["github-release", "github-branch", "github-artifact", "sftp"].includes(value))
+    throw new Error("storage must be github-release, github-branch, github-artifact, or sftp");
+  return value;
+}
+
+function artifactRetentionDays() {
+  const value = Number(input(INPUTS.ARTIFACT_RETENTION_DAYS, process.env.CACHE_ARTIFACT_RETENTION_DAYS || "0"));
+  if (!Number.isInteger(value) || value < 0 || value > 90)
+    throw new Error("artifact-retention-days must be an integer from 0 to 90");
+  return value;
+}
+
+async function artifactClient() {
+  if (!artifactClientPromise) {
+    artifactClientPromise = import("@actions/artifact").then(
+      ({ DefaultArtifactClient }) => new DefaultArtifactClient(),
+    );
+  }
+  return artifactClientPromise;
+}
+
+function artifactFindBy(workflowRunId) {
+  const [repositoryOwner, repositoryName] = cacheRepository().split("/");
+  return { workflowRunId, repositoryOwner, repositoryName, token: token() };
+}
+
+const githubBranchPartBytes = positiveEnvironmentLimit(
+  "CACHE_BRANCH_PART_BYTES",
+  24 * 1024 ** 2,
+  "branch_part_bytes",
+);
+const githubBranchUploadConcurrency = positiveEnvironmentLimit(
+  "CACHE_BRANCH_UPLOAD_CONCURRENCY",
+  6,
+  "branch_upload_concurrency",
+);
+
+function branchObjectPath(hash, index, directory = null) {
+  validateCacheHash(hash);
+  if (!Number.isSafeInteger(index) || index < 0) throw new Error("invalid branch object part");
+  return directory
+    ? `${manifestPath()}/objects/v1/${directory}/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`
+    : `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
+}
+
+function branchReferencePath(reference, index) {
+  return branchObjectPath(reference.object, index, reference.path || null);
+}
+
+// Runtime input overrides environment and repository configuration, including
+// an explicit false. This switch affects restore only, never post-save.
+function cacheDownloadDisabled() {
+  const value = input(INPUTS.DISABLE_DOWNLOAD) ||
+    process.env.CACHE_DISABLE_DOWNLOAD || configuration().disable_download || false;
+  const normalized = String(value).trim().toLowerCase();
+  if (!["true", "false"].includes(normalized))
+    throw new Error("disable-download must be true or false");
+  return normalized === "true" && ["github-branch", "github-artifact", "sftp"].includes(storageMode());
+}
+
+function sftpSettings() {
+  if (storageMode() !== "sftp") return null;
+  const configured = configuration().sftp || {};
+  const host =
+    input(INPUTS.SFTP_HOST) || process.env.SFTP_HOST || configured.host;
+  const username =
+    input(INPUTS.SFTP_USERNAME) ||
+    process.env.SFTP_USERNAME ||
+    configured.username;
+  // Credentials must come from runtime inputs/environment, never repository JSON.
+  const privateKey =
+    input(INPUTS.SFTP_PRIVATE_KEY) || process.env.SFTP_PRIVATE_KEY;
+  const password =
+    input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD;
+  const port = Number(
+    input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22,
+  );
+  const basePath =
+    input(INPUTS.SFTP_BASE_PATH) ||
+    process.env.SFTP_BASE_PATH ||
+    configured.base_path ||
+    "/cache-the-planet";
+  if (!host || !username || (!privateKey && !password))
+    throw new Error(
+      "SFTP storage requires host, username, and private-key or password",
+    );
+  if (!Number.isInteger(port) || port < 1 || port > 65535)
+    throw new Error("sftp-port must be valid");
+  if (!basePath.startsWith("/") || basePath.includes(".."))
+    throw new Error("sftp-base-path must be an absolute safe path");
+  return { host, username, port, privateKey, password, basePath };
+}
+
+async function sftpClient() {
+  const settings = sftpSettings();
+  if (!sftpClientPromise) {
+    sftpClientPromise = import("ssh2-sftp-client").then(
+      async ({ default: SftpClient }) => {
+        const client = new SftpClient("cache-the-planet");
+        await client.connect({
+          host: settings.host,
+          port: settings.port,
+          username: settings.username,
+          ...(settings.privateKey
+            ? { privateKey: settings.privateKey }
+            : { password: settings.password }),
+          algorithms: {
+            compress: ["none"],
+          },
+        });
+        return client;
+      },
+    );
+  }
+  return sftpClientPromise;
+}
+
+async function closeSftp() {
+  if (!sftpClientPromise) return;
+  const pending = sftpClientPromise;
+  sftpClientPromise = null;
+  try {
+    const client = await pending;
+    await client.end();
+  } catch {
+    // Cleanup must not replace the original cache result or error.
+  }
+}
+
+function sftpObjectPath(hash) {
+  validateCacheHash(hash);
+  const { basePath } = sftpSettings();
+  return `${basePath.replace(/\/+$/, "")}/${hash.slice(7)}.tar.zst`;
 }
 
 function defaultBranch() {
@@ -434,7 +614,10 @@ const cacheIdentityFormat = "archive-v1|restore-safety-v1";
 function cacheIdentitySignature() {
   // The publisher repacks downloaded artifacts from a different workspace
   // path. Cache paths are transport details, not cache content identity.
-  const excludes = excludePatterns();
+  // Exclusion order is not semantically relevant. Canonicalize it so that
+  // restore and save produce the same key even when inputs were assembled in
+  // a different order.
+  const excludes = [...new Set(excludePatterns())].sort();
   if (!excludes.length) return "";
   const identity = JSON.stringify({
     format: cacheIdentityFormat,
@@ -551,11 +734,16 @@ function refName() {
 
 function manifestBranch() {
   const configuredBranch = configuration().manifest_branch;
+  const hasManifestPath = Boolean(
+    process.env.CACHE_MANIFEST_PATH ||
+    input(INPUTS.MANIFEST_PATH) ||
+    configuration().manifest_path,
+  );
   const branch =
     process.env.CACHE_MANIFEST_BRANCH ||
     input(INPUTS.MANIFEST_BRANCH) ||
     configuredBranch ||
-    "cache-data";
+    (hasManifestPath ? defaultBranch() : "cache-data");
   if (
     typeof branch !== "string" ||
     !/^[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/.test(branch) ||
@@ -567,6 +755,30 @@ function manifestBranch() {
     throw new Error("manifest branch is invalid");
   }
   return branch;
+}
+
+function manifestPath() {
+  const value =
+    process.env.CACHE_MANIFEST_PATH ||
+    input(INPUTS.MANIFEST_PATH) ||
+    configuration().manifest_path ||
+    "manifests";
+  if (
+    typeof value !== "string" ||
+    !value ||
+    value.startsWith("/") ||
+    value.endsWith("/") ||
+    value.includes("\\") ||
+    value
+      .split("/")
+      .some(
+        (part) =>
+          !/^[A-Za-z0-9._-]+$/.test(part) || part === "." || part === "..",
+      )
+  ) {
+    throw new Error("manifest path is invalid");
+  }
+  return value;
 }
 
 function pullRequestNumber() {
@@ -626,7 +838,7 @@ function scopedKey(
     scope === "auto" ? (pullRequest ? "untrusted" : "trusted") : scope;
   if (selectedScope === "shared") {
     if (pullRequest) {
-      log("scope=shared is mapped to an isolated untrusted PR cache");
+      normalLog("scope=shared is mapped to an isolated untrusted PR cache");
       const number = pullRequestNumber();
       if (!number)
         throw new Error(
@@ -806,6 +1018,19 @@ function log(message) {
   console.log(`::notice::${message}`);
 }
 
+function normalLog(message) {
+  console.log(message);
+}
+
+function progressLog(action, hash, current, total) {
+  const completed = Math.max(0, Math.min(current, total));
+  const percent = total ? Math.floor((completed / total) * 100) : 100;
+  const width = 20;
+  const filled = Math.round((percent / 100) * width);
+  const bar = `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
+  normalLog(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
+}
+
 function summary(title, fields) {
   if (!process.env.GITHUB_STEP_SUMMARY) return;
   const escape = (value) =>
@@ -824,6 +1049,7 @@ function summary(title, fields) {
 
 function fail(error, strictInput = INPUTS.STRICT) {
   const message = error?.message || String(error);
+  setOutput("error", message);
   const debug =
     process.env.ACTIONS_STEP_DEBUG === "true" ||
     process.env.RUNNER_DEBUG === "1";
@@ -1160,10 +1386,13 @@ const sensitiveKeywordName =
 const sourceFileName =
   /\.(?:css|scss|sass|less|map|py|js|mjs|cjs|ts|tsx|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
 const binaryFileName =
-  /\.(?:7z|aar|bin|class|dll|dylib|exe|gz|iso|jar|jpeg|jpg|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
+  /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
+const cargoIndexPath =
+  /(?:^|\/)(?:cargo\/)?registry\/index\/[^/]+\/\.cache(?:\/|$)/i;
+const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1173,8 +1402,42 @@ const knownTokenContent =
 const credentialAssignment =
   /(?:password|passwd|secret|api[_-]?key)\s*[:=]\s*(?:"[^"\r\n]{8,}"|'[^'\r\n]{8,}'|[A-Za-z0-9_+/=.-]{20,})/i;
 
-function securityScan(root) {
+function globToRegExp(pattern) {
+  let result = "^";
+  for (let index = 0; index < pattern.length; index += 1) {
+    const character = pattern[index];
+    if (character === "*" && pattern[index + 1] === "*") {
+      result += ".*";
+      index += 1;
+    } else if (character === "*") {
+      result += "[^/]*";
+    } else if (character === "?") {
+      result += "[^/]";
+    } else {
+      result += character.replace(/[\\^$+{}()|.\[\]]/g, "\\$&");
+    }
+  }
+  return new RegExp(`${result}$`, "i");
+}
+
+function isExcludedPath(file, root, patterns, workspace) {
+  if (!patterns.length) return false;
+  const candidates = [
+    path.relative(workspace, file),
+    path.relative(root, file),
+  ].map((value) => value.split(path.sep).join("/").replace(/^\.\//, ""));
+  return patterns.some((pattern) => {
+    const normalized = pattern.replace(/\\/g, "/").replace(/^\.\//, "");
+    const matcher = globToRegExp(normalized);
+    return candidates.some((candidate) => matcher.test(candidate));
+  });
+}
+
+function securityScan(root, options = {}) {
+  const workspace = options.workspace || process.env.GITHUB_WORKSPACE || process.cwd();
+  const excludes = options.excludes || [];
   const walk = (file) => {
+    if (isExcludedPath(file, root, excludes, workspace)) return;
     const stat = fs.lstatSync(file);
     if (stat.isSymbolicLink()) {
       const target = path.resolve(path.dirname(file), fs.readlinkSync(file));
@@ -1201,8 +1464,12 @@ function securityScan(root) {
     }
     if (
       sensitiveDirectory.test(relative) ||
-      sensitiveName.test(path.basename(file)) ||
+      (sensitiveName.test(path.basename(file)) &&
+        !(sourceFileName.test(path.basename(file)) &&
+          packageSourcePath.test(relative))) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
+        !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
+        !packageSourcePath.test(relative) &&
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
     ) {
@@ -1264,7 +1531,7 @@ async function makeArchive() {
           `cache path must not contain a virtual environment: ${value}`,
         );
       }
-      securityScan(absolute);
+      securityScan(absolute, { excludes: excludePatterns(), workspace });
       paths.push(relative || ".");
     } else log(`cache path missing: ${value}`);
   }
@@ -1363,7 +1630,7 @@ function inspectTar(tarFile) {
   const tarOptions = { encoding: "utf8", env: { ...process.env, LC_ALL: "C" } };
   const listing = cp.spawnSync(
     "tar",
-    ["--quoting-style=escape", "-tf", tarFile],
+    ["--force-local", "--quoting-style=escape", "-tf", tarFile],
     tarOptions,
   );
   if (listing.status) {
@@ -1389,7 +1656,7 @@ function inspectTar(tarFile) {
   }
   const details = cp.spawnSync(
     "tar",
-    ["--quoting-style=escape", "-tvf", tarFile],
+    ["--force-local", "--quoting-style=escape", "-tvf", tarFile],
     tarOptions,
   );
   if (details.status)
@@ -1458,7 +1725,9 @@ async function release(repository) {
           body: JSON.stringify({
             tag_name: "cache-v1",
             name: "Cache objects (v1)",
-            prerelease: true,
+            draft: false,
+            prerelease: false,
+            make_latest: false,
           }),
         })
       ).body;
@@ -1474,6 +1743,29 @@ async function release(repository) {
 }
 
 async function assets(repository) {
+  if (storageMode() === "sftp") {
+    const client = await sftpClient();
+    const settings = sftpSettings();
+    await client.mkdir(settings.basePath, true);
+    const entries = await client.list(settings.basePath);
+    return {
+      release: null,
+      assets: entries
+        .filter(
+          (entry) =>
+            entry.type === "-" && /^[a-f0-9]{64}\.tar\.zst$/i.test(entry.name),
+        )
+        .map((entry) => ({
+          id: entry.name,
+          name: entry.name,
+          size: entry.size,
+          created_at: entry.modifyTime
+            ? new Date(entry.modifyTime).toISOString()
+            : new Date(0).toISOString(),
+          sftp: true,
+        })),
+    };
+  }
   if (assetsCache.has(repository)) return assetsCache.get(repository);
   const pending = (async () => {
     const cacheRelease = await release(repository);
@@ -1500,8 +1792,71 @@ function invalidateRepositoryCache(repository) {
   releaseCache.delete(repository);
 }
 
+// Metadata-only lookup: never fetch archive bytes. A hit is not an integrity
+// guarantee; the normal download path still verifies hashes before extraction.
+async function probeObject(repository, reference) {
+  validateManifestReference(reference);
+  if (storageMode() === "github-artifact") {
+    if (Array.isArray(reference.parts)) {
+      if (reference.parts.some((part) => !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)) return null;
+      return { id: reference.object, name: reference.artifact_name || reference.object,
+        size: reference.size, artifact: true, parts: reference.parts };
+    }
+    if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1) return null;
+    return { id: reference.artifact_id, name: reference.artifact_name || String(reference.artifact_id),
+      size: reference.size, artifact: true };
+  }
+  if (storageMode() !== "github-branch") {
+    const asset = await object(repository, reference.object);
+    if (!asset || (reference.size != null && asset.size !== reference.size)) return null;
+    return asset;
+  }
+  if (!Array.isArray(reference.parts)) return null;
+  try {
+    for (const part of reference.parts) {
+      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const entry = result.body;
+      if (!entry || entry.type !== "file" || entry.size !== part.size) return null;
+    }
+    return {
+      id: reference.object, name: `${reference.object.slice(7)}.branch`,
+      size: reference.parts.reduce((total, part) => total + part.size, 0), branch: true,
+    };
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
+  }
+}
+
 async function object(repository, hash) {
   validateCacheHash(hash);
+  if (storageMode() === "github-branch") {
+    try {
+      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(hash, 0)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const size = Number(result.body.size);
+      if (!Number.isSafeInteger(size) || size < 1 || size > githubBranchPartBytes) return null;
+      return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true };
+    } catch (error) {
+      if (error.status === 404) return null;
+      throw error;
+    }
+  }
+  if (storageMode() === "sftp") {
+    try {
+      const client = await sftpClient();
+      const stat = await client.stat(sftpObjectPath(hash));
+      return {
+        id: hash,
+        name: `${hash.slice(7)}.tar.zst`,
+        size: stat.size,
+        sftp: true,
+      };
+    } catch (error) {
+      if (error.code === 2 || /no such file/i.test(error.message || ""))
+        return null;
+      throw error;
+    }
+  }
   const result = await assets(repository);
   return result.assets.find(
     (asset) =>
@@ -1592,7 +1947,8 @@ async function manifest(repository, filePath) {
 }
 
 async function refs(repository, { fresh = false, key, filePath } = {}) {
-  const selectedPath = filePath || (key ? manifestPathForKey(key) : "manifests/v1/trusted.json");
+  const selectedPath =
+    filePath || (key ? manifestPathForKey(key) : "manifests/v1/trusted.json");
   const cacheKey = `${repository}:${selectedPath}`;
   if (!fresh && manifestCache.has(cacheKey)) {
     return manifestCache.get(cacheKey);
@@ -1615,12 +1971,31 @@ async function refs(repository, { fresh = false, key, filePath } = {}) {
 }
 
 async function refsForKeys(repository, keys, { fresh = false } = {}) {
-  const paths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const storagePaths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
+  const paths = [];
+  // Preserve read compatibility for manifests written before storage was
+  // part of the manifest identity. New writes always use the storage-scoped
+  // path above; SFTP must never read GitHub-storage references.
+  if (storageMode() !== "sftp") {
+    for (const key of keys) {
+      const legacy = key.startsWith("trusted/")
+        ? `${manifestPath()}/v1/trusted.json`
+        : key.startsWith("shared/")
+          ? `${manifestPath()}/v1/shared.json`
+          : key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)
+            ? `${manifestPath()}/v1/untrusted/pr-${key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)[1]}.json`
+            : null;
+      if (legacy) paths.push(legacy);
+    }
+  }
+  // Storage-scoped manifests take precedence over legacy references.
+  paths.push(...storagePaths.filter((filePath) => !paths.includes(filePath)));
   const manifests = await Promise.all(
     paths.map((filePath) => refs(repository, { fresh, filePath })),
   );
   const references = {};
-  for (const current of manifests) Object.assign(references, current.json.references);
+  for (const current of manifests)
+    Object.assign(references, current.json.references);
   return { json: { schema_version: 1, references }, sha: null };
 }
 
@@ -1628,7 +2003,7 @@ async function refsAll(repository, { fresh = false } = {}) {
   const paths = [...manifestPaths()];
   try {
     const directory = await gh(
-      `/repos/${repository}/contents/manifests/v1/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
+      `/repos/${repository}/contents/${manifestPath()}/v1/${storageMode() === "sftp" ? "sftp" : "github"}/untrusted?ref=${encodeURIComponent(manifestBranch())}`,
     );
     if (Array.isArray(directory.body)) {
       for (const item of directory.body) {
@@ -1645,7 +2020,15 @@ async function refsAll(repository, { fresh = false } = {}) {
     for (const [key, reference] of Object.entries(current.json.references))
       entries.push([key, reference, filePath]);
   }
-  return { json: { schema_version: 1, references: Object.fromEntries(entries.map(([key, reference]) => [key, reference])) }, entries };
+  return {
+    json: {
+      schema_version: 1,
+      references: Object.fromEntries(
+        entries.map(([key, reference]) => [key, reference]),
+      ),
+    },
+    entries,
+  };
 }
 
 function invalidateManifestCache(repository) {
@@ -1697,13 +2080,20 @@ async function updateManifestUnlocked(repository, message, update, filePath) {
   throw new Error(`reference update conflicted after ${maxAttempts} attempts`);
 }
 
-async function updateManifest(repository, message, update, { key, filePath } = {}) {
+async function updateManifest(
+  repository,
+  message,
+  update,
+  { key, filePath } = {},
+) {
   const selectedPath = filePath || manifestPathForKey(key);
   const lockKey = `${repository}:${selectedPath}`;
   const previous = manifestLocks.get(lockKey) || Promise.resolve();
   const current = previous
     .catch(() => {})
-    .then(() => updateManifestUnlocked(repository, message, update, selectedPath));
+    .then(() =>
+      updateManifestUnlocked(repository, message, update, selectedPath),
+    );
   manifestLocks.set(lockKey, current);
   try {
     return await current;
@@ -1779,6 +2169,11 @@ async function setRef(repository, key, hash, metadata = {}) {
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
+        ...(metadata.parts ? { parts: metadata.parts } : {}),
+        ...(metadata.path ? { path: metadata.path } : {}),
+        ...(metadata.artifact_id ? { artifact_id: metadata.artifact_id } : {}),
+        ...(metadata.artifact_name ? { artifact_name: metadata.artifact_name } : {}),
+        ...(metadata.workflow_run_id ? { workflow_run_id: metadata.workflow_run_id } : {}),
       };
       return true;
     },
@@ -1810,6 +2205,11 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
         size: Number.isFinite(metadata.size) ? metadata.size : null,
+        ...(metadata.parts ? { parts: metadata.parts } : {}),
+        ...(metadata.path ? { path: metadata.path } : {}),
+        ...(metadata.artifact_id ? { artifact_id: metadata.artifact_id } : {}),
+        ...(metadata.artifact_name ? { artifact_name: metadata.artifact_name } : {}),
+        ...(metadata.workflow_run_id ? { workflow_run_id: metadata.workflow_run_id } : {}),
       };
       return true;
     },
@@ -1825,11 +2225,82 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
 async function deleteObject(repository, hash, invalidate = true) {
   const asset = await object(repository, hash);
   if (!asset) return false;
+  if (storageMode() === "sftp") {
+    const client = await sftpClient();
+    await client.delete(sftpObjectPath(hash));
+    return true;
+  }
   await gh(`/repos/${repository}/releases/assets/${asset.id}`, {
     method: "DELETE",
   });
   if (invalidate) invalidateRepositoryCache(repository);
   return true;
+}
+
+async function deleteArtifactReference(reference) {
+  if (storageMode() !== "github-artifact") return false;
+  if (Array.isArray(reference?.parts)) {
+    let deleted = false;
+    for (const part of reference.parts) {
+      if (await deleteArtifactReference(part)) deleted = true;
+    }
+    return deleted;
+  }
+  if (!Number.isSafeInteger(reference?.artifact_id) || reference.artifact_id < 1)
+    return false;
+  if (!Number.isSafeInteger(reference?.workflow_run_id) || reference.workflow_run_id < 1)
+    return false;
+  if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
+    return false;
+  await (await artifactClient()).deleteArtifact(
+    reference.artifact_name,
+    artifactFindBy(reference.workflow_run_id),
+  );
+  return true;
+}
+
+function formatTransferSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toFixed(unit === 0 ? 0 : 2)}${units[unit]}`;
+}
+
+function formatTransferDuration(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00:00";
+  const total = Math.ceil(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function createSftpProgress(label) {
+  const started = Date.now();
+  let lastRender = 0;
+  let lastLength = 0;
+
+  return (transferred, chunk, total) => {
+    if (!Number.isFinite(total) || total <= 0) return;
+    const now = Date.now();
+    if (transferred < total && now - lastRender < 250) return;
+    lastRender = now;
+    const elapsed = Math.max((now - started) / 1000, 0.001);
+    const rate = transferred / elapsed;
+    const remaining = Math.max(total - transferred, 0);
+    const percent = Math.min(100, Math.floor((transferred / total) * 100));
+    const line = `${formatTransferSize(transferred).padStart(10)} ${String(percent).padStart(3)}% ${formatTransferSize(rate)}/s ${formatTransferDuration(remaining / rate)}`;
+    const output = `${label}: ${line}`;
+    const padding = " ".repeat(Math.max(0, lastLength - output.length));
+    process.stdout.write(`\r${output}${padding}`);
+    lastLength = output.length;
+    if (transferred >= total) process.stdout.write("\n");
+  };
 }
 
 async function download(repository, hash) {
@@ -1839,11 +2310,27 @@ async function download(repository, hash) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-"));
   const file = path.join(directory, asset.name);
   try {
-    await downloadToFile(asset.browser_download_url, file, {
-      maxBytes: maxCompressedBytes,
-      timeoutMs: 120000,
-      headers: authorizationHeaders(),
-    });
+    if (storageMode() === "github-artifact")
+      throw new Error("artifact storage requires the manifest artifact reference");
+    if (storageMode() === "github-branch") {
+      throw new Error("branch storage requires the manifest part list");
+    }
+    if (storageMode() === "sftp") {
+      const client = await sftpClient();
+      await client.fastGet(sftpObjectPath(hash), file, {
+        concurrency: 128,
+        chunkSize: 131072,
+        step: createSftpProgress("SFTP download"),
+      });
+      if (fs.statSync(file).size > maxCompressedBytes)
+        throw new Error("cache archive exceeds the compressed size limit");
+    } else {
+      await downloadToFile(asset.browser_download_url, file, {
+        maxBytes: maxCompressedBytes,
+        timeoutMs: 120000,
+        headers: authorizationHeaders(),
+      });
+    }
     if (digest(file) !== hash)
       throw new Error("integrity check failed: sha256 mismatch");
     return file;
@@ -1851,6 +2338,275 @@ async function download(repository, hash) {
     removeTemporaryFile(directory);
     throw error;
   }
+}
+
+async function downloadArtifactObject(reference) {
+  if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1)
+    throw new Error("artifact reference has no valid artifact id");
+  if (!Number.isSafeInteger(reference.workflow_run_id) || reference.workflow_run_id < 1)
+    throw new Error("artifact reference has no valid workflow run id");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
+  try {
+    await (await artifactClient()).downloadArtifact(reference.artifact_id, {
+      path: directory,
+      findBy: artifactFindBy(reference.workflow_run_id),
+    });
+    const files = fs.readdirSync(directory);
+    if (files.length !== 1) throw new Error("artifact must contain exactly one archive");
+    const file = path.join(directory, files[0]);
+    if (reference.size != null && fs.statSync(file).size !== reference.size)
+      throw new Error("artifact cache size mismatch");
+    if (digest(file) !== reference.object)
+      throw new Error("artifact cache integrity check failed: sha256 mismatch");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
+async function downloadArtifactPart(part, directory) {
+  if (!Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)
+    throw new Error("artifact part has no valid artifact id");
+  if (!Number.isSafeInteger(part.workflow_run_id) || part.workflow_run_id < 1)
+    throw new Error("artifact part has no valid workflow run id");
+  if (typeof part.artifact_name !== "string" || !part.artifact_name)
+    throw new Error("artifact part has no valid artifact name");
+  const partDirectory = path.join(directory, `part-${part.index}`);
+  fs.mkdirSync(partDirectory);
+  await (await artifactClient()).downloadArtifact(part.artifact_id, {
+    path: partDirectory,
+    findBy: artifactFindBy(part.workflow_run_id),
+  });
+  const files = fs.readdirSync(partDirectory);
+  if (files.length !== 1) throw new Error("artifact part must contain exactly one file");
+  const file = path.join(partDirectory, files[0]);
+  if (fs.statSync(file).size !== part.size)
+    throw new Error("artifact part size mismatch");
+  if (digest(file) !== part.object)
+    throw new Error("artifact part integrity check failed: sha256 mismatch");
+  return file;
+}
+
+async function downloadArtifactParts(reference) {
+  validateManifestReference(reference);
+  if (!Array.isArray(reference.parts))
+    throw new Error("artifact object has no part list");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
+  const file = path.join(directory, "archive.tar.zst");
+  try {
+    const output = fs.createWriteStream(file, { flags: "wx" });
+    for (const part of reference.parts) {
+      const partFile = await downloadArtifactPart(part, directory);
+      output.write(fs.readFileSync(partFile));
+      removeTemporaryFile(path.dirname(partFile));
+    }
+    output.end();
+    await new Promise((resolve, reject) => {
+      output.once("finish", resolve);
+      output.once("error", reject);
+    });
+    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+      throw new Error("artifact cache object integrity check failed");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
+async function downloadBranchObject(repository, reference) {
+  validateManifestReference(reference);
+  if (!Array.isArray(reference.parts)) throw new Error("branch object has no part list");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-branch-"));
+  const file = path.join(directory, "archive.tar.zst");
+  try {
+    const output = fs.createWriteStream(file, { flags: "wx" });
+    progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
+    let downloadedBytes = 0;
+    for (const part of reference.parts) {
+      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const partFile = path.join(directory, `part-${part.index}`);
+      if (result.body.download_url) {
+        await downloadToFile(result.body.download_url, partFile, {
+          maxBytes: githubBranchPartBytes,
+          timeoutMs: githubApiTimeoutMs,
+          headers: authorizationHeaders(),
+        });
+      } else if (typeof result.body.content === "string") {
+        fs.writeFileSync(partFile, Buffer.from(result.body.content.replace(/\s/g, ""), "base64"), { flag: "wx" });
+      } else {
+        throw new Error("branch cache part has no downloadable content");
+      }
+      const bytes = fs.readFileSync(partFile);
+      if (bytes.length !== part.size || `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}` !== part.object)
+        throw new Error("branch cache part integrity check failed");
+      if (bytes.length > githubBranchPartBytes) throw new Error("branch cache part exceeds size limit");
+      output.write(bytes);
+      removeTemporaryFile(partFile);
+      downloadedBytes += bytes.length;
+      progressLog("📥 Restoring branch object", reference.object, part.index + 1, reference.parts.length);
+    }
+    output.end();
+    await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });
+    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+      throw new Error("branch cache object integrity check failed");
+    return file;
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
+}
+
+// Identical blob bytes are content-addressed, so retrying this POST is safe.
+// Do not apply this retry policy to branch-ref writes or permanent API errors.
+async function uploadBranchBlob(repository, buffer) {
+  const body = JSON.stringify({ content: buffer.toString("base64"), encoding: "base64" });
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await gh(`/repos/${repository}/git/blobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+    } catch (error) {
+      if (![500, 502, 503, 504].includes(error.status) || attempt >= 5)
+        throw error;
+      const delay = Math.min(1000 * 2 ** attempt, 8000);
+      log(`Branch blob upload: HTTP ${error.status}; retry ${attempt + 1}/5 in ${delay}ms`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+async function uploadObject(repository, file, name, contentType) {
+  if (storageMode() === "github-artifact") {
+    const size = fs.statSync(file).size;
+    const hash = digest(file);
+    const totalParts = Math.ceil(size / githubBranchPartBytes);
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-upload-"));
+    const parts = [];
+    try {
+      for (let index = 0; index < totalParts; index += 1) {
+        const offset = index * githubBranchPartBytes;
+        const length = Math.min(githubBranchPartBytes, size - offset);
+        const partFile = path.join(directory, `part-${String(index).padStart(6, "0")}.bin`);
+        const descriptor = fs.openSync(file, "r");
+        const buffer = Buffer.allocUnsafe(length);
+        try { fs.readSync(descriptor, buffer, 0, length, offset); }
+        finally { fs.closeSync(descriptor); }
+        fs.writeFileSync(partFile, buffer, { flag: "wx" });
+        const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}-part-${String(index).padStart(6, "0")}`.slice(0, 180);
+        const result = await (await artifactClient()).uploadArtifact(
+          artifactName,
+          [partFile],
+          directory,
+          { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
+        );
+        if (!Number.isSafeInteger(result.id) || result.id < 1)
+          throw new Error("artifact upload returned no valid artifact id");
+        parts.push({
+          index,
+          object: `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`,
+          size: length,
+          artifact_id: result.id,
+          artifact_name: artifactName,
+          workflow_run_id: Number(process.env.GITHUB_RUN_ID),
+        });
+      }
+      return { id: parts[0].artifact_id, name: parts[0].artifact_name, size, artifact: true, parts };
+    } finally {
+      removeTemporaryFile(directory);
+    }
+  }
+  if (storageMode() === "github-branch") {
+    const hash = digest(file);
+    const size = fs.statSync(file).size;
+    const branchPath = name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "");
+    const parts = [];
+    const totalParts = Math.ceil(size / githubBranchPartBytes);
+    progressLog("📤 Saving branch object", hash, 0, totalParts);
+    const blobs = [];
+    let nextIndex = 0;
+    let completedParts = 0;
+    const uploadPart = async () => {
+      while (true) {
+        const index = nextIndex++;
+        if (index >= totalParts) return;
+        const offset = index * githubBranchPartBytes;
+        const length = Math.min(githubBranchPartBytes, size - offset);
+        const bytes = fs.openSync(file, "r");
+        const buffer = Buffer.allocUnsafe(length);
+        try {
+          fs.readSync(bytes, buffer, 0, length, offset);
+        } finally {
+          fs.closeSync(bytes);
+        }
+        const partHash = `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`;
+        const blob = await uploadBranchBlob(repository, buffer);
+        blobs[index] = { index, sha: blob.body.sha };
+        parts[index] = { index, object: partHash, size: length };
+        completedParts += 1;
+        progressLog("📤 Saving branch object", hash, completedParts, totalParts);
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(githubBranchUploadConcurrency, totalParts) }, uploadPart),
+    );
+    const branch = encodeURIComponent(manifestBranch());
+    const ref = await gh(`/repos/${repository}/git/ref/heads/${branch}`);
+    const commit = await gh(`/repos/${repository}/git/commits/${ref.body.object.sha}`);
+    const tree = await gh(`/repos/${repository}/git/trees`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        base_tree: commit.body.tree.sha,
+        tree: blobs.map(({ index, sha }) => ({
+          path: branchObjectPath(hash, index, branchPath), mode: "100644", type: "blob", sha,
+        })),
+      }),
+    });
+    const createdCommit = await gh(`/repos/${repository}/git/commits`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `cache: upload ${hash}`, tree: tree.body.sha, parents: [ref.body.object.sha] }),
+    });
+    await gh(`/repos/${repository}/git/refs/heads/${branch}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
+    });
+    log(`📍 Branch cache object path: ${manifestPath()}/objects/v1/${branchPath}/${hash.slice(7)}/part-000000`);
+    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
+      path: branchPath };
+  }
+  if (storageMode() !== "sftp") {
+    const release = (await assets(repository)).release;
+    const uploadUrl = release.upload_url.replace(
+      "{?name,label}",
+      `?name=${encodeURIComponent(name)}`,
+    );
+    return upload(uploadUrl, file, name, contentType);
+  }
+  const hash = hashFromAssetName(name);
+  if (!hash)
+    throw new Error("SFTP object name must contain a valid sha256 hash");
+  const client = await sftpClient();
+  const settings = sftpSettings();
+  await client.mkdir(settings.basePath, true);
+  try {
+    await client.stat(sftpObjectPath(hash));
+    const error = new Error("object already exists");
+    error.status = 422;
+    throw error;
+  } catch (error) {
+    if (error.status === 422) throw error;
+    if (!(error.code === 2 || /no such file/i.test(error.message || "")))
+      throw error;
+  }
+  await client.fastPut(file, sftpObjectPath(hash), {
+    concurrency: 128,
+    chunkSize: 131072,
+    step: createSftpProgress("SFTP upload"),
+  });
+  return { id: hash, name, size: fs.statSync(file).size, sftp: true };
 }
 
 async function downloadToFile(url, output, options = {}) {
@@ -1862,11 +2618,22 @@ async function downloadToFile(url, output, options = {}) {
     options.timeoutMs ?? 120000,
     "download timeout",
   );
-  const response = await fetch(url, {
-    headers: options.headers || {},
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!response.ok) throw new Error(`download failed: ${response.status}`);
+  // Retry only transient HTTP server failures, before writing any response
+  // bytes. Never retry size/integrity failures or permanent authorization errors.
+  let response;
+  for (let attempt = 0; ; attempt += 1) {
+    response = await fetch(url, {
+      headers: options.headers || {},
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (response.ok) break;
+    if (response.body) await response.body.cancel();
+    if (![500, 502, 503, 504].includes(response.status) || attempt >= 5)
+      throw new Error(`download failed: ${response.status}`);
+    const delay = Math.min(1000 * 2 ** attempt, 8000);
+    log(`Cache download: HTTP ${response.status}; retry ${attempt + 1}/5 in ${delay}ms`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
   const contentLength = Number(response.headers.get("content-length") || 0);
   if (contentLength > maxBytes)
     throw new Error("cache archive exceeds the compressed size limit");
@@ -1972,6 +2739,7 @@ async function extract(file, paths = restorePaths()) {
     const extraction = cp.spawnSync(
       "tar",
       [
+        "--force-local",
         "--extract",
         "--file",
         tarFile,
@@ -1993,6 +2761,7 @@ async function extract(file, paths = restorePaths()) {
 }
 
 module.exports = {
+  probeObject,
   input,
   parsePositiveSafeInteger,
   hasInput,
@@ -2020,14 +2789,22 @@ module.exports = {
   sharedRestorePrefix,
   assertTrustedRestoreAllowed,
   log,
+  normalLog,
   summary,
   fail,
   gh,
   upload,
+  uploadObject,
+  uploadBranchBlob,
+  closeSftp,
+  cacheDownloadDisabled,
+  sftpSettings,
   entries,
   excludePatterns,
   refName,
   manifestBranch,
+  manifestPath,
+  storageMode,
   securityScan,
   makeArchive,
   inspectTar,
@@ -2059,8 +2836,12 @@ module.exports = {
   setRef,
   replaceRef,
   deleteObject,
+  deleteArtifactReference,
   manifestWriteGuard,
   download,
+  downloadBranchObject,
+  downloadArtifactObject,
+  downloadArtifactParts,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,

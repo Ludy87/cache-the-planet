@@ -9,7 +9,9 @@
       "docker",
       "docker-qemu",
       "task",
-      "cargo"
-    ]
+      "cargo",
+      "github-artifact-test"
+    ],
+    "branch_part_bytes": "25165824"
   }
 }

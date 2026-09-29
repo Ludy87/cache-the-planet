@@ -17,6 +17,13 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
 
+Der Workflow `github-branch-storage-test.yml` speichert seine Testreferenzen
+und Objektteile unter `integration-tests/branch-<run-id>-<attempt>/` auf
+`cache-data`. Nach dem Restore entfernt ein eigener Cleanup-Job diesen
+laufbezogenen Ordner, auch wenn der Restore fehlschlägt. Andere Cache-Pfade
+bleiben erhalten. Die Löschung erfolgt durch einen neuen Commit; frühere
+Dateiversionen bleiben in der Git-Historie. Dies ersetzt keine allgemeine GC.
+
 `cache-name` wird nicht automatisch in einen Dateipfad umgewandelt. Die
 Integrations-Workflows verwenden aber bewusst denselben Namensbestandteil für
 `cache-name` und den lokalen Cache-Root; beide Werte müssen deshalb manuell
@@ -77,7 +84,10 @@ Bei genau einem `multi-cache`-Eintrag werden die Singular-Outputs
 gesetzt. Bei zwei oder mehr Einträgen werden stattdessen die Listen-Outputs
 `cache-hits`, `matched-keys`, `assets-name`, `contents-hash` und `cache-sizes`
 gesetzt. Die Werte stehen in derselben Reihenfolge wie die Einträge in der
-`multi-cache`-Definition.
+`multi-cache`-Definition. Beim Restore gibt es zusätzlich den gemeinsamen
+`cache-hit`: Er ist nur `true`, wenn alle Einträge exakte Treffer sind.
+Mit `disable-download: true` bezeichnet dies für Branch/SFTP nur die
+Existenz, nicht die lokale Wiederherstellung (siehe [Protokoll](protocol.md)).
 
 Für den Zugriff nach Cache-Namen gibt es zusätzlich das JSON-Output
 `cache-results`. GitHub-Expressions müssen den String mit `fromJSON(...)`

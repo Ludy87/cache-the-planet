@@ -54,6 +54,106 @@ test("security scan allows token-named stylesheet files", () => {
   }
 });
 
+test("security scan allows credential-like source filenames", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-source-name-"));
+  try {
+    const cargoSource = path.join(root, "registry", "src", "crate", "src");
+    fs.mkdirSync(cargoSource, { recursive: true });
+    fs.writeFileSync(path.join(cargoSource, "credential.rs"), "pub struct Credential;\n");
+    fs.writeFileSync(path.join(cargoSource, "credentials.java"), "final class Credentials {}\n");
+    fs.writeFileSync(path.join(cargoSource, "sample.rsa"), "example certificate data\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan still rejects credential files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-credential-file-"));
+  try {
+    fs.writeFileSync(path.join(root, ".git-credentials"), "https://user:password@example.invalid\n");
+    assert.throws(() => common.securityScan(root), /sensitive-looking file/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows Cargo crate archives with token-like names", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-crate-"));
+  try {
+    fs.writeFileSync(path.join(root, "match_token-0.1.0.crate"), Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows token-like Cargo sparse index entries", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-index-"));
+  const entry = path.join(
+    root,
+    "cargo",
+    "registry",
+    "index",
+    "index.crates.io-1949cf8c6b5b557f",
+    ".cache",
+    "ma",
+    "tc",
+    "match_token",
+  );
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows Cargo sparse index entries from the cargo cache root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-root-"));
+  const entry = path.join(
+    root,
+    "registry",
+    "index",
+    "index.crates.io-1949cf8c6b5b557f",
+    ".cache",
+    "ma",
+    "tc",
+    "match_token",
+  );
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan skips explicitly excluded credential-like files", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-exclude-"));
+  const file = path.join(workspace, ".cache", "cargo", "registry", "src", "crate", "examples", "sample.rsa");
+  const previousWorkspace = process.env.GITHUB_WORKSPACE;
+  const previousExclude = process.env["INPUT_EXCLUDE"];
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, "-----BEGIN RSA PRIVATE KEY-----\n");
+    process.env.GITHUB_WORKSPACE = workspace;
+    process.env["INPUT_EXCLUDE"] = ".cache/cargo/registry/src/**/examples/*.rsa";
+    assert.doesNotThrow(() => common.securityScan(path.join(workspace, ".cache", "cargo"), {
+      excludes: common.excludePatterns(),
+      workspace,
+    }));
+  } finally {
+    if (previousWorkspace === undefined) delete process.env.GITHUB_WORKSPACE;
+    else process.env.GITHUB_WORKSPACE = previousWorkspace;
+    if (previousExclude === undefined) delete process.env["INPUT_EXCLUDE"];
+    else process.env["INPUT_EXCLUDE"] = previousExclude;
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
   const configPath = path.join(workspace, ".cache-the-planet.json");

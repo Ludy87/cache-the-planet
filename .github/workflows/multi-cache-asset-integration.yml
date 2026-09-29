@@ -18,7 +18,7 @@ on:
         required: false
 
 env:
-  NPM_CACHE: ${{ github.workspace }}/.cache/npm
+  NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
   MAVEN_CACHE: ${{ github.workspace }}/.cache/maven-java17
 
 permissions:
@@ -64,7 +64,7 @@ jobs:
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
           strict: true
 
-      - name: Verify list outputs for multiple caches
+      - name: Verify list and aggregate outputs for multiple caches
         if: ${{ inputs.save-cache || inputs.restore-cache }}
         env:
           CACHE_HITS: ${{ steps.cache.outputs.cache-hits }}
@@ -82,9 +82,13 @@ jobs:
           test -n "$ASSET_NAMES"
           test -n "$CONTENT_HASHES"
           test -n "$CACHE_SIZES"
-          test -z "$SINGULAR_HIT"
           test "$NPM_RESULT" = "true" || test "$NPM_RESULT" = "false"
           test "$MAVEN_RESULT" = "true" || test "$MAVEN_RESULT" = "false"
+          expected_hit=false
+          if [ "$NPM_RESULT" = "true" ] && [ "$MAVEN_RESULT" = "true" ]; then
+            expected_hit=true
+          fi
+          test "$SINGULAR_HIT" = "$expected_hit"
 
       - name: Verify singular outputs for one cache
         if: ${{ inputs.restore-cache && !inputs.save-cache }}
@@ -125,7 +129,7 @@ jobs:
 
       - name: Configure cache directories
         run: |
-          npm config set cache "$NPM_CACHE" --global
+          npm config set cache "$NPM_CONFIG_CACHE" --global
           mkdir -p "$MAVEN_CACHE"
 
       - name: Install npm dependencies

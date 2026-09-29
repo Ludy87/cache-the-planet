@@ -127,6 +127,11 @@ Empfohlen wird ein zufälliger 64-stelliger Hex-Schlüssel. Eine Passphrase ist 
 Cache-Daten gelten als nicht vertrauenswürdige Eingaben. Bevor ein Archiv
 erstellt wird, lehnt die Action Folgendes ab:
 
+Auch GitHub-Actions-Artefakte gelten beim Restore als untrusted input. Der
+Artifact-Run und die Artifact-ID stammen aus dem Manifest, die geladenen Bytes
+werden aber unabhängig davon gegen den gespeicherten SHA-256-Hash und die
+Manifestgröße geprüft, bevor Dekompression oder Extraktion beginnt.
+
 - externe symbolische Links; relative symbolische Links, deren Ziele innerhalb des Cache-Pfads liegen, sind erlaubt und werden beim Erstellen des Archivs aufgelöst;
 - Hardlinks werden beim Erstellen des Archivs in separate reguläre Dateien umgewandelt; symbolische Links, Hardlinks und spezielle Dateien in einem Eingabearchiv werden bei der Validierung und beim Restore abgelehnt;
 - Pfade außerhalb von `GITHUB_WORKSPACE`;
@@ -134,7 +139,9 @@ erstellt wird, lehnt die Action Folgendes ab:
 - Muster für Private-Keys in allen Textdateien bis 1 MiB; bekannte Token-Muster und allgemeine Zugangsdaten-Zuweisungen werden nur in Textdateien geprüft, die weder Quellcode noch Paketmetadaten sind. Token-Muster erfordern eine realistische Token-Länge, damit gewöhnlicher Pakettext nicht fälschlich erkannt wird. Vollständige Python-Paketmetadaten-Verzeichnisse wie `*.dist-info` und `*.egg-info` sind erlaubt, da Abhängigkeitsnamen, Hashes und Beschreibungen sicherheitsbezogene Begriffe enthalten können. Bekannte Binär- und Archivformate wie JAR, ZIP, WAR und AAR werden nicht als Text dekodiert. Dadurch werden Fehlalarme durch Binärdaten von Paketen vermieden. Normaler Quellcode wird nicht allein deshalb abgelehnt, weil er Variablen wie `password`, `secret` oder `api_key` enthält.
 
 Diese Prüfung ist eine zusätzliche Schutzmaßnahme und kein vollständiger
-Secret-Scanner. Halte Cache-Pfade möglichst eng, verwende `exclude` und lege
+Secret-Scanner. `exclude`-Muster werden bereits vor dem Security-Scan angewendet
+und verhindern daher auch Warnungen für bewusst ausgeschlossene Dateien. Halte
+Cache-Pfade möglichst eng, verwende `exclude` und lege
 niemals einen Workspace mit Produktionszugangsdaten in einen Cache-Pfad.
 Downloads werden per SHA-256 geprüft und Archive mit Pfadüberquerungen werden
 abgelehnt.

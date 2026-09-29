@@ -1,0 +1,12 @@
+# The repository contains one exact, non-secret Ed25519 capability-test key
+# copied from ssh2's public-source test constants. Keep the exceptions narrow
+# and path-scoped so real credentials remain findings.
+
+[[allowlists]]
+description = "Allow the ssh2 capability-test key in generated bundles"
+paths = ["(^|/)dist/(common|gc|multi-cache-save|multi-cache|pr-cleanup|restore|save)\\.js$"]
+regexes = ["-----BEGIN PRIVATE KEY-----\\r?\\nMC4CAQAwBQYDK2VwBCIEIHKj\\+sVa9wCD/q2DJUJaf43Kptc8xYuUQA4bOFj9vC8T\\r?\\n-----END PRIVATE KEY-----"]
+
+[[allowlists]]
+description = "Allow the exact ssh2 test-key pattern in the Trivy configuration"
+paths = ["^trivy-secret\\.yaml$"]

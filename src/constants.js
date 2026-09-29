@@ -7,6 +7,7 @@ const INPUTS = Object.freeze({
   CONFIG_FILE: "config-file",
   DELETE_SHARED: "delete-shared",
   DRY_RUN: "dry-run",
+  DISABLE_DOWNLOAD: "disable-download",
   ENCRYPTION_KEY: "encryption-key",
   EXCLUDE: "exclude",
   EXCLUDE_PATH: "exclude-path",
@@ -14,6 +15,7 @@ const INPUTS = Object.freeze({
   GRACE_DAYS: "grace-days",
   KEY: "key",
   MANIFEST_BRANCH: "manifest-branch",
+  MANIFEST_PATH: "manifest-path",
   MODE: "mode",
   MULTI_CACHE: "multi-cache",
   OBJECT: "object",
@@ -23,6 +25,13 @@ const INPUTS = Object.freeze({
   PR_REPOSITORY: "pr-repository",
   RESTORE_KEYS: "restore-keys",
   RESTORE_ONLY: "restore-only",
+  STORAGE: "storage",
+  SFTP_HOST: "sftp-host",
+  SFTP_PORT: "sftp-port",
+  SFTP_USERNAME: "sftp-username",
+  SFTP_PRIVATE_KEY: "sftp-private-key",
+  SFTP_PASSWORD: "sftp-password",
+  SFTP_BASE_PATH: "sftp-base-path",
   REPOSITORY: "repository",
   SAVE_SCOPE: "save-scope",
   SCOPE: "scope",
@@ -31,6 +40,7 @@ const INPUTS = Object.freeze({
   STRICT_SAVE: "strict-save",
   UNTRUSTED_TTL_HOURS: "untrusted-ttl-hours",
   VERSION: "version",
+  ARTIFACT_RETENTION_DAYS: "artifact-retention-days",
 });
 
 const OUTPUTS = Object.freeze({

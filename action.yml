@@ -2,6 +2,10 @@ name: Content-addressed GitHub cache
 description: Immutable, deduplicated cache objects stored as GitHub Release assets
 author: cache-the-planet
 inputs:
+  disable-download:
+    description: "Check cache existence without downloading or extracting for github-branch, github-artifact and sftp. Hits do not mean local files were restored. Saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
+    required: false
+    default: ""
   repository:
     description: "owner/name of cache repository"
     required: false
@@ -42,6 +46,30 @@ inputs:
   token:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
+  storage:
+    description: "Object storage backend: github-release, github-branch, github-artifact, or sftp"
+  artifact-retention-days:
+    description: "Retention in days for github-artifact storage; 0 uses repository default"
+    default: "0"
+    required: false
+  sftp-host:
+    description: "SFTP hostname"
+    required: false
+  sftp-port:
+    description: "SFTP port"
+    required: false
+  sftp-username:
+    description: "SFTP username"
+    required: false
+  sftp-private-key:
+    description: "SFTP private key; preferably supplied from a secret"
+    required: false
+  sftp-password:
+    description: "SFTP password; preferably supplied from a secret"
+    required: false
+  sftp-base-path:
+    description: "Absolute SFTP directory for immutable cache objects"
+    required: false
   encryption-key:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
     required: false
@@ -60,6 +88,10 @@ inputs:
     default: ""
   manifest-branch:
     description: "Branch containing the cache manifest; defaults to manifest_branch in config or cache-data"
+    required: false
+    default: ""
+  manifest-path:
+    description: "Repository directory containing the manifest; when set without manifest-branch, the default branch is used"
     required: false
     default: ""
   allow-shared-restore:
@@ -87,6 +119,8 @@ inputs:
     required: false
     default: "true"
 outputs:
+  error:
+    description: "Error message when cache restore or save fails"
   cache-hit:
     description: "true when an exact key was restored"
   matched-key:

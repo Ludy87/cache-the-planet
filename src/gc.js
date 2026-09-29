@@ -76,6 +76,35 @@ const { INPUTS } = require("./constants");
     const cacheAssets = allAssets.filter((item) =>
       item.name.endsWith(".tar.zst"),
     );
+    const deleteAsset = async (asset) => {
+      const hash = c.hashFromAssetName(asset.name);
+      if (!hash) return false;
+      if (asset.sftp) return c.deleteObject(repository, hash);
+      await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
+        method: "DELETE",
+      });
+      return true;
+    };
+    const deleteArtifactReferences = async (referencesToDelete, liveReferences) => {
+      if (c.storageMode() !== "github-artifact" || dryRun) return 0;
+      const artifactIds = (reference) =>
+        Array.isArray(reference.parts)
+          ? reference.parts.map((part) => part.artifact_id)
+          : [reference.artifact_id];
+      const liveArtifactIds = new Set(
+        Object.values(liveReferences).flatMap(artifactIds),
+      );
+      let deleted = 0;
+      const attempted = new Set();
+      for (const reference of referencesToDelete) {
+        const ids = artifactIds(reference);
+        if (ids.some((id) => liveArtifactIds.has(id))) continue;
+        if (ids.some((id) => attempted.has(id))) continue;
+        ids.forEach((id) => attempted.add(id));
+        if (await c.deleteArtifactReference(reference)) deleted += 1;
+      }
+      return deleted;
+    };
 
     if (mode === "expired") {
       const isDeletableKey = (key) =>
@@ -112,6 +141,12 @@ const { INPUTS } = require("./constants");
           dryRun ? references : (await c.refsAll(repository)).json.references,
         ).map((reference) => reference.object),
       );
+      const liveReferencesAfterExpiry =
+        dryRun ? references : (await c.refsAll(repository)).json.references;
+      deletedAssets += await deleteArtifactReferences(
+        expired.map(([, reference]) => reference),
+        liveReferencesAfterExpiry,
+      );
       for (const asset of cacheAssets) {
         const hash = c.hashFromAssetName(asset.name);
         const isUntrustedAsset = asset.name.startsWith("untrusted-");
@@ -131,24 +166,20 @@ const { INPUTS } = require("./constants");
         )
           continue;
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun)
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        deletedAssets += 1;
+        if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       }
       report();
       return;
     }
 
     if (mode === "all") {
+      deletedAssets += await deleteArtifactReferences(
+        Object.values(references),
+        {},
+      );
       for (const asset of cacheAssets) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun)
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        deletedAssets += 1;
+        if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       }
       if (Object.keys(references).length && !dryRun) {
         await updateManifestGroups(
@@ -183,13 +214,20 @@ const { INPUTS } = require("./constants");
       );
       if (asset) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun)
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        deletedAssets += 1;
+        if (!dryRun && (await deleteAsset(asset))) deletedAssets += 1;
       } else {
         console.log(`object not found: ${hash}`);
+      }
+      if (!dryRun) {
+        const matchingReferences = Object.entries(references)
+          .filter(([, reference]) => reference.object === hash)
+          .map(([, reference]) => reference);
+        deletedAssets += await deleteArtifactReferences(
+          matchingReferences,
+          Object.fromEntries(
+            Object.entries(references).filter(([, reference]) => reference.object !== hash),
+          ),
+        );
       }
       const matchingKeys = Object.entries(references)
         .filter(([, reference]) => reference.object === hash)
@@ -216,15 +254,13 @@ const { INPUTS } = require("./constants");
         now - new Date(asset.created_at).getTime() > gracePeriod;
       if (!liveObjects.has(hash) && oldEnough) {
         console.log(`${dryRun ? "would delete" : "delete"} ${asset.name}`);
-        if (!dryRun) {
-          await c.gh(`/repos/${repository}/releases/assets/${asset.id}`, {
-            method: "DELETE",
-          });
-        }
+        if (!dryRun) await deleteAsset(asset);
       }
     }
     report();
   } catch (error) {
     c.fail(error);
+  } finally {
+    await c.closeSftp();
   }
 })();

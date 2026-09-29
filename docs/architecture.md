@@ -7,12 +7,19 @@ Referenzen:
 
 1. Das Pre-Release `cache-v1` speichert die großen, unveränderlichen
    `tar.zst`-Objekte als GitHub-Release-Assets.
-2. Getrennte Dateien unter `manifests/v1/` enthalten die Zuordnung von
-   Cache-Keys zu Objekt-Hashes: `trusted.json`, `shared.json` und je eine
-   Datei unter `untrusted/pr-<number>.json` pro Pull Request.
+2. Storage-getrennte Dateien unter `manifests/v1/<storage>/` enthalten die
+   Zuordnung von Cache-Keys zu Objekt-Hashes. Es gibt je Storage
+   `trusted.json`, `shared.json` und eine Datei unter
+   `untrusted/pr-<number>.json` pro Pull Request.
 3. Die GitHub Contents API liest und aktualisiert dieses Manifest.
 4. Die Action prüft, lädt und entpackt Assets direkt, ohne das Repository zu
    klonen oder große Dateien in der Git-Historie abzulegen.
+
+Für `github-artifact` verweist die Manifest-Referenz zusätzlich auf ein oder
+mehrere GitHub-Actions-Artefakte und die ursprünglichen Workflow-Runs. Große
+Archive werden in begrenzte Teile zerlegt. Die Nutzdaten liegen nicht im
+Git-Tree; Restore validiert jeden Teil und anschließend die zusammengesetzten
+Archivbytes weiterhin per SHA-256.
 
 ## Speichern
 

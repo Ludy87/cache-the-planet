@@ -9,7 +9,14 @@ function saveSummary(status, fields = {}) {
   });
 }
 
+async function objectForReference(repository, reference) {
+  if (c.storageMode() === "github-artifact")
+    return c.probeObject(repository, reference);
+  return c.object(repository, reference.object);
+}
+
 async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
+  if (c.storageMode() === "github-branch") return;
   // Every scope is content-addressed, but an upload can still race with
   // another publisher.  In particular, PR artifacts are published by a
   // separate trusted workflow and may be processed more than once.  Remove
@@ -74,6 +81,7 @@ async function replaceOlderReferences(repository, key) {
 }
 
 async function deleteUnreferencedObjects(repository, hashes, manifest) {
+  if (c.storageMode() === "github-branch") return;
   const liveHashes = new Set(
     Object.values(manifest.references || {})
       .map((reference) => reference?.object)
@@ -207,10 +215,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       }
     }
     if (existingReference?.object) {
-      const existingAsset = await c.object(
-        repository,
-        existingReference.object,
-      );
+      const existingAsset = await objectForReference(repository, existingReference);
       if (!existingAsset) {
         c.log(
           `orphaned cache reference detected for key=${key}; recreating asset`,
@@ -282,26 +287,23 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           `replacing existing pull request cache: old-key=${conflictingKey}; new-key=${key}`,
         );
         const archive = await c.makeArchive();
-        const hash = c.digest(archive.file);
+        try {
+          const hash = c.digest(archive.file);
         const existing = await c.object(repository, hash);
         const name = c.assetName(key, hash);
+        let uploaded;
         if (!existing) {
-          const release = (await c.assets(repository)).release;
-          const uploadUrl = release.upload_url.replace(
-            "{?name,label}",
-            `?name=${encodeURIComponent(name)}`,
-          );
-          await c.upload(uploadUrl, archive.file, name, "application/zstd");
+          uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
           c.invalidateRepositoryCache(repository);
+        } else if (c.storageMode() === "github-branch") {
+          uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         }
         const updated = await c.replaceRef(
           repository,
           key,
           hash,
           conflictingKey,
-          {
-            size: fs.statSync(archive.file).size,
-          },
+          { size: fs.statSync(archive.file).size, ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}), ...(uploaded?.artifact ? { artifact_id: uploaded.id, artifact_name: uploaded.artifactName, workflow_run_id: Number(process.env.GITHUB_RUN_ID) } : {}) },
         );
         const oldHash = current.json.references[conflictingKey]?.object;
         const stillReferenced =
@@ -311,7 +313,13 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           );
         if (oldHash && oldHash !== hash && !stillReferenced) {
           try {
-            await c.deleteObject(repository, oldHash);
+            c.log(`deleting replaced pull request cache asset: hash=${oldHash}`);
+            const deleted = await c.deleteObject(repository, oldHash);
+            c.log(
+              deleted
+                ? `deleted replaced pull request cache asset: hash=${oldHash}`
+                : `replaced pull request cache asset was already absent: hash=${oldHash}`,
+            );
           } catch (error) {
             c.log(`old cache asset could not be deleted: ${error.message}`);
           }
@@ -330,16 +338,20 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           "Content hash": hash,
         });
         return;
+        } finally {
+          c.removeTemporaryFile(archive.dir);
+        }
       }
     }
 
     const relatedKey = c.scopeCounterpartKey(key);
     const relatedReference = relatedKey && current.json.references[relatedKey];
     if (relatedReference?.object) {
-      const relatedAsset = await c.object(repository, relatedReference.object);
+      const relatedAsset = await objectForReference(repository, relatedReference);
       if (relatedAsset) {
         let updated = await c.setRef(repository, key, relatedReference.object, {
           size: relatedReference.size,
+          ...(relatedReference.parts ? { parts: relatedReference.parts } : {}),
           source: `linked-from:${relatedKey}`,
         });
         if (sharedKey || trustedKey) {
@@ -378,30 +390,31 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
 
     const archive = await c.makeArchive();
-    const hash = c.digest(archive.file);
+    try {
+      const hash = c.digest(archive.file);
     const existing = await c.object(repository, hash);
     const name = c.assetName(key, hash);
+    let uploaded;
 
     if (!existing) {
-      const release = (await c.assets(repository)).release;
       try {
-        const uploadUrl = release.upload_url.replace(
-          "{?name,label}",
-          `?name=${encodeURIComponent(name)}`,
-        );
-        await c.upload(uploadUrl, archive.file, name, "application/zstd");
+        uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
         c.invalidateRepositoryCache(repository);
-        c.log(`uploaded object ${hash}`);
+        c.normalLog(`uploaded object ${hash}`);
       } catch (error) {
         if (error.status !== 422) throw error;
         c.log(`deduplicated object ${hash}`);
       }
     } else {
       c.log(`object already exists: ${hash}`);
+      if (c.storageMode() === "github-branch") {
+        uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
+      }
     }
 
     let updated = await c.setRef(repository, key, hash, {
       size: fs.statSync(archive.file).size,
+      ...(uploaded?.parts ? { parts: uploaded.parts } : {}), ...(uploaded?.path ? { path: uploaded.path } : {}), ...(uploaded?.artifact ? { artifact_id: uploaded.id, artifact_name: uploaded.artifactName, workflow_run_id: Number(process.env.GITHUB_RUN_ID) } : {}),
     });
     if (sharedKey || trustedKey) {
       const replacement = await replaceOlderReferences(repository, key);
@@ -411,6 +424,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     if (sharedCounterpart) {
       updated = await c.setRef(repository, sharedCounterpart, hash, {
         size: fs.statSync(archive.file).size,
+        ...(uploaded?.parts ? { parts: uploaded.parts } : {}),
         source: `linked-from:${key}`,
       });
       const replacement = await replaceOlderReferences(
@@ -443,6 +457,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       "Asset name": existing?.name || name,
       "Content hash": hash,
     });
+    } finally {
+      c.removeTemporaryFile(archive.dir);
+    }
   } catch (error) {
     // Pull-request jobs may receive a valid token without write access to the
     // central cache repository. Saving is optional there, including for
@@ -464,4 +481,4 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     }
     c.fail(error, INPUTS.STRICT_SAVE);
   }
-})();
+})().finally(() => c.closeSftp());

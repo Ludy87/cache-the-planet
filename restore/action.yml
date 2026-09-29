@@ -2,6 +2,10 @@ name: Content-addressed GitHub cache (restore)
 description: Restore immutable, deduplicated cache objects stored as GitHub Release assets
 author: cache-the-planet
 inputs:
+  disable-download:
+    description: "Check cache existence without downloading or extracting for github-branch and sftp. Hits do not mean local files were restored. Saving remains enabled. Defaults to CACHE_DISABLE_DOWNLOAD or disable_download in config, otherwise false. Ignored by save."
+    required: false
+    default: ""
   repository:
     description: "owner/name of cache repository"
     required: false

@@ -70,3 +70,5 @@ mcp/
 dist/
 !dist/
 !dist/*.js
+
+bench*

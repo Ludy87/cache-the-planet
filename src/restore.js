@@ -7,6 +7,7 @@ const { INPUTS } = require("./constants");
     const isFork = c.isForkPullRequest();
     c.setOutput("is-fork", isFork ? "true" : "false");
     c.setOutput("read-only", isFork ? "true" : "false");
+    const downloadDisabled = c.cacheDownloadDisabled();
     const repository = c.cacheRepository();
     const key = c.scopedKey(c.input(INPUTS.KEY));
     const candidates = [];
@@ -69,7 +70,11 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const asset = await c.object(repository, found[1].object);
+    const asset = c.storageMode && ["github-branch", "github-artifact"].includes(c.storageMode())
+      ? await c.probeObject(repository, found[1])
+      : downloadDisabled
+        ? await c.probeObject(repository, found[1])
+        : await c.object(repository, found[1].object);
     if (!asset) {
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
@@ -86,8 +91,30 @@ const { INPUTS } = require("./constants");
       return;
     }
 
-    const archive = await c.download(repository, found[1].object);
-    await c.extract(archive);
+    if (c.storageMode && c.storageMode() === "github-branch") {
+      const branchPath = found[1].path
+        ? `${c.manifestPath()}/objects/v1/${found[1].path}/${found[1].object.slice(7)}`
+        : `${c.manifestPath()}/objects/v1/${found[1].object.slice(7)}`;
+      c.log(`📍 Branch cache object path: ${branchPath}/part-000000`);
+    }
+
+    let archive;
+    if (!downloadDisabled && c.storageMode && c.storageMode() === "github-artifact") {
+      archive = found[1].parts
+        ? await c.downloadArtifactParts(found[1])
+        : await c.downloadArtifactObject(found[1]);
+    } else if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
+      if (!Array.isArray(found[1].parts)) {
+        c.setOutput("cache-hit", "false");
+        c.setOutput("matched-key", "");
+        c.log(`Cache miss: branch reference has no part list: key=${found[0]}`);
+        return;
+      }
+      archive = await c.downloadBranchObject(repository, found[1]);
+    } else if (!downloadDisabled) {
+      archive = await c.download(repository, found[1].object);
+    }
+    if (!downloadDisabled) await c.extract(archive);
     const cacheIdentity = (value) => {
       const parts = value.split("/");
       if (parts[0] === "shared") return parts.slice(3).join("/");
@@ -106,9 +133,10 @@ const { INPUTS } = require("./constants");
     c.setOutput("matched-key", found[0]);
     c.setOutput("content-hash", found[1].object);
     c.setOutput("asset-name", asset.name);
-    c.setOutput("cache-size", fs.statSync(archive).size);
+    c.setOutput("cache-size", downloadDisabled ? asset.size : fs.statSync(archive).size);
     c.summary("Cache Restore", {
       Status: cacheHit ? "HIT" : "FALLBACK",
+      Download: downloadDisabled ? "disabled (existence check only)" : "completed",
       "Requested key": key,
       "Matched key": found[0],
       Asset: asset.name,
@@ -124,4 +152,4 @@ const { INPUTS } = require("./constants");
   } catch (error) {
     c.fail(error);
   }
-})();
+})().finally(() => c.closeSftp());
