@@ -19,7 +19,7 @@ permissions:
 env:
   CACHE_PATH: .cache/github-artifact
   CACHE_KEY: github-artifact-integration-v1
-  CACHE_BRANCH_PART_BYTES: 16
+  # CACHE_BRANCH_PART_BYTES: 16
 
 jobs:
   save-cache:
