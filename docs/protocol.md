@@ -50,6 +50,13 @@ mehrere Artefakt-Teile zerlegt; jedes `parts`-Element enthält zusätzlich
 und anschließend den Hash des zusammengesetzten Archivs. Cross-Run-Restores
 benötigen ein Token mit `actions: read`.
 
+Fork-Pull-Requests schreiben keine Manifest-Datei mit dem untrusted Token. Sie
+legen zusätzlich zu den Cache-Teilen ein `metadata.json`-Artifact an. Ein
+vertrauenswürdiger `workflow_run`-Publisher akzeptiert diese Datei nur bei
+passender PR, passendem Head-SHA und passendem Workflow-Run; danach prüft er
+alle Teil-Hashes sowie den Gesamt-Hash und schreibt die Referenz in das
+Untrusted-Manifest.
+
 `storage: github-branch` verwendet ebenfalls den GitHub-Storage-Namespace,
 legt die Objektteile aber als Dateien unter
 `<manifest-path>/objects/v1/<sha256>/part-<index>` im Manifest-Branch ab.

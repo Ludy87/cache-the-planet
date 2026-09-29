@@ -1,0 +1,49 @@
+name: Publish fork artifact cache metadata
+
+on:
+  workflow_run:
+    workflows: [Cache integration save suite]
+    types: [completed]
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Checkout trusted publisher
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Create publisher token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Download fork cache artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          pattern: cache-*
+          path: fork-artifacts
+          merge-multiple: false
+
+      - name: Publish validated metadata references
+        env:
+          GITHUB_TOKEN: ${{ steps.token.outputs.token }}
+          FORK_ARTIFACT_METADATA_DIR: ${{ github.workspace }}/fork-artifacts
+        run: node scripts/publish-fork-artifact-metadata.js
