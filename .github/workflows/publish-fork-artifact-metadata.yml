@@ -33,6 +33,19 @@ jobs:
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
 
+      - name: Show source workflow run
+        env:
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_WORKFLOW: ${{ github.event.workflow_run.name }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          SOURCE_EVENT: ${{ github.event.workflow_run.event }}
+        run: |
+          echo "Publisher run: ${GITHUB_RUN_ID}"
+          echo "Source run: ${SOURCE_RUN_ID}"
+          echo "Source workflow: ${SOURCE_WORKFLOW}"
+          echo "Source event: ${SOURCE_EVENT}"
+          echo "Source SHA: ${SOURCE_SHA}"
+
       - name: Download fork cache artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:

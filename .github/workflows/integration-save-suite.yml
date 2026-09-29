@@ -110,7 +110,7 @@ jobs:
           path: .cache/npm
           save-scope: shared
           allow-shared-restore: true
-          strict: true
+          strict: false
           storage: sftp
           sftp-host: ${{ secrets.SFTP_HOST }}
           sftp-username: ${{ secrets.SFTP_USERNAME }}
