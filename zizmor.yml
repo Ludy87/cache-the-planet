@@ -7,4 +7,5 @@ rules:
     ignore:
       - integration-restore-suite.yml
       - publish-pr-cache-artifacts.yml
+      - publish-fork-artifact-metadata.yml
       - test.yml

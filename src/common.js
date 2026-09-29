@@ -2609,6 +2609,28 @@ async function uploadObject(repository, file, name, contentType) {
   return { id: hash, name, size: fs.statSync(file).size, sftp: true };
 }
 
+async function uploadForkArtifactMetadata(metadata) {
+  if (storageMode() !== "github-artifact")
+    throw new Error("fork artifact metadata requires github-artifact storage");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-metadata-"));
+  try {
+    const file = path.join(directory, "metadata.json");
+    fs.writeFileSync(file, `${JSON.stringify(metadata, null, 2)}\n`, { flag: "wx" });
+    const artifactName = `cache-the-planet-pr-${metadata.pull_request}-metadata-${metadata.object.slice(7, 23)}`;
+    const result = await (await artifactClient()).uploadArtifact(
+      artifactName,
+      [file],
+      directory,
+      { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
+    );
+    if (!Number.isSafeInteger(result.id) || result.id < 1)
+      throw new Error("metadata artifact upload returned no valid artifact id");
+    return { id: result.id, name: artifactName };
+  } finally {
+    removeTemporaryFile(directory);
+  }
+}
+
 async function downloadToFile(url, output, options = {}) {
   const maxBytes = parsePositiveSafeInteger(
     options.maxBytes ?? maxCompressedBytes,
@@ -2795,6 +2817,7 @@ module.exports = {
   gh,
   upload,
   uploadObject,
+  uploadForkArtifactMetadata,
   uploadBranchBlob,
   closeSftp,
   cacheDownloadDisabled,

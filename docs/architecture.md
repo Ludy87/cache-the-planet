@@ -21,6 +21,11 @@ Archive werden in begrenzte Teile zerlegt. Die Nutzdaten liegen nicht im
 Git-Tree; Restore validiert jeden Teil und anschließend die zusammengesetzten
 Archivbytes weiterhin per SHA-256.
 
+Bei Fork-Pull-Requests lädt der untrusted Lauf die Teile und eine separate
+`metadata.json` als Runner-Artefakte hoch. Ein `workflow_run`-Publisher aus
+`main` lädt und prüft diese Metadaten, validiert PR-Head, Artifact-IDs, Teil-
+Hashes und den Gesamt-Hash und schreibt erst danach die untrusted-Referenz.
+
 ## Speichern
 
 Die Root-Action führt das Speichern nach einem erfolgreichen Restore-Job im

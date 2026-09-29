@@ -121,7 +121,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     );
     const isPullRequest = c.isPullRequestEvent();
     const requestedScope = c.cacheScope("save-scope", "scope");
-    if (isFork) {
+    if (isFork && c.storageMode() !== "github-artifact") {
       c.summary("Cache Save", {
         Status: "SKIPPED",
         Reason: "Fork pull request is read-only",
@@ -410,6 +410,34 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       if (c.storageMode() === "github-branch") {
         uploaded = await c.uploadObject(repository, archive.file, name, "application/zstd");
       }
+    }
+
+    if (isFork) {
+      if (!uploaded?.artifact || !Array.isArray(uploaded.parts))
+        throw new Error("fork artifact save did not return artifact parts");
+      const event = JSON.parse(
+        fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"),
+      );
+      const pullRequest = event.pull_request?.number;
+      const metadataArtifact = await c.uploadForkArtifactMetadata({
+        schema_version: 1,
+        repository: process.env.GITHUB_REPOSITORY,
+        pull_request: pullRequest,
+        head_sha: event.pull_request?.head?.sha || process.env.GITHUB_SHA,
+        key,
+        object: hash,
+        size: fs.statSync(archive.file).size,
+        parts: uploaded.parts,
+      });
+      c.log(
+        `fork cache artifact metadata uploaded: artifact=${metadataArtifact.name}; key=${key}`,
+      );
+      saveSummary("STAGED", {
+        Key: key,
+        "Content hash": hash,
+        "Metadata artifact": metadataArtifact.name,
+      });
+      return;
     }
 
     let updated = await c.setRef(repository, key, hash, {
