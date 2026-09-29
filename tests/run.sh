@@ -368,9 +368,9 @@ try {
   let invalidKeyRejected = false;
   try { scopedKey('trusted/example/project/npm/Linux-X64/hash/v1'); } catch { invalidKeyRejected = true; }
   if (!invalidKeyRejected) throw new Error('invalid trusted cache key was accepted');
-  process.env['INPUT_CACHE-NAME'] = 'NPM_CACHE';
+  process.env['INPUT_CACHE-NAME'] = 'NPM_CONFIG_CACHE';
   invalidKeyRejected = false;
-  if (scopedKey('Linux-X64/hash/v1') !== 'trusted/example/project/main/NPM_CACHE/Linux-X64/hash/v1') {
+  if (scopedKey('Linux-X64/hash/v1') !== 'trusted/example/project/main/NPM_CONFIG_CACHE/Linux-X64/hash/v1') {
     throw new Error('uppercase and underscore cache-name was rejected');
   }
   process.env['INPUT_CACHE-NAME'] = 'npm.cache';
