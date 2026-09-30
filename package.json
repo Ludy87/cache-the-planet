@@ -36,6 +36,7 @@
     "esbuild": true
   },
   "scripts": {
+    "prebuild": "node scripts/clean-dist.js",
     "build": "esbuild ./src/restore.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/restore.js && esbuild ./src/save.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/save.js && esbuild ./src/multi-cache.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/multi-cache.js && esbuild ./src/multi-cache-save.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/multi-cache-save.js && esbuild ./src/gc.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/gc.js && esbuild ./src/pr-cleanup.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/pr-cleanup.js && esbuild ./src/common.js --bundle --platform=node --target=node24 --loader:.node=file --minify --outfile=./dist/common.js",
     "build:check": "npm run build && git diff --exit-code -- dist",
     "mcp": "node mcp/server.js",
@@ -48,5 +49,8 @@
     "@actions/artifact": "^6.2.1",
     "@actions/github": "9.1.1",
     "ssh2-sftp-client": "12.1.1"
+  },
+  "overrides": {
+    "glob": "13.0.6"
   }
 }

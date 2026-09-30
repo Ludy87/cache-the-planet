@@ -61,6 +61,25 @@ jobs:
         run: |
           test "$CACHE_HIT" = true || test "$CACHE_HIT" = false
 
+      - name: Save identical cache again to test deduplication
+        id: duplicate-cache
+        uses: $/
+        with:
+          cache-name: github-artifact-test
+          key: ${{ env.CACHE_KEY }}
+          path: ${{ env.CACHE_PATH }}
+          storage: github-artifact
+          save-scope: shared
+          artifact-retention-days: 1
+          token: ${{ github.token }}
+          strict: true
+
+      - name: Verify duplicate save completed
+        env:
+          CACHE_HIT: ${{ steps.duplicate-cache.outputs.cache-hit }}
+        run: |
+          test "$CACHE_HIT" = true || test "$CACHE_HIT" = false
+
   restore-cache:
     # if: ${{ inputs.restore-cache }}
     needs: save-cache

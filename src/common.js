@@ -382,6 +382,14 @@ async function artifactClient() {
   return artifactClientPromise;
 }
 
+function isArtifactNameConflict(error) {
+  return error?.status === 409 || error?.statusCode === 409 ||
+    error?.httpStatusCode === 409 ||
+    /\b409\b[\s\S]*artifact with this name already exists/i.test(
+      String(error?.message || error),
+    );
+}
+
 function artifactFindBy(workflowRunId) {
   const [repositoryOwner, repositoryName] = cacheRepository().split("/");
   return { workflowRunId, repositoryOwner, repositoryName, token: token() };
@@ -2506,7 +2514,7 @@ async function uploadObject(repository, file, name, contentType) {
             { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
           );
         } catch (error) {
-          if (error.status !== 409)
+          if (!isArtifactNameConflict(error))
             throw error;
           const artifacts = (await gh(
             `/repos/${repository}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
@@ -2633,12 +2641,28 @@ async function uploadForkArtifactMetadata(metadata) {
     const file = path.join(directory, "metadata.json");
     fs.writeFileSync(file, `${JSON.stringify(metadata, null, 2)}\n`, { flag: "wx" });
     const artifactName = `cache-the-planet-pr-${metadata.pull_request}-metadata-${metadata.object.slice(7, 23)}`;
-    const result = await (await artifactClient()).uploadArtifact(
-      artifactName,
-      [file],
-      directory,
-      { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
-    );
+    let result;
+    try {
+      result = await (await artifactClient()).uploadArtifact(
+        artifactName,
+        [file],
+        directory,
+        { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
+      );
+    } catch (error) {
+      if (!isArtifactNameConflict(error))
+        throw error;
+      const artifacts = (await gh(
+        `/repos/${process.env.GITHUB_REPOSITORY}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
+      )).body.artifacts || [];
+      const existing = artifacts.find(
+        (artifact) => !artifact.expired && artifact.name === artifactName,
+      );
+      if (!existing || !Number.isSafeInteger(existing.id) || existing.id < 1)
+        throw error;
+      result = { id: existing.id };
+      log(`reusing existing artifact ${artifactName}: ${existing.id}`);
+    }
     if (!Number.isSafeInteger(result.id) || result.id < 1)
       throw new Error("metadata artifact upload returned no valid artifact id");
     return { id: result.id, name: artifactName };
