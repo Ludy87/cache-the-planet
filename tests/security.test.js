@@ -163,6 +163,27 @@ test("security scan allows Cargo sparse index entries from the cargo cache root"
   }
 });
 
+test("security scan allows Cargo sparse index entries when registry is the scan root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-registry-root-"));
+  const registry = path.join(root, "registry");
+  const entry = path.join(
+    registry,
+    "index",
+    "index.crates.io-1949cf8c6b5b557f",
+    ".cache",
+    "ma",
+    "tc",
+    "match_token",
+  );
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(registry));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan skips explicitly excluded credential-like files", () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-exclude-"));
   const file = path.join(workspace, ".cache", "cargo", "registry", "src", "crate", "examples", "sample.rsa");

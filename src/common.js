@@ -1424,7 +1424,7 @@ const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath =
-  /(?:^|\/)registry\/index\/[^/]+\/\.cache(?:\/|$)/i;
+  /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath =
   /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
