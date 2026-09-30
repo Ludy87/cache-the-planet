@@ -76,6 +76,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
+      - name: Create Cargo cache directories
+        run: mkdir -p .cache/cargo/bin .cache/cargo/registry .cache/cargo/git
+
       - name: Restore Cargo cache
         id: cache
         uses: $/
@@ -87,8 +90,6 @@ jobs:
           allow-shared-restore: true
           path: |
             .cache/cargo/bin
-            .cache/cargo/.crates.toml
-            .cache/cargo/.crates2.json
             .cache/cargo/registry
             .cache/cargo/git
           version: ${{ env.VERSION }}
@@ -121,8 +122,6 @@ jobs:
           name: cache-the-planet-pr-${{ github.event.pull_request.number }}-cargo-${{ needs.hash_pr.outputs.files_hash }}-v${{ env.VERSION }}
           path: |
             .cache/cargo/bin
-            .cache/cargo/.crates.toml
-            .cache/cargo/.crates2.json
             .cache/cargo/registry
             .cache/cargo/git
           include-hidden-files: true
@@ -155,6 +154,9 @@ jobs:
           ref: main
           persist-credentials: false
 
+      - name: Create Cargo cache directories
+        run: mkdir -p .cache/cargo/bin .cache/cargo/registry .cache/cargo/git
+
       - name: Restore Cargo cache - ${{ matrix.scope-matrix.scope }}
         uses: $/
         with:
@@ -163,8 +165,6 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |
             .cache/cargo/bin
-            .cache/cargo/.crates.toml
-            .cache/cargo/.crates2.json
             .cache/cargo/registry
             .cache/cargo/git
           version: ${{ env.VERSION }}
