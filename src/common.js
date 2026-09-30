@@ -382,6 +382,14 @@ async function artifactClient() {
   return artifactClientPromise;
 }
 
+function isArtifactNameConflict(error) {
+  return error?.status === 409 || error?.statusCode === 409 ||
+    error?.httpStatusCode === 409 ||
+    /\b409\b[\s\S]*artifact with this name already exists/i.test(
+      String(error?.message || error),
+    );
+}
+
 function artifactFindBy(workflowRunId) {
   const [repositoryOwner, repositoryName] = cacheRepository().split("/");
   return { workflowRunId, repositoryOwner, repositoryName, token: token() };
@@ -2506,7 +2514,7 @@ async function uploadObject(repository, file, name, contentType) {
             { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
           );
         } catch (error) {
-          if (error.status !== 409)
+          if (!isArtifactNameConflict(error))
             throw error;
           const artifacts = (await gh(
             `/repos/${repository}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
@@ -2642,7 +2650,7 @@ async function uploadForkArtifactMetadata(metadata) {
         { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
       );
     } catch (error) {
-      if (error.status !== 409)
+      if (!isArtifactNameConflict(error))
         throw error;
       const artifacts = (await gh(
         `/repos/${process.env.GITHUB_REPOSITORY}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
