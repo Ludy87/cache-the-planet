@@ -80,8 +80,40 @@ test("security scan still rejects credential files", () => {
 
 test("security scan allows Cargo crate archives with token-like names", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-crate-"));
+  const entry = path.join(
+    root,
+    "registry",
+    "cache",
+    "github.com-1ecc6299db9ec823",
+    "match_token-0.1.0.crate",
+  );
   try {
-    fs.writeFileSync(path.join(root, "match_token-0.1.0.crate"), Buffer.from([0, 1, 2, 3]));
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan still rejects credential files in Cargo git caches", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-git-"));
+  const entry = path.join(root, "cargo", "git", "checkouts", ".git-credentials");
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, "https://user:password@example.invalid\n");
+    assert.throws(() => common.securityScan(root), /sensitive-looking file/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows Cargo bin executables with token-like names", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-bin-"));
+  const entry = path.join(root, "cargo", "bin", "match_token");
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -782,6 +814,27 @@ test("artifact names and contents are restricted", () => {
     );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("artifact restore binds metadata to the manifest reference", () => {
+  const reference = { artifact_id: 42, artifact_name: "cache-example-part-000000", workflow_run_id: 7 };
+  const metadata = {
+    id: 42,
+    name: "cache-example-part-000000",
+    expired: false,
+    workflow_run: { id: 7, repository: { full_name: "owner/cache" } },
+  };
+  const previousRepository = process.env.INPUT_REPOSITORY;
+  try {
+    process.env.INPUT_REPOSITORY = "owner/cache";
+    assert.doesNotThrow(() => common.validateArtifactMetadata(metadata, reference));
+    assert.throws(() => common.validateArtifactMetadata({ ...metadata, id: 43 }, reference), /identity mismatch: id/);
+    assert.throws(() => common.validateArtifactMetadata({ ...metadata, name: "other" }, reference), /identity mismatch: name/);
+    assert.throws(() => common.validateArtifactMetadata({ ...metadata, workflow_run: { ...metadata.workflow_run, id: 8 } }, reference), /identity mismatch: workflow run/);
+  } finally {
+    if (previousRepository === undefined) delete process.env.INPUT_REPOSITORY;
+    else process.env.INPUT_REPOSITORY = previousRepository;
   }
 });
 
