@@ -121,10 +121,12 @@ dieses Verzeichnis mit einem Key aus `Cargo.lock`:
 - run: cargo fetch --locked
 ```
 
-Der Cache enthält primär Cargo-Registry- und Git-Downloads. Das Rust-
-`target`-Verzeichnis ist nicht automatisch enthalten, weil es stark von
-Toolchain, Betriebssystem, Architektur und Compilerflags abhängt. Wenn es
-bewusst gecached wird, muss es einen eigenen, vollständigen Key erhalten.
+Der Cache enthält primär Cargo-Registry- und Git-Downloads. Die empfohlenen
+Cache-Wurzeln sind `cargo/registry/cache`, `cargo/registry/index`, `cargo/git`
+und `cargo/bin`; ihre Inhalte werden weiterhin auf sensible Dateien geprüft.
+Das Rust-`target`-Verzeichnis wird nicht automatisch enthalten und bleibt
+bewusst außerhalb der erlaubten Cargo-Ausnahmen, weil Build-Artefakte und
+Tool-Ausgaben Secrets enthalten können.
 
 ## Scope-Muster für Integrationen
 

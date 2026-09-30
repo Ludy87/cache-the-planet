@@ -146,6 +146,12 @@ niemals einen Workspace mit Produktionszugangsdaten in einen Cache-Pfad.
 Downloads werden per SHA-256 geprüft und Archive mit Pfadüberquerungen werden
 abgelehnt.
 
+Die üblichen Cargo-Cache-Wurzeln `cargo/registry/cache`, `cargo/registry/index`,
+`cargo/git` und `cargo/bin` sind als Cache-Struktur zulässig. Ihre
+Unterverzeichnisse und Dateien bleiben dem normalen Pfad- und Inhalts-Scan
+unterworfen. Das Rust-`target`-Verzeichnis erhält keine solche Ausnahme, weil
+Build-Artefakte und Tool-Ausgaben Secrets enthalten können.
+
 Vertrauenswürdige Referenzen dürfen nur aus `main` oder einem Tag geschrieben
 werden. Pull-Request-Referenzen müssen
 `untrusted/<repository>/pr-<number>/...` verwenden und werden beim Schließen des

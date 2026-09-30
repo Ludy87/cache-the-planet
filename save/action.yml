@@ -47,6 +47,7 @@ inputs:
     required: false
   storage:
     description: "Object storage backend: github-release, github-branch, github-artifact, or sftp"
+    default: github-artifact
   artifact-retention-days:
     description: "Retention in days for github-artifact storage; 0 uses repository default"
     default: "0"

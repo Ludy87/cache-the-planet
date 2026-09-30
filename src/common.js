@@ -12,6 +12,7 @@ const encryptionMagic = Buffer.from("CTPENC1\0");
 let githubClientPromise;
 let sftpClientPromise;
 let artifactClientPromise;
+const artifactMetadataCache = new Map();
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -357,7 +358,7 @@ function storageMode() {
     input(INPUTS.STORAGE) ||
       process.env.CACHE_STORAGE ||
       configuration().storage ||
-      "github-release",
+      "github-artifact",
   )
     .trim()
     .toLowerCase();
@@ -393,6 +394,30 @@ function isArtifactNameConflict(error) {
 function artifactFindBy(workflowRunId) {
   const [repositoryOwner, repositoryName] = cacheRepository().split("/");
   return { workflowRunId, repositoryOwner, repositoryName, token: token() };
+}
+
+function validateArtifactMetadata(metadata, reference) {
+  if (!metadata || typeof metadata !== "object") throw new Error("artifact metadata is missing");
+  if (metadata.id !== reference.artifact_id) throw new Error("artifact identity mismatch: id");
+  if (metadata.name !== reference.artifact_name) throw new Error("artifact identity mismatch: name");
+  if (metadata.expired === true) throw new Error("artifact has expired");
+  if (metadata.workflow_run?.id !== reference.workflow_run_id)
+    throw new Error("artifact identity mismatch: workflow run");
+  if (metadata.workflow_run?.repository?.full_name !== cacheRepository())
+    throw new Error("artifact identity mismatch: repository");
+  return metadata;
+}
+
+async function validateArtifactReference(reference) {
+  const key = `${reference.artifact_id}:${reference.workflow_run_id}`;
+  let metadata = artifactMetadataCache.get(key);
+  if (!metadata) {
+    metadata = (await gh(
+      `/repos/${cacheRepository()}/actions/artifacts/${encodeURIComponent(reference.artifact_id)}`,
+    )).body;
+    artifactMetadataCache.set(key, metadata);
+  }
+  return validateArtifactMetadata(metadata, reference);
 }
 
 const githubBranchPartBytes = positiveEnvironmentLimit(
@@ -1399,7 +1424,10 @@ const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath =
-  /(?:^|\/)(?:cargo\/)?registry\/index\/[^/]+\/\.cache(?:\/|$)/i;
+  /(?:^|\/)registry\/index\/[^/]+\/\.cache(?:\/|$)/i;
+const cargoRegistryCachePath =
+  /(?:^|\/)registry\/cache(?:\/|$)/i;
+const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
@@ -1473,10 +1501,16 @@ function securityScan(root, options = {}) {
     if (
       sensitiveDirectory.test(relative) ||
       (sensitiveName.test(path.basename(file)) &&
+        !cargoBinPath.test(relative.split(path.sep).join("/")) &&
         !(sourceFileName.test(path.basename(file)) &&
           packageSourcePath.test(relative))) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
+        !cargoBinPath.test(relative.split(path.sep).join("/")) &&
+        !(
+          cargoRegistryCachePath.test(relative.split(path.sep).join("/")) &&
+          binaryFileName.test(path.basename(file))
+        ) &&
         !packageSourcePath.test(relative) &&
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
@@ -2353,6 +2387,9 @@ async function downloadArtifactObject(reference) {
     throw new Error("artifact reference has no valid artifact id");
   if (!Number.isSafeInteger(reference.workflow_run_id) || reference.workflow_run_id < 1)
     throw new Error("artifact reference has no valid workflow run id");
+  if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
+    throw new Error("artifact reference has no valid artifact name");
+  await validateArtifactReference(reference);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
   try {
     await (await artifactClient()).downloadArtifact(reference.artifact_id, {
@@ -2380,6 +2417,7 @@ async function downloadArtifactPart(part, directory) {
     throw new Error("artifact part has no valid workflow run id");
   if (typeof part.artifact_name !== "string" || !part.artifact_name)
     throw new Error("artifact part has no valid artifact name");
+  await validateArtifactReference(part);
   const partDirectory = path.join(directory, `part-${part.index}`);
   fs.mkdirSync(partDirectory);
   await (await artifactClient()).downloadArtifact(part.artifact_id, {
@@ -2907,6 +2945,7 @@ module.exports = {
   downloadBranchObject,
   downloadArtifactObject,
   downloadArtifactParts,
+  validateArtifactMetadata,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
