@@ -2504,7 +2504,9 @@ async function uploadObject(repository, file, name, contentType) {
         try { fs.readSync(descriptor, buffer, 0, length, offset); }
         finally { fs.closeSync(descriptor); }
         fs.writeFileSync(partFile, buffer, { flag: "wx" });
-        const artifactName = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}-part-${String(index).padStart(6, "0")}`.slice(0, 180);
+        const partSuffix = `-part-${String(index).padStart(6, "0")}`;
+        const artifactPrefix = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}`;
+        const artifactName = `${artifactPrefix.slice(0, 180 - partSuffix.length)}${partSuffix}`;
         let result;
         try {
           result = await (await artifactClient()).uploadArtifact(
