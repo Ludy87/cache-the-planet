@@ -349,6 +349,7 @@ function runRestoreOutput(event, eventName = "pull_request") {
         INPUT_KEY: "hash",
         "INPUT_CACHE-NAME": "npm",
         INPUT_SCOPE: "auto",
+        INPUT_STORAGE: "github-artifact",
       },
       encoding: "utf8",
     },
@@ -1081,4 +1082,30 @@ test("workflow security invariants remain present", () => {
     publisherWorkflow,
     /CACHE_CONFIG_FILE: \.cache-the-planet\.json/,
   );
+});
+
+test("post-save storage must match the initiating restore storage", () => {
+  const stateFile = path.join(os.tmpdir(), `cache-state-${process.pid}.txt`);
+  const previousStateFile = process.env.GITHUB_STATE;
+  const previousState = process.env.STATE_STORAGE_MODE;
+  try {
+    fs.writeFileSync(stateFile, "");
+    process.env.GITHUB_STATE = stateFile;
+    delete process.env.STATE_STORAGE_MODE;
+    common.recordInitiatingStorage("github-artifact");
+    assert.match(fs.readFileSync(stateFile, "utf8"), /storage-mode=github-artifact/);
+
+    process.env.STATE_STORAGE_MODE = "github-artifact";
+    assert.doesNotThrow(() => common.assertPostStorage("github-artifact"));
+    assert.throws(
+      () => common.assertPostStorage("github-release"),
+      /post-save storage does not match restore storage/,
+    );
+  } finally {
+    if (previousStateFile === undefined) delete process.env.GITHUB_STATE;
+    else process.env.GITHUB_STATE = previousStateFile;
+    if (previousState === undefined) delete process.env.STATE_STORAGE_MODE;
+    else process.env.STATE_STORAGE_MODE = previousState;
+    fs.rmSync(stateFile, { force: true });
+  }
 });

@@ -365,6 +365,21 @@ function storageMode() {
   return value;
 }
 
+function recordInitiatingStorage(mode) {
+  const stateFile = process.env.GITHUB_STATE;
+  if (!stateFile) return;
+  fs.appendFileSync(stateFile, `storage-mode=${mode}${os.EOL}`);
+}
+
+function assertPostStorage(mode) {
+  const initiatingStorage = process.env.STATE_STORAGE_MODE;
+  if (initiatingStorage && initiatingStorage !== mode) {
+    throw new Error(
+      `post-save storage does not match restore storage: ${initiatingStorage} != ${mode}`,
+    );
+  }
+}
+
 function artifactRetentionDays() {
   const value = Number(input(INPUTS.ARTIFACT_RETENTION_DAYS, process.env.CACHE_ARTIFACT_RETENTION_DAYS || "0"));
   if (!Number.isInteger(value) || value < 0 || value > 90)
@@ -2909,6 +2924,8 @@ module.exports = {
   manifestBranch,
   manifestPath,
   storageMode,
+  recordInitiatingStorage,
+  assertPostStorage,
   securityScan,
   makeArchive,
   inspectTar,

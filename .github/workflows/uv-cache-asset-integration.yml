@@ -80,7 +80,7 @@ jobs:
         uses: $/
         with:
           cache-name: uv
-          storage: sftp
+          storage: github-branch
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -166,7 +166,7 @@ jobs:
         uses: $/
         with:
           cache-name: uv
-          storage: sftp
+          storage: github-branch
           version: ${{ env.VERSION }}
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
