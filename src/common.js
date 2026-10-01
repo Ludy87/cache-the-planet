@@ -403,7 +403,10 @@ function validateArtifactMetadata(metadata, reference) {
   if (metadata.expired === true) throw new Error("artifact has expired");
   if (metadata.workflow_run?.id !== reference.workflow_run_id)
     throw new Error("artifact identity mismatch: workflow run");
-  if (metadata.workflow_run?.repository?.full_name !== cacheRepository())
+  if (
+    metadata.workflow_run?.repository?.full_name &&
+    metadata.workflow_run.repository.full_name !== cacheRepository()
+  )
     throw new Error("artifact identity mismatch: repository");
   return metadata;
 }
