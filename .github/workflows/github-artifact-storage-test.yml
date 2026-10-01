@@ -53,6 +53,7 @@ jobs:
           save-scope: shared
           artifact-retention-days: 1
           token: ${{ github.token }}
+          version: 2
           strict: true
 
       - name: Verify artifact save metadata
@@ -72,6 +73,7 @@ jobs:
           save-scope: shared
           artifact-retention-days: 1
           token: ${{ github.token }}
+          version: 2
           strict: true
 
       - name: Verify duplicate save completed
@@ -106,6 +108,7 @@ jobs:
           storage: github-artifact
           restore-only: true
           token: ${{ github.token }}
+          version: 2
           strict: true
 
       - name: Verify restored artifact payload
