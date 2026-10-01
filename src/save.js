@@ -101,6 +101,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 
 (async () => {
   try {
+    const storage = c.storageMode();
+    c.assertPostStorage(storage);
     if (String(c.input(INPUTS.RESTORE_ONLY)).toLowerCase() === "true") {
       c.log("post-save skipped because restore-only is enabled");
       c.summary("Cache Save", {

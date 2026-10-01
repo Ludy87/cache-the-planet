@@ -354,17 +354,30 @@ function cacheRepository() {
 }
 
 function storageMode() {
-  const value = String(
-    input(INPUTS.STORAGE) ||
-      process.env.CACHE_STORAGE ||
-      configuration().storage ||
-      "github-release",
-  )
+  const configured =
+    input(INPUTS.STORAGE) || process.env.CACHE_STORAGE || configuration().storage;
+  if (!configured) throw new Error("storage is required");
+  const value = String(configured)
     .trim()
     .toLowerCase();
   if (!["github-release", "github-branch", "github-artifact", "sftp"].includes(value))
     throw new Error("storage must be github-release, github-branch, github-artifact, or sftp");
   return value;
+}
+
+function recordInitiatingStorage(mode) {
+  const stateFile = process.env.GITHUB_STATE;
+  if (!stateFile) return;
+  fs.appendFileSync(stateFile, `storage-mode=${mode}${os.EOL}`);
+}
+
+function assertPostStorage(mode) {
+  const initiatingStorage = process.env.STATE_STORAGE_MODE;
+  if (initiatingStorage && initiatingStorage !== mode) {
+    throw new Error(
+      `post-save storage does not match restore storage: ${initiatingStorage} != ${mode}`,
+    );
+  }
 }
 
 function artifactRetentionDays() {
@@ -403,7 +416,10 @@ function validateArtifactMetadata(metadata, reference) {
   if (metadata.expired === true) throw new Error("artifact has expired");
   if (metadata.workflow_run?.id !== reference.workflow_run_id)
     throw new Error("artifact identity mismatch: workflow run");
-  if (metadata.workflow_run?.repository?.full_name !== cacheRepository())
+  if (
+    metadata.workflow_run?.repository?.full_name &&
+    metadata.workflow_run.repository.full_name !== cacheRepository()
+  )
     throw new Error("artifact identity mismatch: repository");
   return metadata;
 }
@@ -1424,7 +1440,7 @@ const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath =
-  /(?:^|\/)registry\/index\/[^/]+\/\.cache(?:\/|$)/i;
+  /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath =
   /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
@@ -2908,6 +2924,8 @@ module.exports = {
   manifestBranch,
   manifestPath,
   storageMode,
+  recordInitiatingStorage,
+  assertPostStorage,
   securityScan,
   makeArchive,
   inspectTar,

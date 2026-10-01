@@ -163,6 +163,27 @@ test("security scan allows Cargo sparse index entries from the cargo cache root"
   }
 });
 
+test("security scan allows Cargo sparse index entries when registry is the scan root", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-registry-root-"));
+  const registry = path.join(root, "registry");
+  const entry = path.join(
+    registry,
+    "index",
+    "index.crates.io-1949cf8c6b5b557f",
+    ".cache",
+    "ma",
+    "tc",
+    "match_token",
+  );
+  try {
+    fs.mkdirSync(path.dirname(entry), { recursive: true });
+    fs.writeFileSync(entry, Buffer.from([0, 1, 2, 3]));
+    assert.doesNotThrow(() => common.securityScan(registry));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan skips explicitly excluded credential-like files", () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-exclude-"));
   const file = path.join(workspace, ".cache", "cargo", "registry", "src", "crate", "examples", "sample.rsa");
@@ -328,6 +349,7 @@ function runRestoreOutput(event, eventName = "pull_request") {
         INPUT_KEY: "hash",
         "INPUT_CACHE-NAME": "npm",
         INPUT_SCOPE: "auto",
+        INPUT_STORAGE: "github-artifact",
       },
       encoding: "utf8",
     },
@@ -829,6 +851,11 @@ test("artifact restore binds metadata to the manifest reference", () => {
   try {
     process.env.INPUT_REPOSITORY = "owner/cache";
     assert.doesNotThrow(() => common.validateArtifactMetadata(metadata, reference));
+    const metadataWithoutRepository = {
+      ...metadata,
+      workflow_run: { id: 7 },
+    };
+    assert.doesNotThrow(() => common.validateArtifactMetadata(metadataWithoutRepository, reference));
     assert.throws(() => common.validateArtifactMetadata({ ...metadata, id: 43 }, reference), /identity mismatch: id/);
     assert.throws(() => common.validateArtifactMetadata({ ...metadata, name: "other" }, reference), /identity mismatch: name/);
     assert.throws(() => common.validateArtifactMetadata({ ...metadata, workflow_run: { ...metadata.workflow_run, id: 8 } }, reference), /identity mismatch: workflow run/);
@@ -1055,4 +1082,30 @@ test("workflow security invariants remain present", () => {
     publisherWorkflow,
     /CACHE_CONFIG_FILE: \.cache-the-planet\.json/,
   );
+});
+
+test("post-save storage must match the initiating restore storage", () => {
+  const stateFile = path.join(os.tmpdir(), `cache-state-${process.pid}.txt`);
+  const previousStateFile = process.env.GITHUB_STATE;
+  const previousState = process.env.STATE_STORAGE_MODE;
+  try {
+    fs.writeFileSync(stateFile, "");
+    process.env.GITHUB_STATE = stateFile;
+    delete process.env.STATE_STORAGE_MODE;
+    common.recordInitiatingStorage("github-artifact");
+    assert.match(fs.readFileSync(stateFile, "utf8"), /storage-mode=github-artifact/);
+
+    process.env.STATE_STORAGE_MODE = "github-artifact";
+    assert.doesNotThrow(() => common.assertPostStorage("github-artifact"));
+    assert.throws(
+      () => common.assertPostStorage("github-release"),
+      /post-save storage does not match restore storage/,
+    );
+  } finally {
+    if (previousStateFile === undefined) delete process.env.GITHUB_STATE;
+    else process.env.GITHUB_STATE = previousStateFile;
+    if (previousState === undefined) delete process.env.STATE_STORAGE_MODE;
+    else process.env.STATE_STORAGE_MODE = previousState;
+    fs.rmSync(stateFile, { force: true });
+  }
 });

@@ -4,6 +4,8 @@ const { INPUTS } = require("./constants");
 
 (async () => {
   try {
+    const storage = c.storageMode();
+    c.recordInitiatingStorage(storage);
     const isFork = c.isForkPullRequest();
     c.setOutput("is-fork", isFork ? "true" : "false");
     c.setOutput("read-only", isFork ? "true" : "false");

@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: Create AstraGermany-Bot token for trusted save
         if: ${{ github.event_name != 'pull_request' }}
@@ -79,6 +79,7 @@ jobs:
         uses: $/
         with:
           cache-name: task
+          storage: github-branch
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -150,6 +151,7 @@ jobs:
         uses: $/
         with:
           cache-name: task
+          storage: github-branch
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |

@@ -29,6 +29,8 @@ jobs:
     if: ${{ inputs.save-cache || inputs.restore-cache }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,6 +53,7 @@ jobs:
         id: cache
         uses: $/multi-cache
         with:
+          storage: github-artifact
           key: |
             npm=${{ hashFiles('package-lock.json') }}
             maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
@@ -62,6 +65,7 @@ jobs:
           allow-shared-restore: true
           token: ${{ steps.bot-token.outputs.token || github.token }}
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
+          version: 2
           strict: true
 
       - name: Verify list and aggregate outputs for multiple caches
@@ -95,11 +99,13 @@ jobs:
         id: single-cache
         uses: $/multi-cache
         with:
+          storage: github-artifact
           key: npm=${{ hashFiles('package-lock.json') }}
           multi-cache: |
             npm:
               path: .cache/npm
           restore-only: true
+          version: 2
           strict: true
 
       - name: Assert singular cache outputs
