@@ -330,6 +330,7 @@ try {
       'INPUT_CACHE-NAME': 'npm',
       INPUT_SCOPE: 'shared',
       INPUT_KEY: 'Linux-X64/hash/v1',
+      INPUT_STORAGE: 'github-artifact',
       INPUT_PATH: root,
       INPUT_TOKEN: 'test-token',
       INPUT_STRICT_SAVE: 'true',
