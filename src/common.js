@@ -2228,6 +2228,7 @@ async function setRef(repository, key, hash, metadata = {}) {
       }
       manifest.references[key] = {
         object: hash,
+        storage: storageMode(),
         updated_at: new Date().toISOString(),
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
@@ -2264,6 +2265,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
       if (removeKey && removeKey !== key) delete manifest.references[removeKey];
       manifest.references[key] = {
         object: hash,
+        storage: storageMode(),
         updated_at: new Date().toISOString(),
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,

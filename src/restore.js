@@ -47,7 +47,8 @@ const { INPUTS } = require("./constants");
       const matches = Object.entries(manifest.json.references)
         .filter(
           ([cacheKey, reference]) =>
-            cacheKey === prefix || cacheKey.startsWith(prefix),
+            (cacheKey === prefix || cacheKey.startsWith(prefix)) &&
+            reference.storage === c.storageMode(),
         )
         .filter(([, reference]) => reference && reference.object)
         .sort((a, b) =>
