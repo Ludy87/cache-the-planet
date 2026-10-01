@@ -24,8 +24,7 @@ inputs:
     default: ""
   storage:
     description: Storage backend used by every cache entry
-    required: false
-    default: github-release
+    required: true
   artifact-retention-days:
     description: Retention in days for github-artifact storage; 0 uses repository default
     required: false
