@@ -230,6 +230,7 @@ try {
       INPUT_KEY: 'hash/v1',
       'INPUT_CACHE-NAME': 'npm',
       INPUT_SCOPE: 'auto',
+      INPUT_STORAGE: 'github-artifact',
       'INPUT_ALLOW-PR-CACHE': 'false',
       GITHUB_TOKEN: '',
     },
