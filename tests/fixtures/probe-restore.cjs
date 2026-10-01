@@ -9,7 +9,11 @@ c.scopedKey = () => key;
 c.cacheScope = () => "trusted";
 c.assertTrustedRestoreAllowed = () => {};
 c.refsForKeys = async () => ({ json: { references: missing ? {} : {
-  [matched]: { object: "sha256:" + "a".repeat(64), size: 10 },
+  [matched]: {
+    object: "sha256:" + "a".repeat(64),
+    storage: process.env.INPUT_STORAGE || "github-branch",
+    size: 10,
+  },
 } } });
 c.probeObject = async () => {
   if (process.env.PROBE_CASE === "error") throw Error("metadata unavailable");
