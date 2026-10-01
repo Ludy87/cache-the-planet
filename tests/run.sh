@@ -199,6 +199,7 @@ try {
     env: {
       ...process.env,
       INPUT_REPOSITORY: 'example/project',
+      INPUT_STORAGE: 'github-release',
       INPUT_KEY: 'hash/v1',
       'INPUT_CACHE-NAME': 'npm',
       INPUT_SCOPE: 'auto',
