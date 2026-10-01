@@ -51,6 +51,7 @@ jobs:
         id: cache
         uses: $/multi-cache
         with:
+          storage: github-artifact
           key: |
             npm=${{ hashFiles('package-lock.json') }}
             maven-java17=${{ hashFiles('examples/java-cache/pom.xml') }}
@@ -96,6 +97,7 @@ jobs:
         id: single-cache
         uses: $/multi-cache
         with:
+          storage: github-artifact
           key: npm=${{ hashFiles('package-lock.json') }}
           multi-cache: |
             npm:

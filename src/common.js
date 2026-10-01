@@ -354,12 +354,10 @@ function cacheRepository() {
 }
 
 function storageMode() {
-  const value = String(
-    input(INPUTS.STORAGE) ||
-      process.env.CACHE_STORAGE ||
-      configuration().storage ||
-      "github-artifact",
-  )
+  const configured =
+    input(INPUTS.STORAGE) || process.env.CACHE_STORAGE || configuration().storage;
+  if (!configured) throw new Error("storage is required");
+  const value = String(configured)
     .trim()
     .toLowerCase();
   if (!["github-release", "github-branch", "github-artifact", "sftp"].includes(value))

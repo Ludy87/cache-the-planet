@@ -25,7 +25,6 @@ on:
       storage:
         description: Storage whose manifests and objects should be cleaned
         required: true
-        default: github-artifact
         type: choice
         options: [github-artifact, github-release, sftp]
   schedule: [{ cron: "0 3 * * *" }]
