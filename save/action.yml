@@ -116,7 +116,7 @@ outputs:
   content-hash:
     description: "sha256 digest of the object"
   asset-name:
-    description: "Release asset filename for the cached object"
+    description: "Backend object or artifact name for the cached object"
   cache-size:
     description: "Compressed object size in bytes"
 branding:

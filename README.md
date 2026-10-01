@@ -2,11 +2,13 @@
 
 ![Cache the Planet – secure content-addressed GitHub Actions cache](docs/assets/cache-the-planet-banner.png)
 
-`cache-the-planet` ist ein content-addressed Cache für GitHub Actions. Große,
-immutable Cache-Objekte werden als Assets des GitHub-Pre-Releases `cache-v1`
-gespeichert. Storage-getrennte Dateien unter `manifests/v1/<storage>/` ordnen
-logische Keys den SHA-256-Objekten zu. Dadurch können GitHub-Asset- und SFTP-
-Caches denselben logischen Key unabhängig voneinander verwenden.
+`cache-the-planet` ist ein content-addressed Cache für GitHub Actions. Je nach
+Storage werden große, immutable Cache-Objekte als Assets des GitHub-
+Pre-Releases `cache-v1`, als GitHub-Actions-Artefakte, im Manifest-Branch oder
+auf SFTP gespeichert. Storage-getrennte Dateien unter
+`manifests/v1/<storage>/` ordnen logische Keys den SHA-256-Objekten zu.
+Dadurch können die unterstützten Storage-Backends denselben logischen Key
+unabhängig voneinander verwenden.
 
 ## Funktionsweise
 
@@ -284,7 +286,7 @@ mehreren Einträgen zusätzlich die Listen-Outputs `cache-hits`, `matched-keys`,
 
 | Schalter                  | Gültige Werte / Standard                                         | Bedeutung                                                                                                                                                                                                                                                                                         |
 | ------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `repository`              | `owner/name`; Standard: `GITHUB_REPOSITORY`                      | Repository, in dessen Release `cache-v1` und Manifest gespeichert werden.                                                                                                                                                                                                                         |
+| `repository`              | `owner/name`; Standard: `GITHUB_REPOSITORY`                      | Repository, in dessen Manifest und gegebenenfalls Release `cache-v1` gespeichert werden.                                                                                                                                                                                                          |
 | `key`                     | logischer Schlüssel, erforderlich                                | Abhängigkeitsschlüssel, aus dem zusammen mit Plattform, Version und Scope der vollständige Cache-Key entsteht.                                                                                                                                                                                    |
 | `cache-name`              | 1–32 Zeichen aus Buchstaben, Zahlen, `-`, `_`; erforderlich      | Trennt verschiedene Cache-Arten voneinander, zum Beispiel `npm` oder `gradle`. Wenn der lokale Cache-Pfad den Namen enthält, müssen `cache-name`, Tool-Konfiguration und `path` zusammenpassen.                                                                                                   |
 | `scope`                   | `auto`, `trusted`, `untrusted`, `shared`; Standard: `auto`       | Bestimmt den Namespace. `auto` verwendet Trusted auf Main/Tags und Untrusted in PRs.                                                                                                                                                                                                              |
@@ -432,14 +434,17 @@ geschlossenen Pull Request. Details und Sicherheitsgrenzen stehen in
 
 ## Fehlerbehebung
 
-- Bei `404` das Repository, das Release `cache-v1` und die Token-Rechte prüfen.
-- Bei `403` benötigt das Token `Contents: Read and write` im Cache-Repository.
+- Bei `404` das Repository, das konfigurierte Storage-Backend und die Token-Rechte prüfen. `cache-v1` ist nur bei `github-release` erforderlich.
+- Bei `403` benötigt der Save-Lauf `Contents: Read and write` für das
+  Manifest-Repository. Bei `github-artifact` benötigt ein Restore zusätzlich
+  `Actions: Read`; bei `github-release` muss das Token außerdem Release-Assets
+  lesen beziehungsweise schreiben dürfen.
 - Bei einem Cache-Miss Lockfile-Hash, Scope, Plattform, Version und
   `matched-key` prüfen.
 - Auf dem Runner müssen Node.js 24 oder höher, GNU `tar` und `zstd` vorhanden
   sein. CI verwendet Node.js 24.
-- Bei einem Asset-Konflikt ist HTTP 422 bei identischem Asset-Namen ein normaler
-  Deduplication-Fall.
+- Bei einem Objekt- oder Artifact-Konflikt ist HTTP 422 bei identischem Namen
+  ein normaler Deduplication-Fall.
 
 ## Weitere Dokumentation
 

@@ -5,8 +5,10 @@
 Das System trennt unveränderliche Cache-Daten von den veränderlichen
 Referenzen:
 
-1. Das Pre-Release `cache-v1` speichert die großen, unveränderlichen
-   `tar.zst`-Objekte als GitHub-Release-Assets.
+1. Je nach Storage liegen die großen, unveränderlichen `tar.zst`-Objekte als
+   GitHub-Release-Assets (`github-release`), GitHub-Actions-Artefakte
+   (`github-artifact`), Dateien im Manifest-Branch (`github-branch`) oder auf
+   SFTP (`sftp`). Nur `github-release` verwendet das Pre-Release `cache-v1`.
 2. Storage-getrennte Dateien unter `manifests/v1/<storage>/` enthalten die
    Zuordnung von Cache-Keys zu Objekt-Hashes. Es gibt je Storage
    `trusted.json`, `shared.json` und eine Datei unter
@@ -39,8 +41,8 @@ AES-256-GCM verschlüsselt. Anschließend wird der SHA-256-Hash der gespeicherte
 Bytes berechnet.
 
 Existiert das Objekt bereits, wird es nicht erneut hochgeladen. Andernfalls
-wird es einmalig als Release-Asset angelegt. Danach wird die Referenz im
-Manifest aktualisiert. Asset-Uploads sind damit create-only; konkurrierende
+wird es im gewählten Storage angelegt und danach im Manifest referenziert.
+`github-release`-Uploads sind dabei create-only; konkurrierende
 Manifest-Änderungen werden per optimistischer Nebenläufigkeitskontrolle und
 erneuten Versuchen behandelt.
 
@@ -48,7 +50,7 @@ erneuten Versuchen behandelt.
 
 Die Action sucht zuerst nach dem vollständigen Key und danach optional nach
 den angegebenen `restore-keys`. Bei einem Treffer wird der referenzierte Hash
-gegen das Release-Asset geprüft. Erst nach erfolgreicher Integritäts- und
+gegen das Objekt im gewählten Storage geprüft. Erst nach erfolgreicher Integritäts- und
 Archivprüfung wird der Inhalt in `GITHUB_WORKSPACE` extrahiert.
 
 Pull Requests dürfen keine vertrauenswürdigen Referenzen wiederherstellen.

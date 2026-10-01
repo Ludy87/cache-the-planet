@@ -3,11 +3,14 @@
 ## Datenmodell
 
 Ein Cache-Objekt wird als komprimiertes und optional verschlüsseltes
-`tar.zst`-Archiv im Pre-Release `cache-v1` gespeichert. Der Objekt-Hash ist
-der SHA-256-Hash der tatsächlich gespeicherten Bytes. Dadurch werden auch
+`tar.zst`-Archiv im konfigurierten Storage gespeichert. Nur
+`storage: github-release` verwendet dafür das Pre-Release `cache-v1`; bei
+`github-artifact` wird ein GitHub-Actions-Artefakt verwendet. Der Objekt-Hash
+ist der SHA-256-Hash der tatsächlich gespeicherten Bytes. Dadurch werden auch
 verschlüsselte Objekte eindeutig identifiziert.
 
-Der physische Asset-Name enthält zusätzlich den lesbaren Cache-Key:
+Bei `storage: github-release` enthält der physische Asset-Name zusätzlich den
+lesbaren Cache-Key:
 
 ```text
 <cache-key>--<64-stelliger-sha256-hash>.tar.zst
@@ -132,7 +135,7 @@ Standardwert.
 
 | JSON-Feld | Umgebungsvariable | Zweck | Standard |
 | --- | --- | --- | --- |
-| `cache_repository` | `CACHE_REPOSITORY` | Ziel-Repository für Manifest und Release-Assets | `GITHUB_REPOSITORY` |
+| `cache_repository` | `CACHE_REPOSITORY` | Ziel-Repository für Manifest und gegebenenfalls Release-Assets | `GITHUB_REPOSITORY` |
 | `manifest_branch` | `CACHE_MANIFEST_BRANCH` | Branch der Manifestdatei | `cache-data` |
 | `manifest_path` | `CACHE_MANIFEST_PATH` | Relativer Unterordner der Manifestdatei | `manifests` |
 | `scope` | — | Standard-Namespace für Restore und Save | `auto` |
@@ -246,7 +249,8 @@ Logische Keys werden vor der Namespace-Erzeugung auf Länge, Anzahl und sichere
 Pfadkomponenten geprüft. Dadurch können Workflows nicht beliebig viele
 syntaktisch unterschiedliche oder pfadähnliche Keys erzeugen.
 
-Beim Restore wird zuerst der Hash des heruntergeladenen Assets geprüft. Danach
+Beim Restore wird zuerst der Hash des aus dem gewählten Storage geladenen
+Objekts geprüft. Danach
 wird das Archiv bei Bedarf entschlüsselt, dekomprimiert, auf Pfadüberquerungen,
 Links und spezielle Dateitypen geprüft und erst anschließend in den Workspace
 entpackt.

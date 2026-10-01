@@ -1,5 +1,5 @@
 name: Content-addressed GitHub cache
-description: Immutable, deduplicated cache objects stored as GitHub Release assets
+description: Immutable, deduplicated cache objects stored in a selectable backend
 author: cache-the-planet
 inputs:
   disable-download:
@@ -133,7 +133,7 @@ outputs:
   content-hash:
     description: "sha256 digest of the object"
   asset-name:
-    description: "Release asset filename for the cached object"
+    description: "Backend object or artifact name for the cached object"
   cache-size:
     description: "Compressed object size in bytes"
 branding:
