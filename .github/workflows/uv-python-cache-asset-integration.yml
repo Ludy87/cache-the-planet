@@ -81,6 +81,7 @@ jobs:
         uses: $/
         with:
           cache-name: uv-python-3-13
+          storage: sftp
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -167,6 +168,7 @@ jobs:
         uses: $/
         with:
           cache-name: uv-python-3-13
+          storage: sftp
           version: ${{ env.VERSION }}
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}

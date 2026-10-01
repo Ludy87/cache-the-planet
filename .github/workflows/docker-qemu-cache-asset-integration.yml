@@ -83,6 +83,7 @@ jobs:
         uses: $/
         with:
           cache-name: docker-qemu
+          storage: sftp
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -181,6 +182,7 @@ jobs:
         uses: $/
         with:
           cache-name: docker-qemu
+          storage: sftp
           key: ${{ needs.hash_pr.outputs.files_hash }}
           version: ${{ env.VERSION }}
           path: .cache/docker-qemu

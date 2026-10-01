@@ -84,6 +84,7 @@ jobs:
         uses: $/
         with:
           cache-name: cargo
+          storage: sftp
           save-scope: shared
           token: ${{ steps.bot-token.outputs.token || github.token }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
@@ -161,6 +162,7 @@ jobs:
         uses: $/
         with:
           cache-name: cargo
+          storage: sftp
           scope: ${{ matrix.scope-matrix.scope }}
           key: ${{ needs.hash_pr.outputs.files_hash }}
           path: |

@@ -47,9 +47,9 @@ jobs:
         uses: $/
         with:
           cache-name: github-artifact-test
+          storage: github-artifact
           key: ${{ env.CACHE_KEY }}
           path: ${{ env.CACHE_PATH }}
-          storage: github-artifact
           save-scope: shared
           artifact-retention-days: 1
           token: ${{ github.token }}
@@ -67,9 +67,9 @@ jobs:
         uses: $/
         with:
           cache-name: github-artifact-test
+          storage: github-artifact
           key: ${{ env.CACHE_KEY }}
           path: ${{ env.CACHE_PATH }}
-          storage: github-artifact
           save-scope: shared
           artifact-retention-days: 1
           token: ${{ github.token }}
@@ -103,9 +103,9 @@ jobs:
         uses: $/
         with:
           cache-name: github-artifact-test
+          storage: github-artifact
           key: ${{ env.CACHE_KEY }}
           path: ${{ env.CACHE_PATH }}
-          storage: github-artifact
           restore-only: true
           token: ${{ github.token }}
           version: 2
