@@ -62,6 +62,7 @@ jobs:
           allow-shared-restore: true
           token: ${{ steps.bot-token.outputs.token || github.token }}
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
+          version: 2
           strict: true
 
       - name: Verify list and aggregate outputs for multiple caches
@@ -100,6 +101,7 @@ jobs:
             npm:
               path: .cache/npm
           restore-only: true
+          version: 2
           strict: true
 
       - name: Assert singular cache outputs
