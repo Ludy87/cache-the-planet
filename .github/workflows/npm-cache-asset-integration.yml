@@ -83,6 +83,7 @@ jobs:
           key: ${{ needs.hash_pr.outputs.files_hash }}
           allow-shared-restore: true
           path: .cache/npm
+          version: 2
           strict: true
 
       - name: Set up Node.js
@@ -154,6 +155,7 @@ jobs:
           allow-shared-restore: ${{ matrix.scope-matrix.allow-shared-restore }}
           restore-only: true
           strict: true
+          version: 2
         continue-on-error: true
 
       - name: Set up Node.js
