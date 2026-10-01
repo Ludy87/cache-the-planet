@@ -850,6 +850,11 @@ test("artifact restore binds metadata to the manifest reference", () => {
   try {
     process.env.INPUT_REPOSITORY = "owner/cache";
     assert.doesNotThrow(() => common.validateArtifactMetadata(metadata, reference));
+    const metadataWithoutRepository = {
+      ...metadata,
+      workflow_run: { id: 7 },
+    };
+    assert.doesNotThrow(() => common.validateArtifactMetadata(metadataWithoutRepository, reference));
     assert.throws(() => common.validateArtifactMetadata({ ...metadata, id: 43 }, reference), /identity mismatch: id/);
     assert.throws(() => common.validateArtifactMetadata({ ...metadata, name: "other" }, reference), /identity mismatch: name/);
     assert.throws(() => common.validateArtifactMetadata({ ...metadata, workflow_run: { ...metadata.workflow_run, id: 8 } }, reference), /identity mismatch: workflow run/);
