@@ -334,6 +334,7 @@ try {
       INPUT_PATH: root,
       INPUT_TOKEN: 'test-token',
       INPUT_STRICT_SAVE: 'true',
+      'INPUT_STRICT-SAVE': 'true',
       GITHUB_EVENT_NAME: 'push',
       GITHUB_REF: 'refs/heads/feature',
       GITHUB_DEFAULT_BRANCH: 'main',
