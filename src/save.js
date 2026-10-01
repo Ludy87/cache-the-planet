@@ -16,7 +16,11 @@ async function objectForReference(repository, reference) {
 }
 
 async function cleanupDuplicateAssets(repository, key, keepHash, manifest) {
-  if (c.storageMode() === "github-branch") return;
+  // GitHub Actions artifacts are not release assets.  Do not inspect the
+  // release asset list for this backend: c.assets() creates cache-v1 when it
+  // does not exist, which would create an unrelated release during an
+  // artifact-only save.
+  if (["github-branch", "github-artifact"].includes(c.storageMode())) return;
   // Every scope is content-addressed, but an upload can still race with
   // another publisher.  In particular, PR artifacts are published by a
   // separate trusted workflow and may be processed more than once.  Remove
@@ -81,7 +85,7 @@ async function replaceOlderReferences(repository, key) {
 }
 
 async function deleteUnreferencedObjects(repository, hashes, manifest) {
-  if (c.storageMode() === "github-branch") return;
+  if (["github-branch", "github-artifact"].includes(c.storageMode())) return;
   const liveHashes = new Set(
     Object.values(manifest.references || {})
       .map((reference) => reference?.object)
@@ -194,9 +198,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         : null;
     const sharedEquivalent = c.sharedEquivalentKey(key);
     if (sharedEquivalent && current.json.references[sharedEquivalent]?.object) {
-      const sharedAsset = await c.object(
+      const sharedAsset = await objectForReference(
         repository,
-        current.json.references[sharedEquivalent].object,
+        current.json.references[sharedEquivalent],
       );
       if (sharedAsset) {
         saveSummary("SKIPPED", {
@@ -291,7 +295,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         const archive = await c.makeArchive();
         try {
           const hash = c.digest(archive.file);
-        const existing = await c.object(repository, hash);
+        const existing =
+          c.storageMode() === "github-artifact"
+            ? null
+            : await c.object(repository, hash);
         const name = c.assetName(key, hash);
         let uploaded;
         if (!existing) {
@@ -394,7 +401,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     const archive = await c.makeArchive();
     try {
       const hash = c.digest(archive.file);
-    const existing = await c.object(repository, hash);
+    const existing =
+      c.storageMode() === "github-artifact"
+        ? null
+        : await c.object(repository, hash);
     const name = c.assetName(key, hash);
     let uploaded;
 
