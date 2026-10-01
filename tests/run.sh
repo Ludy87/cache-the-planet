@@ -333,7 +333,6 @@ try {
       INPUT_STORAGE: 'github-artifact',
       INPUT_PATH: root,
       INPUT_TOKEN: 'test-token',
-      INPUT_STRICT_SAVE: 'true',
       'INPUT_STRICT-SAVE': 'true',
       GITHUB_EVENT_NAME: 'push',
       GITHUB_REF: 'refs/heads/feature',
