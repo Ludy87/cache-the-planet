@@ -2123,8 +2123,13 @@ async function updateManifestUnlocked(repository, message, update, filePath) {
       // GitHub also uses 409 for protected-branch/ruleset violations. Those
       // requests cannot succeed by retrying; only a real optimistic-lock
       // conflict should enter the retry loop.
+      const conflictMessage = String(error.message || "");
       const isManifestConflict =
-        error.status === 409 && /\bconflict\b/i.test(error.message || "");
+        error.status === 409 &&
+        (/\bconflict\b/i.test(conflictMessage) ||
+          /is at [0-9a-f]{40}\s+but expected\s+[0-9a-f]{40}/i.test(
+            conflictMessage,
+          ));
       if (!isManifestConflict || attempt === maxAttempts - 1) throw error;
       invalidateManifestCache(repository);
       const delay =
@@ -2223,6 +2228,7 @@ async function setRef(repository, key, hash, metadata = {}) {
       }
       manifest.references[key] = {
         object: hash,
+        storage: storageMode(),
         updated_at: new Date().toISOString(),
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
@@ -2259,6 +2265,7 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
       if (removeKey && removeKey !== key) delete manifest.references[removeKey];
       manifest.references[key] = {
         object: hash,
+        storage: storageMode(),
         updated_at: new Date().toISOString(),
         source: process.env.GITHUB_REPOSITORY || null,
         created_by: process.env.GITHUB_ACTOR || null,
