@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: Create AstraGermany-Bot token for trusted save
         if: ${{ github.event_name != 'pull_request' }}
