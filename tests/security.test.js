@@ -42,6 +42,13 @@ test("restore accepts tar parent entries for nested cache paths", () => {
     ),
   );
 });
+
+test("restore reports archive paths outside the configured paths", () => {
+  assert.throws(
+    () => common.assertArchiveMatchesRestorePaths([".cache/ok", "other/file"], [".cache"]),
+    /outside the configured path: other\/file/,
+  );
+});
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
 test("security scan allows token-named stylesheet files", () => {

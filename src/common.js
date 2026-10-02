@@ -2813,18 +2813,21 @@ function assertArchiveMatchesRestorePaths(names, paths) {
   const allowed = paths.map(normalize);
   if (allowed.includes(".")) return;
   const normalizedNames = names.map(normalize);
-  if (
-    normalizedNames.some(
-      (name) =>
-        !allowed.some(
-          (root) =>
-            name === root ||
-            name.startsWith(`${root}/`) ||
-            root.startsWith(`${name}/`),
-        ),
-    )
-  ) {
-    throw new Error("cache archive contains files outside the configured path");
+  const outside = normalizedNames.filter(
+    (name) =>
+      !allowed.some(
+        (root) =>
+          name === root ||
+          name.startsWith(`${root}/`) ||
+          root.startsWith(`${name}/`),
+      ),
+  );
+  if (outside.length) {
+    const shown = outside.slice(0, 5).join(", ");
+    const suffix = outside.length > 5 ? ` (+${outside.length - 5} more)` : "";
+    throw new Error(
+      `cache archive contains files outside the configured path: ${shown}${suffix}`,
+    );
   }
 }
 
