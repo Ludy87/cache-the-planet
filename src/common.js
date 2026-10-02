@@ -1555,9 +1555,11 @@ function securityScan(root, options = {}) {
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file);
       if (
-        (privateKeyContent.test(text) && !packageFixturePath.test(relative)) ||
+        !packageFixturePath.test(relative) &&
+        ((privateKeyContent.test(text)) ||
         (!sourceOrMetadata &&
           (knownTokenContent.test(text) || credentialAssignment.test(text)))
+        )
       ) {
         throw new Error(
           `cache path contains credential-like content: ${path.relative(process.cwd(), file)}`,
