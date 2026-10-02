@@ -2606,7 +2606,14 @@ async function uploadObject(repository, file, name, contentType) {
           workflow_run_id: Number(process.env.GITHUB_RUN_ID),
         });
       }
-      return { id: parts[0].artifact_id, name: parts[0].artifact_name, size, artifact: true, parts };
+      return {
+        id: parts[0].artifact_id,
+        name: parts[0].artifact_name,
+        artifactName: parts[0].artifact_name,
+        size,
+        artifact: true,
+        parts,
+      };
     } finally {
       removeTemporaryFile(directory);
     }
@@ -2669,7 +2676,7 @@ async function uploadObject(repository, file, name, contentType) {
     return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
       path: branchPath };
   }
-  if (storageMode() !== "sftp") {
+  if (storageMode() === "github-release") {
     const release = (await assets(repository)).release;
     const uploadUrl = release.upload_url.replace(
       "{?name,label}",
