@@ -1445,6 +1445,11 @@ const cargoRegistryCachePath =
   /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
+// Public package source trees commonly ship dummy keys for TLS examples and
+// integration tests. Keep this exception limited to dependency fixture
+// directories; private keys elsewhere must still be rejected.
+const packageFixturePath =
+  /(?:^|[\\/])registry[\\/]src[\\/][^\\/]+[\\/](?:examples|tests|testdata)(?:[\\/]|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1550,9 +1555,11 @@ function securityScan(root, options = {}) {
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file);
       if (
-        privateKeyContent.test(text) ||
+        !packageFixturePath.test(relative) &&
+        ((privateKeyContent.test(text)) ||
         (!sourceOrMetadata &&
           (knownTokenContent.test(text) || credentialAssignment.test(text)))
+        )
       ) {
         throw new Error(
           `cache path contains credential-like content: ${path.relative(process.cwd(), file)}`,
@@ -2601,7 +2608,14 @@ async function uploadObject(repository, file, name, contentType) {
           workflow_run_id: Number(process.env.GITHUB_RUN_ID),
         });
       }
-      return { id: parts[0].artifact_id, name: parts[0].artifact_name, size, artifact: true, parts };
+      return {
+        id: parts[0].artifact_id,
+        name: parts[0].artifact_name,
+        artifactName: parts[0].artifact_name,
+        size,
+        artifact: true,
+        parts,
+      };
     } finally {
       removeTemporaryFile(directory);
     }
@@ -2664,7 +2678,7 @@ async function uploadObject(repository, file, name, contentType) {
     return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
       path: branchPath };
   }
-  if (storageMode() !== "sftp") {
+  if (storageMode() === "github-release") {
     const release = (await assets(repository)).release;
     const uploadUrl = release.upload_url.replace(
       "{?name,label}",
@@ -2801,18 +2815,21 @@ function assertArchiveMatchesRestorePaths(names, paths) {
   const allowed = paths.map(normalize);
   if (allowed.includes(".")) return;
   const normalizedNames = names.map(normalize);
-  if (
-    normalizedNames.some(
-      (name) =>
-        !allowed.some(
-          (root) =>
-            name === root ||
-            name.startsWith(`${root}/`) ||
-            root.startsWith(`${name}/`),
-        ),
-    )
-  ) {
-    throw new Error("cache archive contains files outside the configured path");
+  const outside = normalizedNames.filter(
+    (name) =>
+      !allowed.some(
+        (root) =>
+          name === root ||
+          name.startsWith(`${root}/`) ||
+          root.startsWith(`${name}/`),
+      ),
+  );
+  if (outside.length) {
+    const shown = outside.slice(0, 5).join(", ");
+    const suffix = outside.length > 5 ? ` (+${outside.length - 5} more)` : "";
+    throw new Error(
+      `cache archive contains files outside the configured path: ${shown}${suffix}`,
+    );
   }
 }
 
