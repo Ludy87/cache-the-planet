@@ -68,6 +68,35 @@ test("security scan allows credential-like source filenames", () => {
   }
 });
 
+test("security scan allows private-key fixtures in Cargo dependency examples", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-fixture-"));
+  try {
+    const fixture = path.join(
+      root,
+      "registry",
+      "src",
+      "crate-1.0.0",
+      "examples",
+      "sample.rsa",
+    );
+    fs.mkdirSync(path.dirname(fixture), { recursive: true });
+    fs.writeFileSync(fixture, "-----BEGIN RSA PRIVATE KEY-----\nfixture\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
+  try {
+    fs.writeFileSync(path.join(root, "private.rsa"), "-----BEGIN RSA PRIVATE KEY-----\nkey\n");
+    assert.throws(() => common.securityScan(root), /credential-like content/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan still rejects credential files", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-credential-file-"));
   try {
