@@ -1445,6 +1445,11 @@ const cargoRegistryCachePath =
   /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
+// Public package source trees commonly ship dummy keys for TLS examples and
+// integration tests. Keep this exception limited to dependency fixture
+// directories; private keys elsewhere must still be rejected.
+const packageFixturePath =
+  /(?:^|[\\/])registry[\\/]src[\\/][^\\/]+[\\/](?:examples|tests|testdata)(?:[\\/]|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1550,7 +1555,7 @@ function securityScan(root, options = {}) {
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file);
       if (
-        privateKeyContent.test(text) ||
+        (privateKeyContent.test(text) && !packageFixturePath.test(relative)) ||
         (!sourceOrMetadata &&
           (knownTokenContent.test(text) || credentialAssignment.test(text)))
       ) {
