@@ -7,6 +7,12 @@ const test = require("node:test");
 
 const common = require("../src/common");
 
+test("normalizes Windows workspace paths for GNU tar", () => {
+  assert.equal(common.tarPath("D:\\a\\cache-the-planet", "win32"), "/d/a/cache-the-planet");
+  assert.equal(common.tarPath("/tmp/cache-the-planet", "win32"), "/tmp/cache-the-planet");
+  assert.equal(common.tarPath("D:/cache", "linux"), "D:/cache");
+});
+
 test("restore rejects symlinked workspace components", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-restore-link-"),
