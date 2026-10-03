@@ -237,6 +237,15 @@ test("security scan allows credential-named TypeScript definitions in node_modul
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows extensionless token modules in node_modules", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-octokit-module-"));
+  const root = path.join(workspace, "node_modules");
+  const moduleFile = path.join(root, "@octokit", "auth-token");
+  fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
+  fs.writeFileSync(moduleFile, "module.exports = { auth: () => undefined };\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-private-key-"),
