@@ -309,6 +309,15 @@ test("security scan reports all blocked paths in one error", () => {
   }
 });
 
+test("security scan allows private-key fixtures in node_modules test directories", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-node-fixtures-"));
+  const root = path.join(workspace, "node_modules");
+  const fixture = path.join(root, "ssh2", "test", "fixtures", "https_key.pem");
+  fs.mkdirSync(path.dirname(fixture), { recursive: true });
+  fs.writeFileSync(fixture, "-----BEGIN RSA PRIVATE KEY-----\nfixture\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan allows Cargo crate archives with token-like names", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-crate-"));
   const entry = path.join(
