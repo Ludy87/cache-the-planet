@@ -205,10 +205,31 @@
       "artifact_id": 11286944208,
       "artifact_name": "cache-shared-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--4f3179ba39e42aba1a39cce5bbc5d42beb69729af7a92e8409472dca27b1f-part-000000",
       "workflow_run_id": 37161519088
+    },
+    "shared/Ludy87/cache-the-planet/task/linux-x64/5fbdf10f0e27f361ec495008517476d1a80b08f27e611b750f85fdfa1dff1ed7/v1": {
+      "object": "sha256:12be9ec72612a47e6970181d4a91983b7d8faba58edcc659d16fbf54829fcdcd",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-03T23:24:35.253Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 165,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:12be9ec72612a47e6970181d4a91983b7d8faba58edcc659d16fbf54829fcdcd",
+          "size": 165,
+          "artifact_id": 11287722606,
+          "artifact_name": "cache-shared-task-linux-x64-5fbdf10f0e27f361ec495008517476d1a80b08f27e611b750f85fdfa1dff1ed7-v1--12be9ec72612a47e6970181d4a91983b7d8faba58edcc659d16fbf54829fcdcd.tar.zs-part-000000",
+          "workflow_run_id": 37161519088
+        }
+      ],
+      "artifact_id": 11287722606,
+      "artifact_name": "cache-shared-task-linux-x64-5fbdf10f0e27f361ec495008517476d1a80b08f27e611b750f85fdfa1dff1ed7-v1--12be9ec72612a47e6970181d4a91983b7d8faba58edcc659d16fbf54829fcdcd.tar.zs-part-000000",
+      "workflow_run_id": 37161519088
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-03T23:22:04.489Z",
-    "writes": 8
+    "writes": 9
   }
 }
