@@ -217,7 +217,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   node-save-cache:
-    needs: [build-dist]
+    needs: [build-dist, test]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
@@ -229,7 +229,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   github-branch-storage-save:
-    needs: [build-dist]
+    needs: [build-dist, test]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/github-branch-storage-test.yml
     permissions:
@@ -239,7 +239,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   github-artifact-storage-save:
-    needs: [build-dist]
+    needs: [build-dist, test]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/github-artifact-storage-test.yml
     with:
@@ -249,7 +249,7 @@ jobs:
       actions: read
 
   docker-qemu-save-cache:
-    needs: [node-save-cache]
+    needs: [node-save-cache, test]
     if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-qemu-cache-asset-integration.yml
     with:
@@ -261,7 +261,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   multi-save-cache:
-    needs: [node-save-cache]
+    needs: [node-save-cache, test]
     if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: $/.github/workflows/multi-cache-asset-integration.yml
     with:
@@ -273,7 +273,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   uv-save-cache:
-    needs: [multi-save-cache]
+    needs: [multi-save-cache, test]
     if: ${{ !cancelled() && needs.multi-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-cache-asset-integration.yml
     with:
@@ -285,7 +285,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   uv-python-save-cache:
-    needs: [uv-save-cache]
+    needs: [uv-save-cache, test]
     if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-python-cache-asset-integration.yml
     with:
@@ -297,7 +297,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   task-save-cache:
-    needs: [uv-python-save-cache]
+    needs: [uv-python-save-cache, test]
     if: ${{ !cancelled() && needs.uv-python-save-cache.result == 'success' }}
     uses: $/.github/workflows/task-cache-asset-integration.yml
     with:
@@ -309,7 +309,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   java-save-cache:
-    needs: [task-save-cache]
+    needs: [task-save-cache, test]
     if: ${{ !cancelled() && needs.task-save-cache.result == 'success' }}
     uses: $/.github/workflows/maven-cache-asset-integration.yml
     with:
@@ -321,7 +321,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   gradle-save-cache:
-    needs: [java-save-cache]
+    needs: [java-save-cache, test]
     if: ${{ !cancelled() && needs.java-save-cache.result == 'success' }}
     uses: $/.github/workflows/gradle-cache-asset-integration.yml
     with:
@@ -333,7 +333,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   docker-save-cache:
-    needs: [gradle-save-cache]
+    needs: [gradle-save-cache, test]
     if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-cache-asset-integration.yml
     with:
@@ -345,7 +345,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   rust-save-cache:
-    needs: [docker-save-cache]
+    needs: [docker-save-cache, test]
     if: ${{ !cancelled() && needs.docker-save-cache.result == 'success' }}
     uses: $/.github/workflows/rust-cache-asset-integration.yml
     with:
@@ -360,6 +360,7 @@ jobs:
     name: All save checks passed
     if: ${{ !cancelled() }}
     needs:
+      - test
       - build-dist
       - node-save-cache
       - uv-save-cache
@@ -380,6 +381,7 @@ jobs:
       - name: Verify every required job passed (or was legitimately skipped)
         env:
           JOB_RESULTS: |
+            test=${{ needs.test.result }}
             build-dist=${{ needs.build-dist.result }}
             node-save-cache=${{ needs.node-save-cache.result }}
             uv-save-cache=${{ needs.uv-save-cache.result }}
