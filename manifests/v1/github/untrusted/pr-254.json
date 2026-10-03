@@ -50,10 +50,39 @@
       "artifact_id": 11287324706,
       "artifact_name": "cache-untrusted-pr-254-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4a128afb21aa1c2c4ca5b39609352c0a094ec25acce0508bd5178328-part-000000",
       "workflow_run_id": 37162395356
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-254/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:4a128afb21aa1c2c4ca5b39609352c0a094ec25acce0508bd5178328f343a252",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-03T23:38:56.978Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33135711,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11287519546,
+          "artifact_name": "cache-untrusted-pr-254-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4a128afb21aa1c2c4ca5b39609352c0a094ec25acce0508bd5178328f343a2-part-000000",
+          "workflow_run_id": 37162395356
+        },
+        {
+          "index": 1,
+          "object": "sha256:941c4bcd5e2d987938be8640e830c285a60dff0d930ccd0e3687bd23cdd9de17",
+          "size": 7969887,
+          "artifact_id": 11287419646,
+          "artifact_name": "cache-untrusted-pr-254-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4a128afb21aa1c2c4ca5b39609352c0a094ec25acce0508bd5178328f343a2-part-000001",
+          "workflow_run_id": 37162395356
+        }
+      ],
+      "artifact_id": 11287519546,
+      "artifact_name": "cache-untrusted-pr-254-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4a128afb21aa1c2c4ca5b39609352c0a094ec25acce0508bd5178328f343a2-part-000000",
+      "workflow_run_id": 37162395356
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-03T23:38:26.591Z",
-    "writes": 2
+    "writes": 3
   }
 }
