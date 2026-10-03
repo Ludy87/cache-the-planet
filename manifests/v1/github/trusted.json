@@ -50,10 +50,39 @@
       "artifact_id": 11287942570,
       "artifact_name": "cache-trusted-main-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615.t-part-000000",
       "workflow_run_id": 37162262060
+    },
+    "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-03T23:42:34.521Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 33138413,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11288451646,
+          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54.t-part-000000",
+          "workflow_run_id": 37162532998
+        },
+        {
+          "index": 1,
+          "object": "sha256:446e8c2ab8a010d69c168eb8e8bd00d15c81772ea8b6d36eed17ac27e7b72975",
+          "size": 7972589,
+          "artifact_id": 11288317133,
+          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54.t-part-000001",
+          "workflow_run_id": 37162532998
+        }
+      ],
+      "artifact_id": 11288451646,
+      "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54.t-part-000000",
+      "workflow_run_id": 37162532998
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-03T23:23:15.512Z",
-    "writes": 3
+    "writes": 4
   }
 }
