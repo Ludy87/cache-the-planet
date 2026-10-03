@@ -75,11 +75,13 @@ let temporaryArchive;
       return;
     }
 
-    const asset = c.storageMode && ["github-branch", "github-artifact"].includes(c.storageMode())
-      ? await c.probeObject(repository, found[1])
-      : downloadDisabled
+    const asset =
+      c.storageMode &&
+      ["github-branch", "github-artifact"].includes(c.storageMode())
         ? await c.probeObject(repository, found[1])
-        : await c.object(repository, found[1].object);
+        : downloadDisabled
+          ? await c.probeObject(repository, found[1])
+          : await c.object(repository, found[1].object);
     if (!asset) {
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
@@ -104,11 +106,37 @@ let temporaryArchive;
     }
 
     let archive;
-    if (!downloadDisabled && c.storageMode && c.storageMode() === "github-artifact") {
-      archive = found[1].parts
-        ? await c.downloadArtifactParts(found[1])
-        : await c.downloadArtifactObject(found[1]);
-    } else if (!downloadDisabled && c.storageMode && c.storageMode() === "github-branch") {
+    if (
+      !downloadDisabled &&
+      c.storageMode &&
+      c.storageMode() === "github-artifact"
+    ) {
+      try {
+        archive = found[1].parts
+          ? await c.downloadArtifactParts(found[1])
+          : await c.downloadArtifactObject(found[1]);
+      } catch (error) {
+        if (!c.isMissingArtifactError(error)) throw error;
+        c.recordMissingArtifactForSave();
+        c.setOutput("cache-hit", "false");
+        c.setOutput("matched-key", "");
+        c.summary("Cache Restore", {
+          Status: "MISS",
+          "Requested key": key,
+          "Matched key": found[0],
+          Asset: "missing",
+          Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
+        });
+        console.log(
+          `Cache miss: referenced artifact is unavailable: key=${found[0]}; artifact=${asset.name}`,
+        );
+        return;
+      }
+    } else if (
+      !downloadDisabled &&
+      c.storageMode &&
+      c.storageMode() === "github-branch"
+    ) {
       if (!Array.isArray(found[1].parts)) {
         c.setOutput("cache-hit", "false");
         c.setOutput("matched-key", "");
@@ -139,10 +167,15 @@ let temporaryArchive;
     c.setOutput("matched-key", found[0]);
     c.setOutput("content-hash", found[1].object);
     c.setOutput("asset-name", asset.name);
-    c.setOutput("cache-size", downloadDisabled ? asset.size : fs.statSync(archive).size);
+    c.setOutput(
+      "cache-size",
+      downloadDisabled ? asset.size : fs.statSync(archive).size,
+    );
     c.summary("Cache Restore", {
       Status: cacheHit ? "HIT" : "FALLBACK",
-      Download: downloadDisabled ? "disabled (existence check only)" : "completed",
+      Download: downloadDisabled
+        ? "disabled (existence check only)"
+        : "completed",
       "Requested key": key,
       "Matched key": found[0],
       Asset: asset.name,
@@ -158,8 +191,7 @@ let temporaryArchive;
   } catch (error) {
     c.fail(error);
   }
-})()
-  .finally(() => {
-    c.removeTemporaryFile(temporaryArchive);
-    return c.closeSftp();
-  });
+})().finally(() => {
+  c.removeTemporaryFile(temporaryArchive);
+  return c.closeSftp();
+});

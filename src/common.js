@@ -461,6 +461,35 @@ async function validateArtifactReference(reference) {
   return validateArtifactMetadata(metadata, reference);
 }
 
+function artifactMissingStateName() {
+  const digest = crypto
+    .createHash("sha256")
+    .update(cacheName(), "utf8")
+    .digest("hex");
+  return `cache_artifact_missing_${digest}`;
+}
+
+function recordMissingArtifactForSave() {
+  if (!process.env.GITHUB_STATE) return;
+  fs.appendFileSync(
+    process.env.GITHUB_STATE,
+    `${artifactMissingStateName()}=true${os.EOL}`,
+  );
+}
+
+function isArtifactMissingForSave() {
+  return process.env[`STATE_${artifactMissingStateName()}`] === "true";
+}
+
+function isMissingArtifactError(error) {
+  return (
+    error?.status === 404 ||
+    error?.statusCode === 404 ||
+    error?.httpStatusCode === 404 ||
+    error?.message === "artifact has expired"
+  );
+}
+
 const githubBranchPartBytes = positiveEnvironmentLimit(
   "CACHE_BRANCH_PART_BYTES",
   24 * 1024 ** 2,
@@ -1500,7 +1529,9 @@ function isNodeModulesFixture(relative, root) {
   const normalized = relative.split(path.sep).join("/");
   return (
     isNodeModulesPath(relative, root) &&
-    /(?:^|\/)(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i.test(normalized)
+    /(?:^|\/)(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i.test(
+      normalized,
+    )
   );
 }
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
@@ -1632,8 +1663,8 @@ function securityScan(root, options = {}) {
       if (
         !packageFixturePath.test(relative) &&
         !isNodeModulesFixture(relative, root) &&
-        (privateKeyContent.test(text) &&
-          !isNodeModulesSourceFile(file, relative, root) ||
+        ((privateKeyContent.test(text) &&
+          !isNodeModulesSourceFile(file, relative, root)) ||
           (!sourceOrMetadata &&
             (knownTokenContent.test(text) || credentialAssignment.test(text))))
       ) {
@@ -2348,7 +2379,8 @@ async function setRef(repository, key, hash, metadata = {}) {
     repository,
     `cache: update ${key}`,
     (manifest) => {
-      if (manifest.references[key]?.object === hash) return false;
+      if (manifest.references[key]?.object === hash && metadata.force !== true)
+        return false;
       if (!manifestWriteGuard(manifest)) {
         locked = true;
         return true;
@@ -2388,7 +2420,8 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
     repository,
     `cache: replace ${removeKey} with ${key}`,
     (manifest) => {
-      if (manifest.references[key]?.object === hash) return false;
+      if (manifest.references[key]?.object === hash && metadata.force !== true)
+        return false;
       if (!manifestWriteGuard(manifest, removeKey)) {
         locked = true;
         return true;
@@ -3223,6 +3256,9 @@ module.exports = {
   downloadArtifactObject,
   downloadArtifactParts,
   validateArtifactMetadata,
+  isMissingArtifactError,
+  recordMissingArtifactForSave,
+  isArtifactMissingForSave,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
