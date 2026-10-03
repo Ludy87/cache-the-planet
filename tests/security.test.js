@@ -94,6 +94,14 @@ test("security scan allows private-key fixtures in Cargo dependency examples", (
   }
 });
 
+test("security scan allows credential-like Cargo example fixtures", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-example-"));
+  const fixture = path.join(root, "registry", "src", "crate", "examples", "sample.rsa");
+  fs.mkdirSync(path.dirname(fixture), { recursive: true });
+  fs.writeFileSync(fixture, "password = \"dummy-example-value\"\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
   try {

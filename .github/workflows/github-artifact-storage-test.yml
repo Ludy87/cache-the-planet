@@ -83,7 +83,7 @@ jobs:
           test "$CACHE_HIT" = true || test "$CACHE_HIT" = false
 
   restore-cache:
-    # if: ${{ inputs.restore-cache }}
+    if: ${{ inputs.restore-cache }}
     needs: save-cache
     name: Restore GitHub artifact cache
     runs-on: ubuntu-latest
