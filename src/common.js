@@ -1651,6 +1651,13 @@ function securityScan(root, options = {}) {
   }
 }
 
+function tarPath(value, platform = process.platform) {
+  if (platform !== "win32") return value;
+  const normalized = String(value).replace(/\\/g, "/");
+  const drive = normalized.match(/^([A-Za-z]):\/(.*)$/);
+  return drive ? `/${drive[1].toLowerCase()}/${drive[2]}` : normalized;
+}
+
 async function makeArchive() {
   if (!have("tar") || !have("zstd"))
     throw new Error("tar and zstd are required on the runner");
@@ -1699,7 +1706,7 @@ async function makeArchive() {
       "-",
       ...excludes,
       "-C",
-      workspace,
+      tarPath(workspace),
       ...paths,
     ],
     { stdio: ["ignore", "pipe", "inherit"] },
@@ -3113,7 +3120,7 @@ async function extract(file, paths = restorePaths()) {
         "--file",
         tarFile,
         "--directory",
-        workspace,
+        tarPath(workspace),
         "--keep-directory-symlink",
         "--no-same-owner",
         "--no-same-permissions",
@@ -3218,4 +3225,5 @@ module.exports = {
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
+  tarPath,
 };
