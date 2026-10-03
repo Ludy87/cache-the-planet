@@ -851,6 +851,32 @@ test("security scan allows the reported npm and Cargo dependency paths", () => {
   }
 });
 
+test("security scan ignores token-shaped text in dependency source and wasm", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-embedded-wasm-token-")
+  );
+  const root = path.join(workspace, "node_modules");
+  const files = [
+    ["@octokit", "auth-token", "README.md", "github_pat_12345678901234567890\n"],
+    ["ssh2", "lib", "protocol", "crypto", "poly1305.js", "const wasm = 'AKIA1234567890123456';\n"],
+    ["undici", "lib", "llhttp", "llhttp-wasm.js", "const wasm = 'github_pat_12345678901234567890';\n"],
+  ];
+  try {
+    for (const parts of files) {
+      const file = path.join(root, ...parts.slice(0, -1));
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, parts.at(-1));
+    }
+    fs.writeFileSync(
+      path.join(root, "undici", "lib", "llhttp", "llhttp_simd-wasm.wasm"),
+      Buffer.from("github_pat_12345678901234567890")
+    );
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan skips explicitly excluded credential-like files", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-exclude-"),
