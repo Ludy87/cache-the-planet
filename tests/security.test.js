@@ -246,6 +246,15 @@ test("security scan allows extensionless token modules in node_modules", () => {
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows dependency documentation with credential examples", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-octokit-readme-"));
+  const root = path.join(workspace, "node_modules");
+  const readme = path.join(root, "@octokit", "auth-token", "README.md");
+  fs.mkdirSync(path.dirname(readme), { recursive: true });
+  fs.writeFileSync(readme, "Use token = \"example-token-value\" in this example.\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-private-key-"),
