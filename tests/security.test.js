@@ -8,8 +8,12 @@ const test = require("node:test");
 const common = require("../src/common");
 
 test("restore rejects symlinked workspace components", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-restore-link-"));
-  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "cache-restore-outside-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-restore-link-"),
+  );
+  const outside = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-restore-outside-"),
+  );
   const link = path.join(workspace, "cache");
   try {
     try {
@@ -45,16 +49,25 @@ test("restore accepts tar parent entries for nested cache paths", () => {
 
 test("restore reports archive paths outside the configured paths", () => {
   assert.throws(
-    () => common.assertArchiveMatchesRestorePaths([".cache/ok", "other/file"], [".cache"]),
+    () =>
+      common.assertArchiveMatchesRestorePaths(
+        [".cache/ok", "other/file"],
+        [".cache"],
+      ),
     /outside the configured path: other\/file/,
   );
 });
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
 test("security scan allows token-named stylesheet files", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-stylesheet-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-stylesheet-"),
+  );
   try {
-    fs.writeFileSync(path.join(root, "token.css"), "/* package stylesheet */\n");
+    fs.writeFileSync(
+      path.join(root, "token.css"),
+      "/* package stylesheet */\n",
+    );
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -62,13 +75,24 @@ test("security scan allows token-named stylesheet files", () => {
 });
 
 test("security scan allows credential-like source filenames", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-source-name-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-source-name-"),
+  );
   try {
     const cargoSource = path.join(root, "registry", "src", "crate", "src");
     fs.mkdirSync(cargoSource, { recursive: true });
-    fs.writeFileSync(path.join(cargoSource, "credential.rs"), "pub struct Credential;\n");
-    fs.writeFileSync(path.join(cargoSource, "credentials.java"), "final class Credentials {}\n");
-    fs.writeFileSync(path.join(cargoSource, "sample.rsa"), "example certificate data\n");
+    fs.writeFileSync(
+      path.join(cargoSource, "credential.rs"),
+      "pub struct Credential;\n",
+    );
+    fs.writeFileSync(
+      path.join(cargoSource, "credentials.java"),
+      "final class Credentials {}\n",
+    );
+    fs.writeFileSync(
+      path.join(cargoSource, "sample.rsa"),
+      "example certificate data\n",
+    );
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -76,7 +100,9 @@ test("security scan allows credential-like source filenames", () => {
 });
 
 test("security scan allows private-key fixtures in Cargo dependency examples", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-fixture-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-fixture-"),
+  );
   try {
     const fixture = path.join(
       root,
@@ -95,15 +121,26 @@ test("security scan allows private-key fixtures in Cargo dependency examples", (
 });
 
 test("security scan allows credential-like Cargo example fixtures", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-example-"));
-  const fixture = path.join(root, "registry", "src", "crate", "examples", "sample.rsa");
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-example-"),
+  );
+  const fixture = path.join(
+    root,
+    "registry",
+    "src",
+    "crate",
+    "examples",
+    "sample.rsa",
+  );
   fs.mkdirSync(path.dirname(fixture), { recursive: true });
-  fs.writeFileSync(fixture, "password = \"dummy-example-value\"\n");
+  fs.writeFileSync(fixture, 'password = "dummy-example-value"\n');
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
 test("security scan allows Cargo registry source fixtures with an index directory", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-index-example-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-index-example-"),
+  );
   const fixture = path.join(
     root,
     "registry",
@@ -119,18 +156,30 @@ test("security scan allows Cargo registry source fixtures with an index director
 });
 
 test("security scan allows npm hidden package lock metadata", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-npm-lock-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-npm-lock-"),
+  );
   const lockfile = path.join(root, "node_modules", ".package-lock.json");
   fs.mkdirSync(path.dirname(lockfile), { recursive: true });
-  fs.writeFileSync(lockfile, JSON.stringify({
-    lockfileVersion: 3,
-    packages: { "node_modules/example": { resolved: "https://registry.npmjs.org/example", integrity: "sha512-example" } },
-  }));
+  fs.writeFileSync(
+    lockfile,
+    JSON.stringify({
+      lockfileVersion: 3,
+      packages: {
+        "node_modules/example": {
+          resolved: "https://registry.npmjs.org/example",
+          integrity: "sha512-example",
+        },
+      },
+    }),
+  );
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
 test("security scan allows extensionless credentials modules in node_modules", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-azure-module-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-azure-module-"),
+  );
   const moduleFile = path.join(
     root,
     "node_modules",
@@ -141,23 +190,62 @@ test("security scan allows extensionless credentials modules in node_modules", (
     "credentials",
   );
   fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
-  fs.writeFileSync(moduleFile, "export const credentials = () => ({ token: undefined });\n");
+  fs.writeFileSync(
+    moduleFile,
+    "export const credentials = () => ({ token: undefined });\n",
+  );
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
 test("security scan allows credentials modules when node_modules is the scan root", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-node-modules-root-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-node-modules-root-"),
+  );
   const root = path.join(workspace, "node_modules");
-  const moduleFile = path.join(root, "@azure", "storage-common", "dist", "browser", "credentials");
+  const moduleFile = path.join(
+    root,
+    "@azure",
+    "storage-common",
+    "dist",
+    "browser",
+    "credentials",
+  );
   fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
-  fs.writeFileSync(moduleFile, "export const credentials = () => ({ token: undefined });\n");
+  fs.writeFileSync(
+    moduleFile,
+    "export const credentials = () => ({ token: undefined });\n",
+  );
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
+test("security scan allows credential-named TypeScript definitions in node_modules", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-node-types-"),
+  );
+  const root = path.join(workspace, "node_modules");
+  const definition = path.join(
+    root,
+    "@azure",
+    "storage-common",
+    "dist",
+    "browser",
+    "credentials",
+    "Credential.d.ts",
+  );
+  fs.mkdirSync(path.dirname(definition), { recursive: true });
+  fs.writeFileSync(definition, "export declare class Credential {}\n");
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-private-key-"),
+  );
   try {
-    fs.writeFileSync(path.join(root, "private.rsa"), "-----BEGIN RSA PRIVATE KEY-----\nkey\n");
+    fs.writeFileSync(
+      path.join(root, "private.rsa"),
+      "-----BEGIN RSA PRIVATE KEY-----\nkey\n",
+    );
     assert.throws(() => common.securityScan(root), /credential-like content/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -165,9 +253,14 @@ test("security scan still rejects private keys outside Cargo dependency fixtures
 });
 
 test("security scan still rejects credential files", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-credential-file-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-credential-file-"),
+  );
   try {
-    fs.writeFileSync(path.join(root, ".git-credentials"), "https://user:password@example.invalid\n");
+    fs.writeFileSync(
+      path.join(root, ".git-credentials"),
+      "https://user:password@example.invalid\n",
+    );
     assert.throws(() => common.securityScan(root), /sensitive-looking file/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -193,8 +286,16 @@ test("security scan allows Cargo crate archives with token-like names", () => {
 });
 
 test("security scan still rejects credential files in Cargo git caches", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-git-"));
-  const entry = path.join(root, "cargo", "git", "checkouts", ".git-credentials");
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-git-"),
+  );
+  const entry = path.join(
+    root,
+    "cargo",
+    "git",
+    "checkouts",
+    ".git-credentials",
+  );
   try {
     fs.mkdirSync(path.dirname(entry), { recursive: true });
     fs.writeFileSync(entry, "https://user:password@example.invalid\n");
@@ -205,7 +306,9 @@ test("security scan still rejects credential files in Cargo git caches", () => {
 });
 
 test("security scan allows Cargo bin executables with token-like names", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-bin-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-bin-"),
+  );
   const entry = path.join(root, "cargo", "bin", "match_token");
   try {
     fs.mkdirSync(path.dirname(entry), { recursive: true });
@@ -217,7 +320,9 @@ test("security scan allows Cargo bin executables with token-like names", () => {
 });
 
 test("security scan allows token-like Cargo sparse index entries", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-index-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-index-"),
+  );
   const entry = path.join(
     root,
     "cargo",
@@ -239,7 +344,9 @@ test("security scan allows token-like Cargo sparse index entries", () => {
 });
 
 test("security scan allows Cargo sparse index entries from the cargo cache root", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-root-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-root-"),
+  );
   const entry = path.join(
     root,
     "registry",
@@ -260,7 +367,9 @@ test("security scan allows Cargo sparse index entries from the cargo cache root"
 });
 
 test("security scan allows Cargo sparse index entries when registry is the scan root", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-registry-root-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-registry-root-"),
+  );
   const registry = path.join(root, "registry");
   const entry = path.join(
     registry,
@@ -281,19 +390,33 @@ test("security scan allows Cargo sparse index entries when registry is the scan 
 });
 
 test("security scan skips explicitly excluded credential-like files", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-exclude-"));
-  const file = path.join(workspace, ".cache", "cargo", "registry", "src", "crate", "examples", "sample.rsa");
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-exclude-"),
+  );
+  const file = path.join(
+    workspace,
+    ".cache",
+    "cargo",
+    "registry",
+    "src",
+    "crate",
+    "examples",
+    "sample.rsa",
+  );
   const previousWorkspace = process.env.GITHUB_WORKSPACE;
   const previousExclude = process.env["INPUT_EXCLUDE"];
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, "-----BEGIN RSA PRIVATE KEY-----\n");
     process.env.GITHUB_WORKSPACE = workspace;
-    process.env["INPUT_EXCLUDE"] = ".cache/cargo/registry/src/**/examples/*.rsa";
-    assert.doesNotThrow(() => common.securityScan(path.join(workspace, ".cache", "cargo"), {
-      excludes: common.excludePatterns(),
-      workspace,
-    }));
+    process.env["INPUT_EXCLUDE"] =
+      ".cache/cargo/registry/src/**/examples/*.rsa";
+    assert.doesNotThrow(() =>
+      common.securityScan(path.join(workspace, ".cache", "cargo"), {
+        excludes: common.excludePatterns(),
+        workspace,
+      }),
+    );
   } finally {
     if (previousWorkspace === undefined) delete process.env.GITHUB_WORKSPACE;
     else process.env.GITHUB_WORKSPACE = previousWorkspace;
@@ -304,7 +427,9 @@ test("security scan skips explicitly excluded credential-like files", () => {
 });
 
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-config-test-"),
+  );
   const configPath = path.join(workspace, ".cache-the-planet.json");
   fs.writeFileSync(configPath, JSON.stringify(config));
   const script = `
@@ -326,7 +451,9 @@ function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
 }
 
 function runManifestBranchWithConfig(config, extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-branch-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-branch-test-"),
+  );
   const configPath = path.join(workspace, ".cache-the-planet.json");
   fs.writeFileSync(configPath, JSON.stringify(config));
   const script = `
@@ -346,7 +473,9 @@ function runManifestBranchWithConfig(config, extraEnv = {}) {
 }
 
 function runCompressionLevelWithConfig(config, extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-compression-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-compression-test-"),
+  );
   fs.writeFileSync(
     path.join(workspace, ".cache-the-planet.json"),
     JSON.stringify(config),
@@ -367,7 +496,9 @@ function runCompressionLevelWithConfig(config, extraEnv = {}) {
 }
 
 function runConfiguredDefaults(config, extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-defaults-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-defaults-test-"),
+  );
   fs.writeFileSync(
     path.join(workspace, ".cache-the-planet.json"),
     JSON.stringify(config),
@@ -395,7 +526,9 @@ function runConfiguredDefaults(config, extraEnv = {}) {
 }
 
 function runCommonExpression(config, expression) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-limits-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-limits-test-"),
+  );
   fs.writeFileSync(
     path.join(workspace, ".cache-the-planet.json"),
     JSON.stringify(config),
@@ -423,7 +556,9 @@ function runCommonExpression(config, expression) {
 }
 
 function runRestoreOutput(event, eventName = "pull_request") {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-restore-output-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-restore-output-test-"),
+  );
   const eventPath = path.join(workspace, "event.json");
   const outputPath = path.join(workspace, "output.txt");
   fs.writeFileSync(eventPath, JSON.stringify(event));
@@ -437,7 +572,10 @@ function runRestoreOutput(event, eventName = "pull_request") {
         GITHUB_WORKSPACE: workspace,
         GITHUB_EVENT_NAME: eventName,
         GITHUB_EVENT_PATH: eventPath,
-        GITHUB_REF: eventName === "pull_request" ? "refs/pull/7/merge" : "refs/heads/main",
+        GITHUB_REF:
+          eventName === "pull_request"
+            ? "refs/pull/7/merge"
+            : "refs/heads/main",
         GITHUB_REPOSITORY: "owner/repo",
         GITHUB_OUTPUT: outputPath,
         GITHUB_TOKEN: "",
@@ -450,13 +588,17 @@ function runRestoreOutput(event, eventName = "pull_request") {
       encoding: "utf8",
     },
   );
-  const output = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, "utf8") : "";
+  const output = fs.existsSync(outputPath)
+    ? fs.readFileSync(outputPath, "utf8")
+    : "";
   fs.rmSync(workspace, { recursive: true, force: true });
   return { result, output };
 }
 
 function runCacheRepository(config = null, extraEnv = {}) {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-repository-test-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-repository-test-"),
+  );
   if (config) {
     fs.writeFileSync(
       path.join(workspace, ".cache-the-planet.json"),
@@ -636,7 +778,10 @@ test("outputs and asset names reject control or unsupported characters", () => {
   const previousOutput = process.env.GITHUB_OUTPUT;
   try {
     process.env.GITHUB_OUTPUT = output;
-    common.setOutput("matched-key", "trusted/owner/repo/main/npm/linux-x64/key/v1");
+    common.setOutput(
+      "matched-key",
+      "trusted/owner/repo/main/npm/linux-x64/key/v1",
+    );
     assert.match(fs.readFileSync(output, "utf8"), /matched-key=trusted\//);
     assert.throws(() => common.setOutput("asset-name", "safe.tar.zst\nX=bad"));
     assert.throws(() => common.setOutput("asset-name", "unsafe value"));
@@ -936,7 +1081,11 @@ test("artifact names and contents are restricted", () => {
 });
 
 test("artifact restore binds metadata to the manifest reference", () => {
-  const reference = { artifact_id: 42, artifact_name: "cache-example-part-000000", workflow_run_id: 7 };
+  const reference = {
+    artifact_id: 42,
+    artifact_name: "cache-example-part-000000",
+    workflow_run_id: 7,
+  };
   const metadata = {
     id: 42,
     name: "cache-example-part-000000",
@@ -946,15 +1095,36 @@ test("artifact restore binds metadata to the manifest reference", () => {
   const previousRepository = process.env.INPUT_REPOSITORY;
   try {
     process.env.INPUT_REPOSITORY = "owner/cache";
-    assert.doesNotThrow(() => common.validateArtifactMetadata(metadata, reference));
+    assert.doesNotThrow(() =>
+      common.validateArtifactMetadata(metadata, reference),
+    );
     const metadataWithoutRepository = {
       ...metadata,
       workflow_run: { id: 7 },
     };
-    assert.doesNotThrow(() => common.validateArtifactMetadata(metadataWithoutRepository, reference));
-    assert.throws(() => common.validateArtifactMetadata({ ...metadata, id: 43 }, reference), /identity mismatch: id/);
-    assert.throws(() => common.validateArtifactMetadata({ ...metadata, name: "other" }, reference), /identity mismatch: name/);
-    assert.throws(() => common.validateArtifactMetadata({ ...metadata, workflow_run: { ...metadata.workflow_run, id: 8 } }, reference), /identity mismatch: workflow run/);
+    assert.doesNotThrow(() =>
+      common.validateArtifactMetadata(metadataWithoutRepository, reference),
+    );
+    assert.throws(
+      () => common.validateArtifactMetadata({ ...metadata, id: 43 }, reference),
+      /identity mismatch: id/,
+    );
+    assert.throws(
+      () =>
+        common.validateArtifactMetadata(
+          { ...metadata, name: "other" },
+          reference,
+        ),
+      /identity mismatch: name/,
+    );
+    assert.throws(
+      () =>
+        common.validateArtifactMetadata(
+          { ...metadata, workflow_run: { ...metadata.workflow_run, id: 8 } },
+          reference,
+        ),
+      /identity mismatch: workflow run/,
+    );
   } finally {
     if (previousRepository === undefined) delete process.env.INPUT_REPOSITORY;
     else process.env.INPUT_REPOSITORY = previousRepository;
@@ -1004,7 +1174,10 @@ test("cache configuration allows, rejects, and defaults allowlists safely", () =
     "uv",
   );
   assert.notEqual(rejected.status, 0);
-  assert.match(rejected.stderr, /not allowed by the configured cache-name allowlist/);
+  assert.match(
+    rejected.stderr,
+    /not allowed by the configured cache-name allowlist/,
+  );
 
   for (const config of [
     {},
@@ -1018,7 +1191,9 @@ test("cache configuration allows, rejects, and defaults allowlists safely", () =
 });
 
 test("automatically loads the root config before a config under .github", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-search-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-config-search-"),
+  );
   try {
     const nestedDirectory = path.join(workspace, ".github", "configs");
     fs.mkdirSync(nestedDirectory, { recursive: true });
@@ -1026,18 +1201,22 @@ test("automatically loads the root config before a config under .github", () => 
       path.join(nestedDirectory, ".cache-the-planet.json"),
       JSON.stringify({ security: { allowed_cache_names: ["nested"] } }),
     );
-    const run = (cacheName) => childProcess.spawnSync(
-      process.execPath,
-      ["-e", `
+    const run = (cacheName) =>
+      childProcess.spawnSync(
+        process.execPath,
+        [
+          "-e",
+          `
         process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
         process.env.RUNNER_OS = "Linux";
         process.env.RUNNER_ARCH = "X64";
         process.env["INPUT_CACHE-NAME"] = ${JSON.stringify(cacheName)};
         const { cacheName: resolveCacheName } = require(${JSON.stringify(path.join(__dirname, "..", "src", "common.js"))});
         process.stdout.write(resolveCacheName());
-      `],
-      { env: process.env, encoding: "utf8" },
-    );
+      `,
+        ],
+        { env: process.env, encoding: "utf8" },
+      );
     const nested = run("nested");
     assert.equal(nested.status, 0);
 
@@ -1072,20 +1251,23 @@ test("manifest branch can be configured in JSON with environment override", () =
 });
 
 test("cache repository defaults to the workflow repository", () => {
-  const workflowRepository = runCacheRepository({
-    cache_repository: "owner/configured-repo",
-  }, {
-    GITHUB_REPOSITORY: "owner/workflow-repo",
-    CACHE_REPOSITORY: "",
-    "INPUT_REPOSITORY": "",
-  });
+  const workflowRepository = runCacheRepository(
+    {
+      cache_repository: "owner/configured-repo",
+    },
+    {
+      GITHUB_REPOSITORY: "owner/workflow-repo",
+      CACHE_REPOSITORY: "",
+      INPUT_REPOSITORY: "",
+    },
+  );
   assert.equal(workflowRepository.status, 0);
   assert.equal(workflowRepository.stdout, "owner/configured-repo");
 
   const configuredRepository = runCacheRepository(null, {
     GITHUB_REPOSITORY: "owner/workflow-repo",
     CACHE_REPOSITORY: "owner/cache-repo",
-    "INPUT_REPOSITORY": "",
+    INPUT_REPOSITORY: "",
   });
   assert.equal(configuredRepository.status, 0);
   assert.equal(configuredRepository.stdout, "owner/cache-repo");
@@ -1099,10 +1281,15 @@ test("cache configuration rejects malformed allowlists and paths outside the wor
   ]) {
     const invalid = runCacheNameWithConfig(config);
     assert.notEqual(invalid.status, 0);
-    assert.match(invalid.stderr, /allowed_cache_names must be a non-empty list/);
+    assert.match(
+      invalid.stderr,
+      /allowed_cache_names must be a non-empty list/,
+    );
   }
 
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-config-path-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-config-path-"),
+  );
   try {
     const script = `
       process.env.GITHUB_WORKSPACE = ${JSON.stringify(workspace)};
@@ -1117,7 +1304,10 @@ test("cache configuration rejects malformed allowlists and paths outside the wor
       encoding: "utf8",
     });
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /config-file must be inside the GitHub workspace/);
+    assert.match(
+      result.stderr,
+      /config-file must be inside the GitHub workspace/,
+    );
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
@@ -1156,7 +1346,14 @@ test("workflow security invariants remain present", () => {
       const expectedCredentialMode = "false";
       assert.equal(
         checkoutCount,
-        (content.match(new RegExp(`persist-credentials:\\s*${expectedCredentialMode}`, "g")) || []).length,
+        (
+          content.match(
+            new RegExp(
+              `persist-credentials:\\s*${expectedCredentialMode}`,
+              "g",
+            ),
+          ) || []
+        ).length,
         `${file} has an unexpected checkout credential mode`,
       );
     }
@@ -1189,7 +1386,10 @@ test("post-save storage must match the initiating restore storage", () => {
     process.env.GITHUB_STATE = stateFile;
     delete process.env.STATE_STORAGE_MODE;
     common.recordInitiatingStorage("github-artifact");
-    assert.match(fs.readFileSync(stateFile, "utf8"), /storage-mode=github-artifact/);
+    assert.match(
+      fs.readFileSync(stateFile, "utf8"),
+      /storage-mode=github-artifact/,
+    );
 
     process.env.STATE_STORAGE_MODE = "github-artifact";
     assert.doesNotThrow(() => common.assertPostStorage("github-artifact"));
