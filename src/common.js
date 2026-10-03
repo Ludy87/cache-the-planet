@@ -1665,6 +1665,7 @@ function securityScan(root, options = {}) {
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file) ||
+        packageSourcePath.test(relative) ||
         isNodeModulesSourceFile(file, relative, root) ||
         npmPackageLockPath.test(relative) ||
         isNodeModulesDocumentation(file, relative, root);

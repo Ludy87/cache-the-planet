@@ -201,10 +201,21 @@ test("security scan allows Cargo test fixtures and source directories with crede
       "Security",
       "Credentials",
     );
+    const packageKey = path.join(
+      root,
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "untrusted-0.9.0",
+      "mk",
+      "llvm-snapshot.gpg.key",
+    );
     fs.mkdirSync(path.dirname(fixture), { recursive: true });
     fs.mkdirSync(path.dirname(credentialsFile), { recursive: true });
+    fs.mkdirSync(path.dirname(packageKey), { recursive: true });
     fs.writeFileSync(fixture, "-----BEGIN RSA PRIVATE KEY-----\nfixture\n");
     fs.writeFileSync(credentialsFile, "pub struct Credentials;\n");
+    fs.writeFileSync(packageKey, 'key = "dependency-example-value"\n');
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
