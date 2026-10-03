@@ -129,6 +129,22 @@ test("security scan allows npm hidden package lock metadata", () => {
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows extensionless credentials modules in node_modules", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-azure-module-"));
+  const moduleFile = path.join(
+    root,
+    "node_modules",
+    "@azure",
+    "storage-common",
+    "dist",
+    "browser",
+    "credentials",
+  );
+  fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
+  fs.writeFileSync(moduleFile, "export const credentials = () => ({ token: undefined });\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
   try {
