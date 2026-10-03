@@ -1495,9 +1495,9 @@ const sensitiveName =
 const sensitiveKeywordName =
   /(^|[-_.])(secret|secrets|token|tokens|password|passwd)([-_.]|$)|\.(key|p12|pfx)$/i;
 const sourceFileName =
-  /\.(?:css|scss|sass|less|map|py|js|mjs|cjs|ts|tsx|mts|cts|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
+  /\.(?:css|scss|sass|less|map|html|toml|py|js|mjs|cjs|ts|tsx|mts|cts|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
 const binaryFileName =
-  /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
+  /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|png|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmPackageLockPath = /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
