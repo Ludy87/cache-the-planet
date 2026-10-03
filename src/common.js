@@ -1524,7 +1524,8 @@ function isNodeModulesDocumentation(file, relative, root) {
     isNodeModulesPath(relative, root) &&
     (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(
       path.basename(file),
-    ) || /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized))
+    ) ||
+      /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized))
   );
 }
 
@@ -1546,7 +1547,7 @@ const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // integration tests. Keep this exception limited to dependency fixture
 // directories; private keys elsewhere must still be rejected.
 const packageFixturePath =
-  /(?:^|[\\/])registry[\\/]src[\\/](?:[^\\/]+[\\/]){1,2}(?:examples|tests|testdata)(?:[\\/]|$)/i;
+  /(?:^|[\\/])registry[\\/]src[\\/](?:[^\\/]+[\\/]){1,2}(?:test|tests|examples|testdata)(?:[\\/]|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1629,6 +1630,10 @@ function securityScan(root, options = {}) {
           (packageSourcePath.test(relative) ||
             nodeModulesPath.test(relative) ||
             path.basename(root).toLowerCase() === "node_modules")
+        ) &&
+        !(
+          packageSourcePath.test(relative) &&
+          /^(?:credential|credentials)$/i.test(path.basename(file))
         )) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
