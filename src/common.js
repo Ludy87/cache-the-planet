@@ -1549,6 +1549,8 @@ function securityScan(root, options = {}) {
   const workspace =
     options.workspace || process.env.GITHUB_WORKSPACE || process.cwd();
   const excludes = options.excludes || [];
+  const violations = [];
+  const report = (message) => violations.push(message);
   const walk = (file) => {
     if (isExcludedPath(file, root, excludes, workspace)) return;
     const stat = fs.lstatSync(file);
@@ -1560,7 +1562,7 @@ function securityScan(root, options = {}) {
         targetRelative === ".." ||
         targetRelative.startsWith(`..${path.sep}`)
       ) {
-        throw new Error(
+        report(
           `cache path contains an external symlink: ${path.relative(process.cwd(), file)}`,
         );
       }
@@ -1571,7 +1573,7 @@ function securityScan(root, options = {}) {
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"
     ) {
-      throw new Error(
+      report(
         `cache path must not contain a virtual environment: ${path.relative(process.cwd(), file)}`,
       );
     }
@@ -1598,7 +1600,7 @@ function securityScan(root, options = {}) {
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
     ) {
-      throw new Error(
+      report(
         `cache path contains a sensitive-looking file: ${path.relative(process.cwd(), file)}`,
       );
     }
@@ -1626,13 +1628,18 @@ function securityScan(root, options = {}) {
           (!sourceOrMetadata &&
             (knownTokenContent.test(text) || credentialAssignment.test(text))))
       ) {
-        throw new Error(
+        report(
           `cache path contains credential-like content: ${path.relative(process.cwd(), file)}`,
         );
       }
     }
   };
   walk(root);
+  if (violations.length) {
+    throw new Error(
+      `cache security scan found ${violations.length} blocked path(s):\n- ${violations.join("\n- ")}`,
+    );
+  }
 }
 
 async function makeArchive() {
