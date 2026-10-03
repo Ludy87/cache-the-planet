@@ -1440,6 +1440,8 @@ const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmPackageLockPath =
   /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
+const nodeModulesPath = /(?:^|[\\/])node_modules(?:[\\/]|$)/i;
+const dependencyCredentialsModule = /^credentials$/i;
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath =
   /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
@@ -1525,6 +1527,8 @@ function securityScan(root, options = {}) {
       sensitiveDirectory.test(relative) ||
       (sensitiveName.test(path.basename(file)) &&
         !cargoBinPath.test(relative.split(path.sep).join("/")) &&
+        !(dependencyCredentialsModule.test(path.basename(file)) &&
+          nodeModulesPath.test(relative)) &&
         !(sourceFileName.test(path.basename(file)) &&
           packageSourcePath.test(relative))) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
@@ -1556,6 +1560,8 @@ function securityScan(root, options = {}) {
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file) ||
+        (dependencyCredentialsModule.test(path.basename(file)) &&
+          nodeModulesPath.test(relative)) ||
         npmPackageLockPath.test(relative);
       if (
         !packageFixturePath.test(relative) &&
