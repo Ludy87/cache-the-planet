@@ -3133,6 +3133,7 @@ async function extract(file, paths = restorePaths()) {
     if (extraction.status) throw new Error("tar extraction failed");
   } finally {
     removeTemporaryFile(tarFile);
+    if (decrypted !== file) removeTemporaryFile(decrypted);
   }
 }
 
