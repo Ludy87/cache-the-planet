@@ -1501,11 +1501,15 @@ const binaryFileName =
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmPackageLockPath = /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
-const nodeModulesPath = /(?:^|[\\/])node_modules(?:[\\/]|$)/i;
+const nodeModulesPath = /(?:^|\/)node_modules(?:\/|$)/i;
+
+function normalizeCachePath(value) {
+  return String(value).replace(/\\/g, "/");
+}
 
 function isNodeModulesPath(relative, root) {
   return (
-    nodeModulesPath.test(relative) ||
+    nodeModulesPath.test(normalizeCachePath(relative)) ||
     path.basename(root).toLowerCase() === "node_modules"
   );
 }
@@ -1547,7 +1551,9 @@ const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // integration tests. Keep this exception limited to dependency fixture
 // directories; private keys elsewhere must still be rejected.
 const packageFixturePath =
-  /(?:^|\/)registry\/src\/(?:[^\/]+\/){1,2}(?:test|tests|examples|testdata)(?:\/|$)/i;
+  /(?:^|\/)registry\/src\/(?:[^/]+\/){1,2}(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i;
+const packagePublicKeyFixturePath =
+  /(?:^|\/)registry\/src\/(?:[^/]+\/){1,2}(?:mk|test|tests|fixtures|examples|testdata)(?:\/|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1615,7 +1621,7 @@ function securityScan(root, options = {}) {
     // Cache paths can originate from a different platform than the Node
     // process (for example Windows paths handled by a Linux runner). Always
     // normalize both separators before applying path-based exceptions.
-    const normalizedRelative = String(relative).replace(/\\/g, "/");
+    const normalizedRelative = normalizeCachePath(relative);
     if (
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"
@@ -1673,13 +1679,30 @@ function securityScan(root, options = {}) {
         isNodeModulesSourceFile(file, relative, root) ||
         npmPackageLockPath.test(normalizedRelative) ||
         isNodeModulesDocumentation(file, relative, root);
+      const dependencySource =
+        packageSourcePath.test(normalizedRelative) ||
+        isNodeModulesPath(normalizedRelative, root);
+      const dependencyFixture =
+        packageFixturePath.test(normalizedRelative) ||
+        isNodeModulesFixture(normalizedRelative, root);
+      const dependencyPublicKeyFixture =
+        packagePublicKeyFixturePath.test(normalizedRelative) || dependencyFixture;
+      const dependencySourceFile =
+        (packageSourcePath.test(normalizedRelative) && sourceFileName.test(file)) ||
+        isNodeModulesSourceFile(file, relative, root);
       if (
-        !packageFixturePath.test(normalizedRelative) &&
-        !isNodeModulesFixture(relative, root) &&
-        ((privateKeyContent.test(text) &&
-          !isNodeModulesSourceFile(file, relative, root)) ||
-          (!sourceOrMetadata &&
-            (knownTokenContent.test(text) || credentialAssignment.test(text))))
+        // Exact known token formats remain blocked everywhere. Generic
+        // credential assignments are ignored in recognized source/metadata
+        // files and published dependency source. Private-key markers are
+        // allowed only in dependency fixtures or dependency source files that
+        // legitimately contain key templates/constants.
+        knownTokenContent.test(text) ||
+        (!sourceOrMetadata &&
+          !dependencySource &&
+          credentialAssignment.test(text)) ||
+        (privateKeyContent.test(text) &&
+          !dependencyPublicKeyFixture &&
+          !dependencySourceFile)
       ) {
         report(
           `cache path contains credential-like content: ${path.relative(process.cwd(), file)}`,
