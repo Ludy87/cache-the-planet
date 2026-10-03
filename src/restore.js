@@ -2,6 +2,8 @@ const fs = require("fs");
 const c = require("./common");
 const { INPUTS } = require("./constants");
 
+let temporaryArchive;
+
 (async () => {
   try {
     const storage = c.storageMode();
@@ -117,6 +119,7 @@ const { INPUTS } = require("./constants");
     } else if (!downloadDisabled) {
       archive = await c.download(repository, found[1].object);
     }
+    temporaryArchive = archive;
     if (!downloadDisabled) await c.extract(archive);
     const cacheIdentity = (value) => {
       const parts = value.split("/");
@@ -155,4 +158,8 @@ const { INPUTS } = require("./constants");
   } catch (error) {
     c.fail(error);
   }
-})().finally(() => c.closeSftp());
+})()
+  .finally(() => {
+    c.removeTemporaryFile(temporaryArchive);
+    return c.closeSftp();
+  });
