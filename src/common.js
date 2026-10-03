@@ -1678,7 +1678,7 @@ async function makeArchive() {
         );
       }
       securityScan(absolute, { excludes: excludePatterns(), workspace });
-      paths.push(relative || ".");
+      paths.push((relative || ".").split(path.sep).join("/"));
     } else log(`cache path missing: ${value}`);
   }
   if (!paths.length) throw new Error("no cache paths exist");
