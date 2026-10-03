@@ -1438,6 +1438,8 @@ const binaryFileName =
   /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
+const npmPackageLockPath =
+  /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath =
   /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
@@ -1553,7 +1555,8 @@ function securityScan(root, options = {}) {
       const sourceOrMetadata =
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
-        npmIndexPath.test(file);
+        npmIndexPath.test(file) ||
+        npmPackageLockPath.test(relative);
       if (
         !packageFixturePath.test(relative) &&
         ((privateKeyContent.test(text)) ||

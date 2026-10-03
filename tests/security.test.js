@@ -118,6 +118,17 @@ test("security scan allows Cargo registry source fixtures with an index director
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows npm hidden package lock metadata", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-npm-lock-"));
+  const lockfile = path.join(root, "node_modules", ".package-lock.json");
+  fs.mkdirSync(path.dirname(lockfile), { recursive: true });
+  fs.writeFileSync(lockfile, JSON.stringify({
+    lockfileVersion: 3,
+    packages: { "node_modules/example": { resolved: "https://registry.npmjs.org/example", integrity: "sha512-example" } },
+  }));
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
   try {
