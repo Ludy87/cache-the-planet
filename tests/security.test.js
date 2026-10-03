@@ -57,6 +57,18 @@ test("restore reports archive paths outside the configured paths", () => {
     /outside the configured path: other\/file/,
   );
 });
+
+test("restore normalizes repeated archive separators", () => {
+  assert.doesNotThrow(() =>
+    common.assertArchiveMatchesRestorePaths(
+      [
+        ".cache//gradle-java-25//caches",
+        ".cache//gradle-java-25//wrapper",
+      ],
+      [".cache/gradle-java-25/caches", ".cache/gradle-java-25/wrapper"],
+    ),
+  );
+});
 const publisher = require("../scripts/publish-pr-cache-artifacts");
 
 test("security scan allows token-named stylesheet files", () => {

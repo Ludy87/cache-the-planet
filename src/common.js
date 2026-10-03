@@ -3036,6 +3036,7 @@ function assertArchiveMatchesRestorePaths(names, paths) {
   const normalize = (value) => {
     let normalized = String(value).replace(/\\/g, "/");
     while (normalized.startsWith("./")) normalized = normalized.slice(2);
+    normalized = normalized.replace(/\/+/g, "/");
     return normalized.replace(/\/+$/, "") || ".";
   };
   const allowed = paths.map(normalize);
