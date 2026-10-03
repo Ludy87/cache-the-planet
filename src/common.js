@@ -1473,7 +1473,6 @@ const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmPackageLockPath = /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
 const nodeModulesPath = /(?:^|[\\/])node_modules(?:[\\/]|$)/i;
-const dependencyCredentialsModule = /^credentials$/i;
 
 function isNodeModulesPath(relative, root) {
   return (
@@ -1482,10 +1481,11 @@ function isNodeModulesPath(relative, root) {
   );
 }
 
-function isNodeModulesModule(file, relative, root) {
+function isNodeModulesSourceFile(file, relative, root) {
+  const basename = path.basename(file);
   return (
     isNodeModulesPath(relative, root) &&
-    /^[A-Za-z0-9_-]+$/.test(path.basename(file))
+    (sourceFileName.test(basename) || /^[A-Za-z0-9_-]+$/.test(basename))
   );
 }
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
@@ -1572,11 +1572,7 @@ function securityScan(root, options = {}) {
       sensitiveDirectory.test(relative) ||
       (sensitiveName.test(path.basename(file)) &&
         !cargoBinPath.test(relative.split(path.sep).join("/")) &&
-        !(
-          dependencyCredentialsModule.test(path.basename(file)) &&
-          isNodeModulesPath(relative, root)
-        ) &&
-        !isNodeModulesModule(file, relative, root) &&
+        !isNodeModulesSourceFile(file, relative, root) &&
         !(
           sourceFileName.test(path.basename(file)) &&
           (packageSourcePath.test(relative) ||
@@ -1591,7 +1587,7 @@ function securityScan(root, options = {}) {
           binaryFileName.test(path.basename(file))
         ) &&
         !packageSourcePath.test(relative) &&
-        !isNodeModulesModule(file, relative, root) &&
+        !isNodeModulesSourceFile(file, relative, root) &&
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
     ) {
@@ -1613,9 +1609,7 @@ function securityScan(root, options = {}) {
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file) ||
-        (dependencyCredentialsModule.test(path.basename(file)) &&
-          isNodeModulesPath(relative, root)) ||
-        isNodeModulesModule(file, relative, root) ||
+        isNodeModulesSourceFile(file, relative, root) ||
         npmPackageLockPath.test(relative);
       if (
         !packageFixturePath.test(relative) &&
