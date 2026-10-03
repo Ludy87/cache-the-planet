@@ -87,6 +87,27 @@ jobs:
           version: 2
           strict: true
 
+      - name: Restore npm + node_modules cache asset
+        id: multi-cache
+        uses: $/multi-cache
+        with:
+          multi-cache: |
+            npm-cache:
+              path: .cache/npm
+            frontend-node-modules:
+              path: node_modules
+          storage: github-branch
+          save-scope: shared
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          key: |
+            npm-cache=${{ needs.hash_pr.outputs.files_hash }}
+            frontend-node-modules=${{ needs.hash_pr.outputs.files_hash }}
+          allow-shared-restore: true
+          version: 2
+          strict: true
+          exclude: |
+            node_modules/**/.env
+
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
