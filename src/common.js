@@ -1621,7 +1621,8 @@ function securityScan(root, options = {}) {
         isNodeModulesDocumentation(file, relative, root);
       if (
         !packageFixturePath.test(relative) &&
-        (privateKeyContent.test(text) ||
+        (privateKeyContent.test(text) &&
+          !isNodeModulesSourceFile(file, relative, root) ||
           (!sourceOrMetadata &&
             (knownTokenContent.test(text) || credentialAssignment.test(text))))
       ) {
