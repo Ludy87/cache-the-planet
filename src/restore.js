@@ -83,6 +83,9 @@ let temporaryArchive;
           ? await c.probeObject(repository, found[1])
           : await c.object(repository, found[1].object);
     if (!asset) {
+      if (c.storageMode && c.storageMode() === "github-artifact") {
+        c.recordMissingArtifactForSave();
+      }
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
       c.summary("Cache Restore", {
@@ -93,7 +96,9 @@ let temporaryArchive;
         Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
       });
       console.log(
-        `Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`,
+        c.storageMode && c.storageMode() === "github-artifact"
+          ? `Cache miss: referenced artifact is unavailable: key=${found[0]}; artifact=${found[1].artifact_name || found[1].object}`
+          : `Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`,
       );
       return;
     }
