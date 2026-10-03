@@ -118,8 +118,8 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Configure npm cache directory
-        run: npm config set cache "$NPM_CONFIG_CACHE" --global
+      # - name: Configure npm cache directory
+      #   run: npm config set cache "$NPM_CONFIG_CACHE" --global
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
