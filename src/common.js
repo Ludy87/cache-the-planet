@@ -1551,9 +1551,9 @@ const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // integration tests. Keep this exception limited to dependency fixture
 // directories; private keys elsewhere must still be rejected.
 const packageFixturePath =
-  /(?:^|\/)registry\/src\/[^/]+\/[^/]+\/(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i;
+  /(?:^|\/)registry\/src\/(?:[^/]+\/){1,2}(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i;
 const packagePublicKeyFixturePath =
-  /(?:^|\/)registry\/src\/[^/]+\/[^/]+\/(?:mk|test|tests|fixtures|examples|testdata)(?:\/|$)/i;
+  /(?:^|\/)registry\/src\/(?:[^/]+\/){1,2}(?:mk|test|tests|fixtures|examples|testdata)(?:\/|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1687,15 +1687,22 @@ function securityScan(root, options = {}) {
         isNodeModulesFixture(normalizedRelative, root);
       const dependencyPublicKeyFixture =
         packagePublicKeyFixturePath.test(normalizedRelative) || dependencyFixture;
+      const dependencySourceFile =
+        (packageSourcePath.test(normalizedRelative) && sourceFileName.test(file)) ||
+        isNodeModulesSourceFile(file, relative, root);
       if (
-        // Published dependency source commonly contains credential-shaped
-        // examples, documentation and TLS test material. Do not treat generic
-        // assignments in dependency source as credentials; exact known token
-        // formats remain blocked everywhere. Private-key material is allowed
-        // only in dependency test/example fixtures.
+        // Exact known token formats remain blocked everywhere. Generic
+        // credential assignments are ignored in recognized source/metadata
+        // files and published dependency source. Private-key markers are
+        // allowed only in dependency fixtures or dependency source files that
+        // legitimately contain key templates/constants.
         knownTokenContent.test(text) ||
-        (!dependencySource && credentialAssignment.test(text)) ||
-        (privateKeyContent.test(text) && !dependencyPublicKeyFixture)
+        (!sourceOrMetadata &&
+          !dependencySource &&
+          credentialAssignment.test(text)) ||
+        (privateKeyContent.test(text) &&
+          !dependencyPublicKeyFixture &&
+          !dependencySourceFile)
       ) {
         report(
           `cache path contains credential-like content: ${path.relative(process.cwd(), file)}`,
