@@ -1495,7 +1495,7 @@ const sensitiveName =
 const sensitiveKeywordName =
   /(^|[-_.])(secret|secrets|token|tokens|password|passwd)([-_.]|$)|\.(key|p12|pfx)$/i;
 const sourceFileName =
-  /\.(?:css|scss|sass|less|map|py|js|mjs|cjs|ts|tsx|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
+  /\.(?:css|scss|sass|less|map|py|js|mjs|cjs|ts|tsx|mts|cts|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
 const binaryFileName =
   /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
 const packageMetadataPath =
@@ -1519,9 +1519,12 @@ function isNodeModulesSourceFile(file, relative, root) {
 }
 
 function isNodeModulesDocumentation(file, relative, root) {
+  const normalized = relative.split(path.sep).join("/");
   return (
     isNodeModulesPath(relative, root) &&
-    /^(?:README|LICENSE|CHANGELOG)(?:\.[^\\/]*)?$/i.test(path.basename(file))
+    (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(
+      path.basename(file),
+    ) || /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized))
   );
 }
 
