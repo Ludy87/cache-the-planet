@@ -21,10 +21,39 @@
       "artifact_id": 11288350471,
       "artifact_name": "cache-untrusted-pr-253-github-artifact-test-linux-x64-github-artifact-integration-v1-v2--a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d.tar.zst-part-000000",
       "workflow_run_id": 37161676829
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-253/npm-cache/linux-x64/ad375a65cd129326ff016187217fc0d858575e397a34ba1fd6330cb954be6a88-cache-64565b669ae2c797/v2": {
+      "object": "sha256:19d03a59c347c3f797bc7419de0a88074cbe73a19d9a028ca1a90786c73cdaa2",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-03T23:25:28.065Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33135654,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11287184008,
+          "artifact_name": "cache-untrusted-pr-253-npm-cache-linux-x64-ad375a65cd129326ff016187217fc0d858575e397a34ba1fd6330cb954be6a88-v2--19d03a59c347c3f797bc7419de0a88074cbe73a19d9a028ca1a90786-part-000000",
+          "workflow_run_id": 37161676829
+        },
+        {
+          "index": 1,
+          "object": "sha256:37058451a4909e366722380b6c4007b0e7a80474b1e7c3afd4471f4829b1bc15",
+          "size": 7969830,
+          "artifact_id": 11287578543,
+          "artifact_name": "cache-untrusted-pr-253-npm-cache-linux-x64-ad375a65cd129326ff016187217fc0d858575e397a34ba1fd6330cb954be6a88-v2--19d03a59c347c3f797bc7419de0a88074cbe73a19d9a028ca1a90786-part-000001",
+          "workflow_run_id": 37161676829
+        }
+      ],
+      "artifact_id": 11287184008,
+      "artifact_name": "cache-untrusted-pr-253-npm-cache-linux-x64-ad375a65cd129326ff016187217fc0d858575e397a34ba1fd6330cb954be6a88-v2--19d03a59c347c3f797bc7419de0a88074cbe73a19d9a028ca1a90786-part-000000",
+      "workflow_run_id": 37161676829
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-03T23:24:58.319Z",
-    "writes": 1
+    "writes": 2
   }
 }
