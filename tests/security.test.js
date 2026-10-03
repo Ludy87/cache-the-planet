@@ -255,6 +255,15 @@ test("security scan allows dependency documentation with credential examples", (
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows private-key templates in node_modules source files", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-ssh2-keygen-"));
+  const root = path.join(workspace, "node_modules");
+  const source = path.join(root, "ssh2", "lib", "keygen.js");
+  fs.mkdirSync(path.dirname(source), { recursive: true });
+  fs.writeFileSync(source, "const header = '-----BEGIN RSA PRIVATE KEY-----';\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-private-key-"),
