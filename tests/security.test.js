@@ -273,6 +273,28 @@ test("security scan allows dependency documentation with credential examples", (
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows dependency type definitions and docs with credential terms", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-dependency-false-flags-"));
+  const root = path.join(workspace, "node_modules");
+  const files = [
+    ["@stripe", "stripe-js", "dist", "api", "confirmation-tokens.d.mts"],
+    ["@supabase", "postgrest-js", "dist", "index.d.cts"],
+    ["dotenv", "README.md"],
+    ["react-router", "docs", "how-to", "form-validation.md"],
+    ["smart-buffer", "docs", "README_v3.md"],
+  ];
+  try {
+    for (const parts of files) {
+      const file = path.join(root, ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'const token = "example-token-value";\n');
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows private-key templates in node_modules source files", () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-ssh2-keygen-"));
   const root = path.join(workspace, "node_modules");
