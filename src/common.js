@@ -1449,7 +1449,7 @@ const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // integration tests. Keep this exception limited to dependency fixture
 // directories; private keys elsewhere must still be rejected.
 const packageFixturePath =
-  /(?:^|[\\/])registry[\\/]src[\\/][^\\/]+[\\/](?:examples|tests|testdata)(?:[\\/]|$)/i;
+  /(?:^|[\\/])registry[\\/]src[\\/](?:[^\\/]+[\\/]){1,2}(?:examples|tests|testdata)(?:[\\/]|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;

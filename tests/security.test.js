@@ -102,6 +102,22 @@ test("security scan allows credential-like Cargo example fixtures", () => {
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows Cargo registry source fixtures with an index directory", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-cargo-index-example-"));
+  const fixture = path.join(
+    root,
+    "registry",
+    "src",
+    "index.crates.io-1949cf8c6b5b557f",
+    "hyper-rustls-0.27.7",
+    "examples",
+    "sample.rsa",
+  );
+  fs.mkdirSync(path.dirname(fixture), { recursive: true });
+  fs.writeFileSync(fixture, "-----BEGIN RSA PRIVATE KEY-----\nfixture\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
   try {
