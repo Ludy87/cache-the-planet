@@ -8,17 +8,39 @@ c.cacheRepository = () => "owner/repo";
 c.scopedKey = () => key;
 c.cacheScope = () => "trusted";
 c.assertTrustedRestoreAllowed = () => {};
-c.refsForKeys = async () => ({ json: { references: missing ? {} : {
-  [matched]: {
-    object: "sha256:" + "a".repeat(64),
-    storage: process.env.INPUT_STORAGE || "github-branch",
-    size: 10,
+c.refsForKeys = async () => ({
+  json: {
+    references: missing
+      ? {}
+      : {
+          [matched]: {
+            object: "sha256:" + "a".repeat(64),
+            storage: process.env.INPUT_STORAGE || "github-branch",
+            size: 10,
+          },
+        },
   },
-} } });
+});
 c.probeObject = async () => {
   if (process.env.PROBE_CASE === "error") throw Error("metadata unavailable");
-  return process.env.PROBE_CASE === "missing-object" ? null : { name: "test", size: 10 };
+  return process.env.PROBE_CASE === "missing-object"
+    ? null
+    : { name: "test", size: 10 };
 };
-for (const method of ["download", "downloadBranchObject", "extract", "object"]) {
-  c[method] = () => { throw Error("Unexpected payload operation: " + method); };
+if (process.env.PROBE_CASE === "missing-artifact") {
+  c.downloadArtifactObject = async () => {
+    const error = Error("404 Not Found");
+    error.status = 404;
+    throw error;
+  };
+}
+for (const method of [
+  "download",
+  "downloadBranchObject",
+  "extract",
+  "object",
+]) {
+  c[method] = () => {
+    throw Error("Unexpected payload operation: " + method);
+  };
 }

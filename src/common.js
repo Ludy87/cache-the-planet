@@ -461,6 +461,35 @@ async function validateArtifactReference(reference) {
   return validateArtifactMetadata(metadata, reference);
 }
 
+function artifactMissingStateName() {
+  const digest = crypto
+    .createHash("sha256")
+    .update(cacheName(), "utf8")
+    .digest("hex");
+  return `cache_artifact_missing_${digest}`;
+}
+
+function recordMissingArtifactForSave() {
+  if (!process.env.GITHUB_STATE) return;
+  fs.appendFileSync(
+    process.env.GITHUB_STATE,
+    `${artifactMissingStateName()}=true${os.EOL}`,
+  );
+}
+
+function isArtifactMissingForSave() {
+  return process.env[`STATE_${artifactMissingStateName()}`] === "true";
+}
+
+function isMissingArtifactError(error) {
+  return (
+    error?.status === 404 ||
+    error?.statusCode === 404 ||
+    error?.httpStatusCode === 404 ||
+    error?.message === "artifact has expired"
+  );
+}
+
 const githubBranchPartBytes = positiveEnvironmentLimit(
   "CACHE_BRANCH_PART_BYTES",
   24 * 1024 ** 2,
@@ -1500,7 +1529,9 @@ function isNodeModulesFixture(relative, root) {
   const normalized = relative.split(path.sep).join("/");
   return (
     isNodeModulesPath(relative, root) &&
-    /(?:^|\/)(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i.test(normalized)
+    /(?:^|\/)(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i.test(
+      normalized,
+    )
   );
 }
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
@@ -1632,8 +1663,8 @@ function securityScan(root, options = {}) {
       if (
         !packageFixturePath.test(relative) &&
         !isNodeModulesFixture(relative, root) &&
-        (privateKeyContent.test(text) &&
-          !isNodeModulesSourceFile(file, relative, root) ||
+        ((privateKeyContent.test(text) &&
+          !isNodeModulesSourceFile(file, relative, root)) ||
           (!sourceOrMetadata &&
             (knownTokenContent.test(text) || credentialAssignment.test(text))))
       ) {
@@ -1649,6 +1680,13 @@ function securityScan(root, options = {}) {
       `cache security scan found ${violations.length} blocked path(s):\n- ${violations.join("\n- ")}`,
     );
   }
+}
+
+function tarPath(value, platform = process.platform) {
+  if (platform !== "win32") return value;
+  const normalized = String(value).replace(/\\/g, "/");
+  const drive = normalized.match(/^([A-Za-z]):\/(.*)$/);
+  return drive ? `/${drive[1].toLowerCase()}/${drive[2]}` : normalized;
 }
 
 async function makeArchive() {
@@ -1678,7 +1716,7 @@ async function makeArchive() {
         );
       }
       securityScan(absolute, { excludes: excludePatterns(), workspace });
-      paths.push(relative || ".");
+      paths.push((relative || ".").split(path.sep).join("/"));
     } else log(`cache path missing: ${value}`);
   }
   if (!paths.length) throw new Error("no cache paths exist");
@@ -1699,7 +1737,7 @@ async function makeArchive() {
       "-",
       ...excludes,
       "-C",
-      workspace,
+      tarPath(workspace),
       ...paths,
     ],
     { stdio: ["ignore", "pipe", "inherit"] },
@@ -1943,33 +1981,42 @@ function invalidateRepositoryCache(repository) {
 async function probeObject(repository, reference) {
   validateManifestReference(reference);
   if (storageMode() === "github-artifact") {
-    if (Array.isArray(reference.parts)) {
-      if (
-        reference.parts.some(
-          (part) =>
-            !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1,
+    try {
+      if (Array.isArray(reference.parts)) {
+        if (
+          reference.parts.some(
+            (part) =>
+              !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1,
+          )
         )
+          return null;
+        await Promise.all(
+          reference.parts.map((part) => validateArtifactReference(part)),
+        );
+        return {
+          id: reference.object,
+          name: reference.artifact_name || reference.object,
+          size: reference.size,
+          artifact: true,
+          parts: reference.parts,
+        };
+      }
+      if (
+        !Number.isSafeInteger(reference.artifact_id) ||
+        reference.artifact_id < 1
       )
         return null;
+      await validateArtifactReference(reference);
       return {
-        id: reference.object,
-        name: reference.artifact_name || reference.object,
+        id: reference.artifact_id,
+        name: reference.artifact_name || String(reference.artifact_id),
         size: reference.size,
         artifact: true,
-        parts: reference.parts,
       };
+    } catch (error) {
+      if (isMissingArtifactError(error)) return null;
+      throw error;
     }
-    if (
-      !Number.isSafeInteger(reference.artifact_id) ||
-      reference.artifact_id < 1
-    )
-      return null;
-    return {
-      id: reference.artifact_id,
-      name: reference.artifact_name || String(reference.artifact_id),
-      size: reference.size,
-      artifact: true,
-    };
   }
   if (storageMode() !== "github-branch") {
     const asset = await object(repository, reference.object);
@@ -2341,7 +2388,8 @@ async function setRef(repository, key, hash, metadata = {}) {
     repository,
     `cache: update ${key}`,
     (manifest) => {
-      if (manifest.references[key]?.object === hash) return false;
+      if (manifest.references[key]?.object === hash && metadata.force !== true)
+        return false;
       if (!manifestWriteGuard(manifest)) {
         locked = true;
         return true;
@@ -2381,7 +2429,8 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
     repository,
     `cache: replace ${removeKey} with ${key}`,
     (manifest) => {
-      if (manifest.references[key]?.object === hash) return false;
+      if (manifest.references[key]?.object === hash && metadata.force !== true)
+        return false;
       if (!manifestWriteGuard(manifest, removeKey)) {
         locked = true;
         return true;
@@ -3036,6 +3085,7 @@ function assertArchiveMatchesRestorePaths(names, paths) {
   const normalize = (value) => {
     let normalized = String(value).replace(/\\/g, "/");
     while (normalized.startsWith("./")) normalized = normalized.slice(2);
+    normalized = normalized.replace(/\/+/g, "/");
     return normalized.replace(/\/+$/, "") || ".";
   };
   const allowed = paths.map(normalize);
@@ -3112,7 +3162,7 @@ async function extract(file, paths = restorePaths()) {
         "--file",
         tarFile,
         "--directory",
-        workspace,
+        tarPath(workspace),
         "--keep-directory-symlink",
         "--no-same-owner",
         "--no-same-permissions",
@@ -3125,6 +3175,7 @@ async function extract(file, paths = restorePaths()) {
     if (extraction.status) throw new Error("tar extraction failed");
   } finally {
     removeTemporaryFile(tarFile);
+    if (decrypted !== file) removeTemporaryFile(decrypted);
   }
 }
 
@@ -3214,7 +3265,11 @@ module.exports = {
   downloadArtifactObject,
   downloadArtifactParts,
   validateArtifactMetadata,
+  isMissingArtifactError,
+  recordMissingArtifactForSave,
+  isArtifactMissingForSave,
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
+  tarPath,
 };

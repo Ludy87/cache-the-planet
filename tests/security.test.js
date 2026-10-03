@@ -7,6 +7,12 @@ const test = require("node:test");
 
 const common = require("../src/common");
 
+test("normalizes Windows workspace paths for GNU tar", () => {
+  assert.equal(common.tarPath("D:\\a\\cache-the-planet", "win32"), "/d/a/cache-the-planet");
+  assert.equal(common.tarPath("/tmp/cache-the-planet", "win32"), "/tmp/cache-the-planet");
+  assert.equal(common.tarPath("D:/cache", "linux"), "D:/cache");
+});
+
 test("restore rejects symlinked workspace components", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-restore-link-"),
@@ -55,6 +61,18 @@ test("restore reports archive paths outside the configured paths", () => {
         [".cache"],
       ),
     /outside the configured path: other\/file/,
+  );
+});
+
+test("restore normalizes repeated archive separators", () => {
+  assert.doesNotThrow(() =>
+    common.assertArchiveMatchesRestorePaths(
+      [
+        ".cache//gradle-java-25//caches",
+        ".cache//gradle-java-25//wrapper",
+      ],
+      [".cache/gradle-java-25/caches", ".cache/gradle-java-25/wrapper"],
+    ),
   );
 });
 const publisher = require("../scripts/publish-pr-cache-artifacts");
