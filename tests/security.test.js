@@ -95,6 +95,49 @@ test("security scan allows token-named stylesheet files", () => {
   }
 });
 
+test("security scan allows generated HTML, translation, and PNG assets", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-frontend-assets-"),
+  );
+  const files = [
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "add-password.html",
+      '<html><body data-label="password"></body></html>\n',
+    ],
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "locales",
+      "de-DE",
+      "translation.toml",
+      'password = "translation label"\n',
+    ],
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "og_images",
+      "remove-password.png",
+      Buffer.from([0, 1, 2, 3]),
+    ],
+  ];
+  try {
+    for (const [directory, ...parts] of files) {
+      const content = parts.pop();
+      const file = path.join(root, directory, ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows credential-like source filenames", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-source-name-"),
