@@ -8,8 +8,14 @@ const test = require("node:test");
 const common = require("../src/common");
 
 test("normalizes Windows workspace paths for GNU tar", () => {
-  assert.equal(common.tarPath("D:\\a\\cache-the-planet", "win32"), "/d/a/cache-the-planet");
-  assert.equal(common.tarPath("/tmp/cache-the-planet", "win32"), "/tmp/cache-the-planet");
+  assert.equal(
+    common.tarPath("D:\\a\\cache-the-planet", "win32"),
+    "/d/a/cache-the-planet",
+  );
+  assert.equal(
+    common.tarPath("/tmp/cache-the-planet", "win32"),
+    "/tmp/cache-the-planet",
+  );
   assert.equal(common.tarPath("D:/cache", "linux"), "D:/cache");
 });
 
@@ -67,10 +73,7 @@ test("restore reports archive paths outside the configured paths", () => {
 test("restore normalizes repeated archive separators", () => {
   assert.doesNotThrow(() =>
     common.assertArchiveMatchesRestorePaths(
-      [
-        ".cache//gradle-java-25//caches",
-        ".cache//gradle-java-25//wrapper",
-      ],
+      [".cache//gradle-java-25//caches", ".cache//gradle-java-25//wrapper"],
       [".cache/gradle-java-25/caches", ".cache/gradle-java-25/wrapper"],
     ),
   );
@@ -86,6 +89,49 @@ test("security scan allows token-named stylesheet files", () => {
       path.join(root, "token.css"),
       "/* package stylesheet */\n",
     );
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows generated HTML, translation, and PNG assets", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-frontend-assets-"),
+  );
+  const files = [
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "add-password.html",
+      '<html><body data-label="password"></body></html>\n',
+    ],
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "locales",
+      "de-DE",
+      "translation.toml",
+      'password = "translation label"\n',
+    ],
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "og_images",
+      "remove-password.png",
+      Buffer.from([0, 1, 2, 3]),
+    ],
+  ];
+  try {
+    for (const [directory, ...parts] of files) {
+      const content = parts.pop();
+      const file = path.join(root, directory, ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -173,6 +219,52 @@ test("security scan allows Cargo registry source fixtures with an index director
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows Cargo test fixtures and source directories with credential names", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-test-fixtures-"),
+  );
+  try {
+    const fixture = path.join(
+      root,
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "schannel-0.1.28",
+      "test",
+      "key.pem",
+    );
+    const credentialsFile = path.join(
+      root,
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "windows-0.62.2",
+      "src",
+      "Windows",
+      "Security",
+      "Credentials",
+    );
+    const packageKey = path.join(
+      root,
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "untrusted-0.9.0",
+      "mk",
+      "llvm-snapshot.gpg.key",
+    );
+    fs.mkdirSync(path.dirname(fixture), { recursive: true });
+    fs.mkdirSync(path.dirname(credentialsFile), { recursive: true });
+    fs.mkdirSync(path.dirname(packageKey), { recursive: true });
+    fs.writeFileSync(fixture, "-----BEGIN RSA PRIVATE KEY-----\nfixture\n");
+    fs.writeFileSync(credentialsFile, "pub struct Credentials;\n");
+    fs.writeFileSync(packageKey, 'key = "dependency-example-value"\n');
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows npm hidden package lock metadata", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-npm-lock-"),
@@ -256,7 +348,9 @@ test("security scan allows credential-named TypeScript definitions in node_modul
 });
 
 test("security scan allows extensionless token modules in node_modules", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-octokit-module-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-octokit-module-"),
+  );
   const root = path.join(workspace, "node_modules");
   const moduleFile = path.join(root, "@octokit", "auth-token");
   fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
@@ -265,20 +359,54 @@ test("security scan allows extensionless token modules in node_modules", () => {
 });
 
 test("security scan allows dependency documentation with credential examples", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-octokit-readme-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-octokit-readme-"),
+  );
   const root = path.join(workspace, "node_modules");
   const readme = path.join(root, "@octokit", "auth-token", "README.md");
   fs.mkdirSync(path.dirname(readme), { recursive: true });
-  fs.writeFileSync(readme, "Use token = \"example-token-value\" in this example.\n");
+  fs.writeFileSync(
+    readme,
+    'Use token = "example-token-value" in this example.\n',
+  );
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows dependency type definitions and docs with credential terms", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-dependency-false-flags-"),
+  );
+  const root = path.join(workspace, "node_modules");
+  const files = [
+    ["@stripe", "stripe-js", "dist", "api", "confirmation-tokens.d.mts"],
+    ["@supabase", "postgrest-js", "dist", "index.d.cts"],
+    ["dotenv", "README.md"],
+    ["react-router", "docs", "how-to", "form-validation.md"],
+    ["smart-buffer", "docs", "README_v3.md"],
+  ];
+  try {
+    for (const parts of files) {
+      const file = path.join(root, ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'const token = "example-token-value";\n');
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows private-key templates in node_modules source files", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-ssh2-keygen-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-ssh2-keygen-"),
+  );
   const root = path.join(workspace, "node_modules");
   const source = path.join(root, "ssh2", "lib", "keygen.js");
   fs.mkdirSync(path.dirname(source), { recursive: true });
-  fs.writeFileSync(source, "const header = '-----BEGIN RSA PRIVATE KEY-----';\n");
+  fs.writeFileSync(
+    source,
+    "const header = '-----BEGIN RSA PRIVATE KEY-----';\n",
+  );
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
@@ -316,7 +444,10 @@ test("security scan reports all blocked paths in one error", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-many-"));
   try {
     fs.writeFileSync(path.join(root, ".env"), "TOKEN=example\n");
-    fs.writeFileSync(path.join(root, "credentials"), "password = \"example-value\"\n");
+    fs.writeFileSync(
+      path.join(root, "credentials"),
+      'password = "example-value"\n',
+    );
     assert.throws(
       () => common.securityScan(root),
       (error) =>
@@ -328,7 +459,9 @@ test("security scan reports all blocked paths in one error", () => {
 });
 
 test("security scan allows private-key fixtures in node_modules test directories", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-node-fixtures-"));
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-node-fixtures-"),
+  );
   const root = path.join(workspace, "node_modules");
   const fixture = path.join(root, "ssh2", "test", "fixtures", "https_key.pem");
   fs.mkdirSync(path.dirname(fixture), { recursive: true });
