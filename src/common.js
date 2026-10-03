@@ -1488,6 +1488,13 @@ function isNodeModulesSourceFile(file, relative, root) {
     (sourceFileName.test(basename) || /^[A-Za-z0-9_-]+$/.test(basename))
   );
 }
+
+function isNodeModulesDocumentation(file, relative, root) {
+  return (
+    isNodeModulesPath(relative, root) &&
+    /^(?:README|LICENSE|CHANGELOG)(?:\.[^\\/]*)?$/i.test(path.basename(file))
+  );
+}
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
@@ -1610,7 +1617,8 @@ function securityScan(root, options = {}) {
         packageMetadataPath.test(file) ||
         npmIndexPath.test(file) ||
         isNodeModulesSourceFile(file, relative, root) ||
-        npmPackageLockPath.test(relative);
+        npmPackageLockPath.test(relative) ||
+        isNodeModulesDocumentation(file, relative, root);
       if (
         !packageFixturePath.test(relative) &&
         (privateKeyContent.test(text) ||
