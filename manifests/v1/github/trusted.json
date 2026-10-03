@@ -22,35 +22,6 @@
       "artifact_name": "cache-trusted-main-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--1b044ca5882ddb6ce64bace0caffccea7e4742f3f1b5e2910338725f7-part-000000",
       "workflow_run_id": 37161519088
     },
-    "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777/v2": {
-      "object": "sha256:749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615",
-      "storage": "github-artifact",
-      "updated_at": "2026-10-03T23:37:16.079Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 33138153,
-      "parts": [
-        {
-          "index": 0,
-          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
-          "size": 25165824,
-          "artifact_id": 11287942570,
-          "artifact_name": "cache-trusted-main-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615.t-part-000000",
-          "workflow_run_id": 37162262060
-        },
-        {
-          "index": 1,
-          "object": "sha256:2867f2d0a155583146013102a4e91e987b449ea3d1b49b2f2a1e6800247b7626",
-          "size": 7972329,
-          "artifact_id": 11287812927,
-          "artifact_name": "cache-trusted-main-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615.t-part-000001",
-          "workflow_run_id": 37162262060
-        }
-      ],
-      "artifact_id": 11287942570,
-      "artifact_name": "cache-trusted-main-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615.t-part-000000",
-      "workflow_run_id": 37162262060
-    },
     "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
       "object": "sha256:72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54",
       "storage": "github-artifact",
