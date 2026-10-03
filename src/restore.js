@@ -75,42 +75,14 @@ let temporaryArchive;
       return;
     }
 
-    let asset;
-    try {
-      asset =
-        c.storageMode &&
-        ["github-branch", "github-artifact"].includes(c.storageMode())
+    const asset =
+      c.storageMode &&
+      ["github-branch", "github-artifact"].includes(c.storageMode())
+        ? await c.probeObject(repository, found[1])
+        : downloadDisabled
           ? await c.probeObject(repository, found[1])
-          : downloadDisabled
-            ? await c.probeObject(repository, found[1])
-            : await c.object(repository, found[1].object);
-    } catch (error) {
-      if (
-        c.storageMode &&
-        c.storageMode() === "github-artifact" &&
-        c.isMissingArtifactError(error)
-      ) {
-        c.recordMissingArtifactForSave();
-        c.setOutput("cache-hit", "false");
-        c.setOutput("matched-key", "");
-        c.summary("Cache Restore", {
-          Status: "MISS",
-          "Requested key": key,
-          "Matched key": found[0],
-          Asset: "missing",
-          Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
-        });
-        console.log(
-          `Cache miss: referenced artifact is unavailable: key=${found[0]}; artifact=${found[1].artifact_name || found[1].object}`,
-        );
-        return;
-      }
-      throw error;
-    }
+          : await c.object(repository, found[1].object);
     if (!asset) {
-      if (c.storageMode && c.storageMode() === "github-artifact") {
-        c.recordMissingArtifactForSave();
-      }
       c.setOutput("cache-hit", "false");
       c.setOutput("matched-key", "");
       c.summary("Cache Restore", {
@@ -121,9 +93,7 @@ let temporaryArchive;
         Encryption: c.encryptionEnabled() ? "enabled" : "disabled",
       });
       console.log(
-        c.storageMode && c.storageMode() === "github-artifact"
-          ? `Cache miss: referenced artifact is unavailable: key=${found[0]}; artifact=${found[1].artifact_name || found[1].object}`
-          : `Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`,
+        `Cache miss: manifest reference has no release asset: key=${found[0]}; object=${found[1].object}`,
       );
       return;
     }

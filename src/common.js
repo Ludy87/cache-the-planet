@@ -1981,42 +1981,33 @@ function invalidateRepositoryCache(repository) {
 async function probeObject(repository, reference) {
   validateManifestReference(reference);
   if (storageMode() === "github-artifact") {
-    try {
-      if (Array.isArray(reference.parts)) {
-        if (
-          reference.parts.some(
-            (part) =>
-              !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1,
-          )
-        )
-          return null;
-        await Promise.all(
-          reference.parts.map((part) => validateArtifactReference(part)),
-        );
-        return {
-          id: reference.object,
-          name: reference.artifact_name || reference.object,
-          size: reference.size,
-          artifact: true,
-          parts: reference.parts,
-        };
-      }
+    if (Array.isArray(reference.parts)) {
       if (
-        !Number.isSafeInteger(reference.artifact_id) ||
-        reference.artifact_id < 1
+        reference.parts.some(
+          (part) =>
+            !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1,
+        )
       )
         return null;
-      await validateArtifactReference(reference);
       return {
-        id: reference.artifact_id,
-        name: reference.artifact_name || String(reference.artifact_id),
+        id: reference.object,
+        name: reference.artifact_name || reference.object,
         size: reference.size,
         artifact: true,
+        parts: reference.parts,
       };
-    } catch (error) {
-      if (isMissingArtifactError(error)) return null;
-      throw error;
     }
+    if (
+      !Number.isSafeInteger(reference.artifact_id) ||
+      reference.artifact_id < 1
+    )
+      return null;
+    return {
+      id: reference.artifact_id,
+      name: reference.artifact_name || String(reference.artifact_id),
+      size: reference.size,
+      artifact: true,
+    };
   }
   if (storageMode() !== "github-branch") {
     const asset = await object(repository, reference.object);
