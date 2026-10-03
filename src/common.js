@@ -1651,6 +1651,13 @@ function securityScan(root, options = {}) {
   }
 }
 
+function tarPath(value, platform = process.platform) {
+  if (platform !== "win32") return value;
+  const normalized = String(value).replace(/\\/g, "/");
+  const drive = normalized.match(/^([A-Za-z]):\/(.*)$/);
+  return drive ? `/${drive[1].toLowerCase()}/${drive[2]}` : normalized;
+}
+
 async function makeArchive() {
   if (!have("tar") || !have("zstd"))
     throw new Error("tar and zstd are required on the runner");
@@ -1678,7 +1685,7 @@ async function makeArchive() {
         );
       }
       securityScan(absolute, { excludes: excludePatterns(), workspace });
-      paths.push(relative || ".");
+      paths.push((relative || ".").split(path.sep).join("/"));
     } else log(`cache path missing: ${value}`);
   }
   if (!paths.length) throw new Error("no cache paths exist");
@@ -1699,7 +1706,7 @@ async function makeArchive() {
       "-",
       ...excludes,
       "-C",
-      workspace,
+      tarPath(workspace),
       ...paths,
     ],
     { stdio: ["ignore", "pipe", "inherit"] },
@@ -3036,6 +3043,7 @@ function assertArchiveMatchesRestorePaths(names, paths) {
   const normalize = (value) => {
     let normalized = String(value).replace(/\\/g, "/");
     while (normalized.startsWith("./")) normalized = normalized.slice(2);
+    normalized = normalized.replace(/\/+/g, "/");
     return normalized.replace(/\/+$/, "") || ".";
   };
   const allowed = paths.map(normalize);
@@ -3112,7 +3120,7 @@ async function extract(file, paths = restorePaths()) {
         "--file",
         tarFile,
         "--directory",
-        workspace,
+        tarPath(workspace),
         "--keep-directory-symlink",
         "--no-same-owner",
         "--no-same-permissions",
@@ -3125,6 +3133,7 @@ async function extract(file, paths = restorePaths()) {
     if (extraction.status) throw new Error("tar extraction failed");
   } finally {
     removeTemporaryFile(tarFile);
+    if (decrypted !== file) removeTemporaryFile(decrypted);
   }
 }
 
@@ -3217,4 +3226,5 @@ module.exports = {
   extract,
   assertArchiveMatchesRestorePaths,
   assertSafeRestoreWorkspace,
+  tarPath,
 };
