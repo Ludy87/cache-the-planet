@@ -145,6 +145,15 @@ test("security scan allows extensionless credentials modules in node_modules", (
   assert.doesNotThrow(() => common.securityScan(root));
 });
 
+test("security scan allows credentials modules when node_modules is the scan root", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-node-modules-root-"));
+  const root = path.join(workspace, "node_modules");
+  const moduleFile = path.join(root, "@azure", "storage-common", "dist", "browser", "credentials");
+  fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
+  fs.writeFileSync(moduleFile, "export const credentials = () => ({ token: undefined });\n");
+  assert.doesNotThrow(() => common.securityScan(root));
+});
+
 test("security scan still rejects private keys outside Cargo dependency fixtures", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-private-key-"));
   try {
