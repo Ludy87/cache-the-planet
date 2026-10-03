@@ -33,7 +33,9 @@
   },
   "license": "MIT",
   "allowScripts": {
-    "esbuild": true
+    "cpu-features": true,
+    "esbuild": true,
+    "ssh2": true
   },
   "scripts": {
     "prebuild": "node scripts/clean-dist.js",
