@@ -1519,7 +1519,7 @@ function isNodeModulesSourceFile(file, relative, root) {
 }
 
 function isNodeModulesDocumentation(file, relative, root) {
-  const normalized = relative.split(path.sep).join("/");
+  const normalized = String(relative).replace(/\\/g, "/");
   return (
     isNodeModulesPath(relative, root) &&
     (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(
@@ -1530,7 +1530,7 @@ function isNodeModulesDocumentation(file, relative, root) {
 }
 
 function isNodeModulesFixture(relative, root) {
-  const normalized = relative.split(path.sep).join("/");
+  const normalized = String(relative).replace(/\\/g, "/");
   return (
     isNodeModulesPath(relative, root) &&
     /(?:^|\/)(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i.test(
@@ -1612,7 +1612,10 @@ function securityScan(root, options = {}) {
       return;
     }
     const relative = path.relative(root, file);
-    const normalizedRelative = relative.split(path.sep).join("/");
+    // Cache paths can originate from a different platform than the Node
+    // process (for example Windows paths handled by a Linux runner). Always
+    // normalize both separators before applying path-based exceptions.
+    const normalizedRelative = String(relative).replace(/\\/g, "/");
     if (
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"
