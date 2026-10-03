@@ -294,6 +294,21 @@ test("security scan still rejects credential files", () => {
   }
 });
 
+test("security scan reports all blocked paths in one error", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-many-"));
+  try {
+    fs.writeFileSync(path.join(root, ".env"), "TOKEN=example\n");
+    fs.writeFileSync(path.join(root, "credentials"), "password = \"example-value\"\n");
+    assert.throws(
+      () => common.securityScan(root),
+      (error) =>
+        error.message.includes(".env") && error.message.includes("credentials"),
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows Cargo crate archives with token-like names", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cache-security-crate-"));
   const entry = path.join(
