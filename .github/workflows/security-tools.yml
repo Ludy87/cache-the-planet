@@ -65,10 +65,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # The PR scan only needs the PR commit and its parent. Avoid fetching
-          # the complete history, which can leave checkout running until the
-          # job timeout on this repository.
-          fetch-depth: 2
+          # Gitleaks derives a commit range from the event and may need the
+          # parent of the event's before SHA. A shallow checkout can omit that
+          # object and makes gitleaks fail before scanning any content.
+          fetch-depth: 0
           persist-credentials: false
       - name: Fetch pull request base branch for diff scan
         if: github.event_name == 'pull_request'
