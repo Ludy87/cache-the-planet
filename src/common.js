@@ -238,11 +238,17 @@ function validateManifestReference(reference) {
         throw new Error("manifest reference parts must be ordered");
       validateCacheHash(part.object);
       const size = parsePositiveSafeInteger(part.size, "manifest part size");
-      if (size > githubBranchPartBytes) throw new Error("manifest part exceeds branch size limit");
+      if (size > githubBranchPartBytes)
+        throw new Error("manifest part exceeds branch size limit");
       total += size;
-      if (total > maxCompressedBytes) throw new Error("manifest parts exceed compressed size limit");
+      if (total > maxCompressedBytes)
+        throw new Error("manifest parts exceed compressed size limit");
     }
-    if (reference.size !== null && reference.size !== undefined && total !== reference.size)
+    if (
+      reference.size !== null &&
+      reference.size !== undefined &&
+      total !== reference.size
+    )
       throw new Error("manifest reference size does not match parts");
   }
   if (
@@ -355,13 +361,19 @@ function cacheRepository() {
 
 function storageMode() {
   const configured =
-    input(INPUTS.STORAGE) || process.env.CACHE_STORAGE || configuration().storage;
+    input(INPUTS.STORAGE) ||
+    process.env.CACHE_STORAGE ||
+    configuration().storage;
   if (!configured) throw new Error("storage is required");
-  const value = String(configured)
-    .trim()
-    .toLowerCase();
-  if (!["github-release", "github-branch", "github-artifact", "sftp"].includes(value))
-    throw new Error("storage must be github-release, github-branch, github-artifact, or sftp");
+  const value = String(configured).trim().toLowerCase();
+  if (
+    !["github-release", "github-branch", "github-artifact", "sftp"].includes(
+      value,
+    )
+  )
+    throw new Error(
+      "storage must be github-release, github-branch, github-artifact, or sftp",
+    );
   return value;
 }
 
@@ -381,7 +393,12 @@ function assertPostStorage(mode) {
 }
 
 function artifactRetentionDays() {
-  const value = Number(input(INPUTS.ARTIFACT_RETENTION_DAYS, process.env.CACHE_ARTIFACT_RETENTION_DAYS || "0"));
+  const value = Number(
+    input(
+      INPUTS.ARTIFACT_RETENTION_DAYS,
+      process.env.CACHE_ARTIFACT_RETENTION_DAYS || "0",
+    ),
+  );
   if (!Number.isInteger(value) || value < 0 || value > 90)
     throw new Error("artifact-retention-days must be an integer from 0 to 90");
   return value;
@@ -397,11 +414,14 @@ async function artifactClient() {
 }
 
 function isArtifactNameConflict(error) {
-  return error?.status === 409 || error?.statusCode === 409 ||
+  return (
+    error?.status === 409 ||
+    error?.statusCode === 409 ||
     error?.httpStatusCode === 409 ||
     /\b409\b[\s\S]*artifact with this name already exists/i.test(
       String(error?.message || error),
-    );
+    )
+  );
 }
 
 function artifactFindBy(workflowRunId) {
@@ -410,9 +430,12 @@ function artifactFindBy(workflowRunId) {
 }
 
 function validateArtifactMetadata(metadata, reference) {
-  if (!metadata || typeof metadata !== "object") throw new Error("artifact metadata is missing");
-  if (metadata.id !== reference.artifact_id) throw new Error("artifact identity mismatch: id");
-  if (metadata.name !== reference.artifact_name) throw new Error("artifact identity mismatch: name");
+  if (!metadata || typeof metadata !== "object")
+    throw new Error("artifact metadata is missing");
+  if (metadata.id !== reference.artifact_id)
+    throw new Error("artifact identity mismatch: id");
+  if (metadata.name !== reference.artifact_name)
+    throw new Error("artifact identity mismatch: name");
   if (metadata.expired === true) throw new Error("artifact has expired");
   if (metadata.workflow_run?.id !== reference.workflow_run_id)
     throw new Error("artifact identity mismatch: workflow run");
@@ -428,9 +451,11 @@ async function validateArtifactReference(reference) {
   const key = `${reference.artifact_id}:${reference.workflow_run_id}`;
   let metadata = artifactMetadataCache.get(key);
   if (!metadata) {
-    metadata = (await gh(
-      `/repos/${cacheRepository()}/actions/artifacts/${encodeURIComponent(reference.artifact_id)}`,
-    )).body;
+    metadata = (
+      await gh(
+        `/repos/${cacheRepository()}/actions/artifacts/${encodeURIComponent(reference.artifact_id)}`,
+      )
+    ).body;
     artifactMetadataCache.set(key, metadata);
   }
   return validateArtifactMetadata(metadata, reference);
@@ -449,7 +474,8 @@ const githubBranchUploadConcurrency = positiveEnvironmentLimit(
 
 function branchObjectPath(hash, index, directory = null) {
   validateCacheHash(hash);
-  if (!Number.isSafeInteger(index) || index < 0) throw new Error("invalid branch object part");
+  if (!Number.isSafeInteger(index) || index < 0)
+    throw new Error("invalid branch object part");
   return directory
     ? `${manifestPath()}/objects/v1/${directory}/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`
     : `${manifestPath()}/objects/v1/${hash.slice(7)}/part-${String(index).padStart(6, "0")}`;
@@ -462,12 +488,18 @@ function branchReferencePath(reference, index) {
 // Runtime input overrides environment and repository configuration, including
 // an explicit false. This switch affects restore only, never post-save.
 function cacheDownloadDisabled() {
-  const value = input(INPUTS.DISABLE_DOWNLOAD) ||
-    process.env.CACHE_DISABLE_DOWNLOAD || configuration().disable_download || false;
+  const value =
+    input(INPUTS.DISABLE_DOWNLOAD) ||
+    process.env.CACHE_DISABLE_DOWNLOAD ||
+    configuration().disable_download ||
+    false;
   const normalized = String(value).trim().toLowerCase();
   if (!["true", "false"].includes(normalized))
     throw new Error("disable-download must be true or false");
-  return normalized === "true" && ["github-branch", "github-artifact", "sftp"].includes(storageMode());
+  return (
+    normalized === "true" &&
+    ["github-branch", "github-artifact", "sftp"].includes(storageMode())
+  );
 }
 
 function sftpSettings() {
@@ -482,8 +514,7 @@ function sftpSettings() {
   // Credentials must come from runtime inputs/environment, never repository JSON.
   const privateKey =
     input(INPUTS.SFTP_PRIVATE_KEY) || process.env.SFTP_PRIVATE_KEY;
-  const password =
-    input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD;
+  const password = input(INPUTS.SFTP_PASSWORD) || process.env.SFTP_PASSWORD;
   const port = Number(
     input(INPUTS.SFTP_PORT) || process.env.SFTP_PORT || configured.port || 22,
   );
@@ -1077,7 +1108,9 @@ function progressLog(action, hash, current, total) {
   const width = 20;
   const filled = Math.round((percent / 100) * width);
   const bar = `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
-  normalLog(`${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`);
+  normalLog(
+    `${action} ${hash.slice(-12)} [${bar}] ${String(percent).padStart(3, " ")}% (${completed}/${total})`,
+  );
 }
 
 function summary(title, fields) {
@@ -1438,8 +1471,7 @@ const binaryFileName =
   /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
-const npmPackageLockPath =
-  /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
+const npmPackageLockPath = /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
 const nodeModulesPath = /(?:^|[\\/])node_modules(?:[\\/]|$)/i;
 const dependencyCredentialsModule = /^credentials$/i;
 
@@ -1450,10 +1482,8 @@ function isNodeModulesPath(relative, root) {
   );
 }
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
-const cargoIndexPath =
-  /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
-const cargoRegistryCachePath =
-  /(?:^|\/)registry\/cache(?:\/|$)/i;
+const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
+const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // Public package source trees commonly ship dummy keys for TLS examples and
@@ -1502,7 +1532,8 @@ function isExcludedPath(file, root, patterns, workspace) {
 }
 
 function securityScan(root, options = {}) {
-  const workspace = options.workspace || process.env.GITHUB_WORKSPACE || process.cwd();
+  const workspace =
+    options.workspace || process.env.GITHUB_WORKSPACE || process.cwd();
   const excludes = options.excludes || [];
   const walk = (file) => {
     if (isExcludedPath(file, root, excludes, workspace)) return;
@@ -1534,10 +1565,16 @@ function securityScan(root, options = {}) {
       sensitiveDirectory.test(relative) ||
       (sensitiveName.test(path.basename(file)) &&
         !cargoBinPath.test(relative.split(path.sep).join("/")) &&
-        !(dependencyCredentialsModule.test(path.basename(file)) &&
-          isNodeModulesPath(relative, root)) &&
-        !(sourceFileName.test(path.basename(file)) &&
-          packageSourcePath.test(relative))) ||
+        !(
+          dependencyCredentialsModule.test(path.basename(file)) &&
+          isNodeModulesPath(relative, root)
+        ) &&
+        !(
+          sourceFileName.test(path.basename(file)) &&
+          (packageSourcePath.test(relative) ||
+            nodeModulesPath.test(relative) ||
+            path.basename(root).toLowerCase() === "node_modules")
+        )) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
         !cargoBinPath.test(relative.split(path.sep).join("/")) &&
@@ -1572,10 +1609,9 @@ function securityScan(root, options = {}) {
         npmPackageLockPath.test(relative);
       if (
         !packageFixturePath.test(relative) &&
-        ((privateKeyContent.test(text)) ||
-        (!sourceOrMetadata &&
-          (knownTokenContent.test(text) || credentialAssignment.test(text)))
-        )
+        (privateKeyContent.test(text) ||
+          (!sourceOrMetadata &&
+            (knownTokenContent.test(text) || credentialAssignment.test(text))))
       ) {
         throw new Error(
           `cache path contains credential-like content: ${path.relative(process.cwd(), file)}`,
@@ -1879,29 +1915,54 @@ async function probeObject(repository, reference) {
   validateManifestReference(reference);
   if (storageMode() === "github-artifact") {
     if (Array.isArray(reference.parts)) {
-      if (reference.parts.some((part) => !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1)) return null;
-      return { id: reference.object, name: reference.artifact_name || reference.object,
-        size: reference.size, artifact: true, parts: reference.parts };
+      if (
+        reference.parts.some(
+          (part) =>
+            !Number.isSafeInteger(part.artifact_id) || part.artifact_id < 1,
+        )
+      )
+        return null;
+      return {
+        id: reference.object,
+        name: reference.artifact_name || reference.object,
+        size: reference.size,
+        artifact: true,
+        parts: reference.parts,
+      };
     }
-    if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1) return null;
-    return { id: reference.artifact_id, name: reference.artifact_name || String(reference.artifact_id),
-      size: reference.size, artifact: true };
+    if (
+      !Number.isSafeInteger(reference.artifact_id) ||
+      reference.artifact_id < 1
+    )
+      return null;
+    return {
+      id: reference.artifact_id,
+      name: reference.artifact_name || String(reference.artifact_id),
+      size: reference.size,
+      artifact: true,
+    };
   }
   if (storageMode() !== "github-branch") {
     const asset = await object(repository, reference.object);
-    if (!asset || (reference.size != null && asset.size !== reference.size)) return null;
+    if (!asset || (reference.size != null && asset.size !== reference.size))
+      return null;
     return asset;
   }
   if (!Array.isArray(reference.parts)) return null;
   try {
     for (const part of reference.parts) {
-      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const result = await gh(
+        `/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`,
+      );
       const entry = result.body;
-      if (!entry || entry.type !== "file" || entry.size !== part.size) return null;
+      if (!entry || entry.type !== "file" || entry.size !== part.size)
+        return null;
     }
     return {
-      id: reference.object, name: `${reference.object.slice(7)}.branch`,
-      size: reference.parts.reduce((total, part) => total + part.size, 0), branch: true,
+      id: reference.object,
+      name: `${reference.object.slice(7)}.branch`,
+      size: reference.parts.reduce((total, part) => total + part.size, 0),
+      branch: true,
     };
   } catch (error) {
     if (error.status === 404) return null;
@@ -1913,9 +1974,16 @@ async function object(repository, hash) {
   validateCacheHash(hash);
   if (storageMode() === "github-branch") {
     try {
-      const result = await gh(`/repos/${repository}/contents/${branchObjectPath(hash, 0)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const result = await gh(
+        `/repos/${repository}/contents/${branchObjectPath(hash, 0)}?ref=${encodeURIComponent(manifestBranch())}`,
+      );
       const size = Number(result.body.size);
-      if (!Number.isSafeInteger(size) || size < 1 || size > githubBranchPartBytes) return null;
+      if (
+        !Number.isSafeInteger(size) ||
+        size < 1 ||
+        size > githubBranchPartBytes
+      )
+        return null;
       return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true };
     } catch (error) {
       if (error.status === 404) return null;
@@ -2259,8 +2327,12 @@ async function setRef(repository, key, hash, metadata = {}) {
         ...(metadata.parts ? { parts: metadata.parts } : {}),
         ...(metadata.path ? { path: metadata.path } : {}),
         ...(metadata.artifact_id ? { artifact_id: metadata.artifact_id } : {}),
-        ...(metadata.artifact_name ? { artifact_name: metadata.artifact_name } : {}),
-        ...(metadata.workflow_run_id ? { workflow_run_id: metadata.workflow_run_id } : {}),
+        ...(metadata.artifact_name
+          ? { artifact_name: metadata.artifact_name }
+          : {}),
+        ...(metadata.workflow_run_id
+          ? { workflow_run_id: metadata.workflow_run_id }
+          : {}),
       };
       return true;
     },
@@ -2296,8 +2368,12 @@ async function replaceRef(repository, key, hash, removeKey, metadata = {}) {
         ...(metadata.parts ? { parts: metadata.parts } : {}),
         ...(metadata.path ? { path: metadata.path } : {}),
         ...(metadata.artifact_id ? { artifact_id: metadata.artifact_id } : {}),
-        ...(metadata.artifact_name ? { artifact_name: metadata.artifact_name } : {}),
-        ...(metadata.workflow_run_id ? { workflow_run_id: metadata.workflow_run_id } : {}),
+        ...(metadata.artifact_name
+          ? { artifact_name: metadata.artifact_name }
+          : {}),
+        ...(metadata.workflow_run_id
+          ? { workflow_run_id: metadata.workflow_run_id }
+          : {}),
       };
       return true;
     },
@@ -2334,13 +2410,21 @@ async function deleteArtifactReference(reference) {
     }
     return deleted;
   }
-  if (!Number.isSafeInteger(reference?.artifact_id) || reference.artifact_id < 1)
+  if (
+    !Number.isSafeInteger(reference?.artifact_id) ||
+    reference.artifact_id < 1
+  )
     return false;
-  if (!Number.isSafeInteger(reference?.workflow_run_id) || reference.workflow_run_id < 1)
+  if (
+    !Number.isSafeInteger(reference?.workflow_run_id) ||
+    reference.workflow_run_id < 1
+  )
     return false;
   if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
     return false;
-  await (await artifactClient()).deleteArtifact(
+  await (
+    await artifactClient()
+  ).deleteArtifact(
     reference.artifact_name,
     artifactFindBy(reference.workflow_run_id),
   );
@@ -2399,7 +2483,9 @@ async function download(repository, hash) {
   const file = path.join(directory, asset.name);
   try {
     if (storageMode() === "github-artifact")
-      throw new Error("artifact storage requires the manifest artifact reference");
+      throw new Error(
+        "artifact storage requires the manifest artifact reference",
+      );
     if (storageMode() === "github-branch") {
       throw new Error("branch storage requires the manifest part list");
     }
@@ -2431,19 +2517,25 @@ async function download(repository, hash) {
 async function downloadArtifactObject(reference) {
   if (!Number.isSafeInteger(reference.artifact_id) || reference.artifact_id < 1)
     throw new Error("artifact reference has no valid artifact id");
-  if (!Number.isSafeInteger(reference.workflow_run_id) || reference.workflow_run_id < 1)
+  if (
+    !Number.isSafeInteger(reference.workflow_run_id) ||
+    reference.workflow_run_id < 1
+  )
     throw new Error("artifact reference has no valid workflow run id");
   if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
     throw new Error("artifact reference has no valid artifact name");
   await validateArtifactReference(reference);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
   try {
-    await (await artifactClient()).downloadArtifact(reference.artifact_id, {
+    await (
+      await artifactClient()
+    ).downloadArtifact(reference.artifact_id, {
       path: directory,
       findBy: artifactFindBy(reference.workflow_run_id),
     });
     const files = fs.readdirSync(directory);
-    if (files.length !== 1) throw new Error("artifact must contain exactly one archive");
+    if (files.length !== 1)
+      throw new Error("artifact must contain exactly one archive");
     const file = path.join(directory, files[0]);
     if (reference.size != null && fs.statSync(file).size !== reference.size)
       throw new Error("artifact cache size mismatch");
@@ -2466,12 +2558,15 @@ async function downloadArtifactPart(part, directory) {
   await validateArtifactReference(part);
   const partDirectory = path.join(directory, `part-${part.index}`);
   fs.mkdirSync(partDirectory);
-  await (await artifactClient()).downloadArtifact(part.artifact_id, {
+  await (
+    await artifactClient()
+  ).downloadArtifact(part.artifact_id, {
     path: partDirectory,
     findBy: artifactFindBy(part.workflow_run_id),
   });
   const files = fs.readdirSync(partDirectory);
-  if (files.length !== 1) throw new Error("artifact part must contain exactly one file");
+  if (files.length !== 1)
+    throw new Error("artifact part must contain exactly one file");
   const file = path.join(partDirectory, files[0]);
   if (fs.statSync(file).size !== part.size)
     throw new Error("artifact part size mismatch");
@@ -2498,7 +2593,10 @@ async function downloadArtifactParts(reference) {
       output.once("finish", resolve);
       output.once("error", reject);
     });
-    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+    if (
+      fs.statSync(file).size !== reference.size ||
+      digest(file) !== reference.object
+    )
       throw new Error("artifact cache object integrity check failed");
     return file;
   } catch (error) {
@@ -2509,15 +2607,23 @@ async function downloadArtifactParts(reference) {
 
 async function downloadBranchObject(repository, reference) {
   validateManifestReference(reference);
-  if (!Array.isArray(reference.parts)) throw new Error("branch object has no part list");
+  if (!Array.isArray(reference.parts))
+    throw new Error("branch object has no part list");
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-branch-"));
   const file = path.join(directory, "archive.tar.zst");
   try {
     const output = fs.createWriteStream(file, { flags: "wx" });
-    progressLog("📥 Restoring branch object", reference.object, 0, reference.parts.length);
+    progressLog(
+      "📥 Restoring branch object",
+      reference.object,
+      0,
+      reference.parts.length,
+    );
     let downloadedBytes = 0;
     for (const part of reference.parts) {
-      const result = await gh(`/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`);
+      const result = await gh(
+        `/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`,
+      );
       const partFile = path.join(directory, `part-${part.index}`);
       if (result.body.download_url) {
         await downloadToFile(result.body.download_url, partFile, {
@@ -2526,22 +2632,42 @@ async function downloadBranchObject(repository, reference) {
           headers: authorizationHeaders(),
         });
       } else if (typeof result.body.content === "string") {
-        fs.writeFileSync(partFile, Buffer.from(result.body.content.replace(/\s/g, ""), "base64"), { flag: "wx" });
+        fs.writeFileSync(
+          partFile,
+          Buffer.from(result.body.content.replace(/\s/g, ""), "base64"),
+          { flag: "wx" },
+        );
       } else {
         throw new Error("branch cache part has no downloadable content");
       }
       const bytes = fs.readFileSync(partFile);
-      if (bytes.length !== part.size || `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}` !== part.object)
+      if (
+        bytes.length !== part.size ||
+        `sha256:${crypto.createHash("sha256").update(bytes).digest("hex")}` !==
+          part.object
+      )
         throw new Error("branch cache part integrity check failed");
-      if (bytes.length > githubBranchPartBytes) throw new Error("branch cache part exceeds size limit");
+      if (bytes.length > githubBranchPartBytes)
+        throw new Error("branch cache part exceeds size limit");
       output.write(bytes);
       removeTemporaryFile(partFile);
       downloadedBytes += bytes.length;
-      progressLog("📥 Restoring branch object", reference.object, part.index + 1, reference.parts.length);
+      progressLog(
+        "📥 Restoring branch object",
+        reference.object,
+        part.index + 1,
+        reference.parts.length,
+      );
     }
     output.end();
-    await new Promise((resolve, reject) => { output.once("finish", resolve); output.once("error", reject); });
-    if (fs.statSync(file).size !== reference.size || digest(file) !== reference.object)
+    await new Promise((resolve, reject) => {
+      output.once("finish", resolve);
+      output.once("error", reject);
+    });
+    if (
+      fs.statSync(file).size !== reference.size ||
+      digest(file) !== reference.object
+    )
       throw new Error("branch cache object integrity check failed");
     return file;
   } catch (error) {
@@ -2553,7 +2679,10 @@ async function downloadBranchObject(repository, reference) {
 // Identical blob bytes are content-addressed, so retrying this POST is safe.
 // Do not apply this retry policy to branch-ref writes or permanent API errors.
 async function uploadBranchBlob(repository, buffer) {
-  const body = JSON.stringify({ content: buffer.toString("base64"), encoding: "base64" });
+  const body = JSON.stringify({
+    content: buffer.toString("base64"),
+    encoding: "base64",
+  });
   for (let attempt = 0; ; attempt += 1) {
     try {
       return await gh(`/repos/${repository}/git/blobs`, {
@@ -2565,7 +2694,9 @@ async function uploadBranchBlob(repository, buffer) {
       if (![500, 502, 503, 504].includes(error.status) || attempt >= 5)
         throw error;
       const delay = Math.min(1000 * 2 ** attempt, 8000);
-      log(`Branch blob upload: HTTP ${error.status}; retry ${attempt + 1}/5 in ${delay}ms`);
+      log(
+        `Branch blob upload: HTTP ${error.status}; retry ${attempt + 1}/5 in ${delay}ms`,
+      );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -2576,39 +2707,53 @@ async function uploadObject(repository, file, name, contentType) {
     const size = fs.statSync(file).size;
     const hash = digest(file);
     const totalParts = Math.ceil(size / githubBranchPartBytes);
-    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-upload-"));
+    const directory = fs.mkdtempSync(
+      path.join(os.tmpdir(), "cad-artifact-upload-"),
+    );
     const parts = [];
     try {
       for (let index = 0; index < totalParts; index += 1) {
         const offset = index * githubBranchPartBytes;
         const length = Math.min(githubBranchPartBytes, size - offset);
-        const partFile = path.join(directory, `part-${String(index).padStart(6, "0")}.bin`);
+        const partFile = path.join(
+          directory,
+          `part-${String(index).padStart(6, "0")}.bin`,
+        );
         const descriptor = fs.openSync(file, "r");
         const buffer = Buffer.allocUnsafe(length);
-        try { fs.readSync(descriptor, buffer, 0, length, offset); }
-        finally { fs.closeSync(descriptor); }
+        try {
+          fs.readSync(descriptor, buffer, 0, length, offset);
+        } finally {
+          fs.closeSync(descriptor);
+        }
         fs.writeFileSync(partFile, buffer, { flag: "wx" });
         const partSuffix = `-part-${String(index).padStart(6, "0")}`;
         const artifactPrefix = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}`;
         const artifactName = `${artifactPrefix.slice(0, 180 - partSuffix.length)}${partSuffix}`;
         let result;
         try {
-          result = await (await artifactClient()).uploadArtifact(
-            artifactName,
-            [partFile],
-            directory,
-            { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
-          );
+          result = await (
+            await artifactClient()
+          ).uploadArtifact(artifactName, [partFile], directory, {
+            retentionDays: artifactRetentionDays(),
+            compressionLevel: 0,
+          });
         } catch (error) {
-          if (!isArtifactNameConflict(error))
-            throw error;
-          const artifacts = (await gh(
-            `/repos/${repository}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
-          )).body.artifacts || [];
+          if (!isArtifactNameConflict(error)) throw error;
+          const artifacts =
+            (
+              await gh(
+                `/repos/${repository}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
+              )
+            ).body.artifacts || [];
           const existing = artifacts.find(
             (artifact) => !artifact.expired && artifact.name === artifactName,
           );
-          if (!existing || !Number.isSafeInteger(existing.id) || existing.id < 1)
+          if (
+            !existing ||
+            !Number.isSafeInteger(existing.id) ||
+            existing.id < 1
+          )
             throw error;
           result = { id: existing.id };
           log(`reusing existing artifact ${artifactName}: ${existing.id}`);
@@ -2664,35 +2809,63 @@ async function uploadObject(repository, file, name, contentType) {
         blobs[index] = { index, sha: blob.body.sha };
         parts[index] = { index, object: partHash, size: length };
         completedParts += 1;
-        progressLog("📤 Saving branch object", hash, completedParts, totalParts);
+        progressLog(
+          "📤 Saving branch object",
+          hash,
+          completedParts,
+          totalParts,
+        );
       }
     };
     await Promise.all(
-      Array.from({ length: Math.min(githubBranchUploadConcurrency, totalParts) }, uploadPart),
+      Array.from(
+        { length: Math.min(githubBranchUploadConcurrency, totalParts) },
+        uploadPart,
+      ),
     );
     const branch = encodeURIComponent(manifestBranch());
     const ref = await gh(`/repos/${repository}/git/ref/heads/${branch}`);
-    const commit = await gh(`/repos/${repository}/git/commits/${ref.body.object.sha}`);
+    const commit = await gh(
+      `/repos/${repository}/git/commits/${ref.body.object.sha}`,
+    );
     const tree = await gh(`/repos/${repository}/git/trees`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         base_tree: commit.body.tree.sha,
         tree: blobs.map(({ index, sha }) => ({
-          path: branchObjectPath(hash, index, branchPath), mode: "100644", type: "blob", sha,
+          path: branchObjectPath(hash, index, branchPath),
+          mode: "100644",
+          type: "blob",
+          sha,
         })),
       }),
     });
     const createdCommit = await gh(`/repos/${repository}/git/commits`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: `cache: upload ${hash}`, tree: tree.body.sha, parents: [ref.body.object.sha] }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `cache: upload ${hash}`,
+        tree: tree.body.sha,
+        parents: [ref.body.object.sha],
+      }),
     });
     await gh(`/repos/${repository}/git/refs/heads/${branch}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sha: createdCommit.body.sha, force: false }),
     });
-    log(`📍 Branch cache object path: ${manifestPath()}/objects/v1/${branchPath}/${hash.slice(7)}/part-000000`);
-    return { id: hash, name: `${hash.slice(7)}.branch`, size, branch: true, parts,
-      path: branchPath };
+    log(
+      `📍 Branch cache object path: ${manifestPath()}/objects/v1/${branchPath}/${hash.slice(7)}/part-000000`,
+    );
+    return {
+      id: hash,
+      name: `${hash.slice(7)}.branch`,
+      size,
+      branch: true,
+      parts,
+      path: branchPath,
+    };
   }
   if (storageMode() === "github-release") {
     const release = (await assets(repository)).release;
@@ -2729,25 +2902,31 @@ async function uploadObject(repository, file, name, contentType) {
 async function uploadForkArtifactMetadata(metadata) {
   if (storageMode() !== "github-artifact")
     throw new Error("fork artifact metadata requires github-artifact storage");
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-metadata-"));
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cad-artifact-metadata-"),
+  );
   try {
     const file = path.join(directory, "metadata.json");
-    fs.writeFileSync(file, `${JSON.stringify(metadata, null, 2)}\n`, { flag: "wx" });
+    fs.writeFileSync(file, `${JSON.stringify(metadata, null, 2)}\n`, {
+      flag: "wx",
+    });
     const artifactName = `cache-the-planet-pr-${metadata.pull_request}-metadata-${metadata.object.slice(7, 23)}`;
     let result;
     try {
-      result = await (await artifactClient()).uploadArtifact(
-        artifactName,
-        [file],
-        directory,
-        { retentionDays: artifactRetentionDays(), compressionLevel: 0 },
-      );
+      result = await (
+        await artifactClient()
+      ).uploadArtifact(artifactName, [file], directory, {
+        retentionDays: artifactRetentionDays(),
+        compressionLevel: 0,
+      });
     } catch (error) {
-      if (!isArtifactNameConflict(error))
-        throw error;
-      const artifacts = (await gh(
-        `/repos/${process.env.GITHUB_REPOSITORY}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
-      )).body.artifacts || [];
+      if (!isArtifactNameConflict(error)) throw error;
+      const artifacts =
+        (
+          await gh(
+            `/repos/${process.env.GITHUB_REPOSITORY}/actions/runs/${encodeURIComponent(process.env.GITHUB_RUN_ID)}/artifacts?per_page=100`,
+          )
+        ).body.artifacts || [];
       const existing = artifacts.find(
         (artifact) => !artifact.expired && artifact.name === artifactName,
       );
@@ -2786,7 +2965,9 @@ async function downloadToFile(url, output, options = {}) {
     if (![500, 502, 503, 504].includes(response.status) || attempt >= 5)
       throw new Error(`download failed: ${response.status}`);
     const delay = Math.min(1000 * 2 ** attempt, 8000);
-    log(`Cache download: HTTP ${response.status}; retry ${attempt + 1}/5 in ${delay}ms`);
+    log(
+      `Cache download: HTTP ${response.status}; retry ${attempt + 1}/5 in ${delay}ms`,
+    );
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
   const contentLength = Number(response.headers.get("content-length") || 0);
