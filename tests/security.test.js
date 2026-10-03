@@ -265,6 +265,34 @@ test("security scan allows Cargo test fixtures and source directories with crede
   }
 });
 
+test("security scan normalizes Windows Cargo dependency paths", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-windows-paths-"),
+  );
+  try {
+    const packageRoot = path.join(
+      root,
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "match_token-0.1.0",
+    );
+    const files = [
+      ["examples", "sample.rsa", "-----BEGIN RSA PRIVATE KEY-----\n"],
+      ["src", "credential.rs", "pub struct Credential;\n"],
+      ["src", "tls.rs", 'let api_key = "example-dependency-value";\n'],
+    ];
+    for (const [directory, name, content] of files) {
+      const file = path.join(packageRoot, directory, name);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows npm hidden package lock metadata", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-npm-lock-"),
