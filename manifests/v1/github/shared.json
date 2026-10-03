@@ -268,37 +268,34 @@
       "workflow_run_id": 37162262060
     },
     "shared/Ludy87/cache-the-planet/npm/linux-x64/8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777/v2": {
-      "object": "sha256:78a7bec7986f9448f6600da82424c418f55d09cb2c20032545e4e36b0a94c609",
+      "object": "sha256:749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615",
       "storage": "github-artifact",
-      "updated_at": "2026-10-03T23:36:24.119Z",
+      "updated_at": "2026-10-03T23:37:18.728Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 33135624,
+      "size": 33138153,
       "parts": [
         {
           "index": 0,
           "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
           "size": 25165824,
-          "artifact_id": 11287668973,
-          "artifact_name": "cache-shared-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--78a7bec7986f9448f6600da82424c418f55d09cb2c20032545e4e36b0a94c609.tar.zst-part-000000",
+          "artifact_id": 11287942570,
+          "artifact_name": "cache-trusted-main-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615.t-part-000000",
           "workflow_run_id": 37162262060
         },
         {
           "index": 1,
-          "object": "sha256:a4909ced71ca01fcc361d27f4f31c60387fcff9b42ca2aaf22d84f339e64ebab",
-          "size": 7969800,
-          "artifact_id": 11287624128,
-          "artifact_name": "cache-shared-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--78a7bec7986f9448f6600da82424c418f55d09cb2c20032545e4e36b0a94c609.tar.zst-part-000001",
+          "object": "sha256:2867f2d0a155583146013102a4e91e987b449ea3d1b49b2f2a1e6800247b7626",
+          "size": 7972329,
+          "artifact_id": 11287812927,
+          "artifact_name": "cache-trusted-main-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--749eeb76c87cc089cc1507a321d4325482225ade7f8aa0ee811a7e994075a615.t-part-000001",
           "workflow_run_id": 37162262060
         }
-      ],
-      "artifact_id": 11287668973,
-      "artifact_name": "cache-shared-npm-linux-x64-8807cb8bfd73ead6f14480abd18398732ea4d1c1c1010c9893aa0f6149e74777-v2--78a7bec7986f9448f6600da82424c418f55d09cb2c20032545e4e36b0a94c609.tar.zst-part-000000",
-      "workflow_run_id": 37162262060
+      ]
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-03T23:22:04.489Z",
-    "writes": 15
+    "writes": 16
   }
 }
