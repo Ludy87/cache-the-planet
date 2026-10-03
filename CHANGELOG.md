@@ -8,6 +8,68 @@
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
 
+## [2.1.0](https://github.com/Ludy87/cache-the-planet/compare/v2.0.0...v2.1.0) (2026-10-03)
+
+
+### 🎉 Features
+
+* **ci:** restore node modules in npm cache integration ([#241](https://github.com/Ludy87/cache-the-planet/issues/241)) ([48b5f4c](https://github.com/Ludy87/cache-the-planet/commit/48b5f4c70997fb217adfed9123584831202ba980))
+* **storage:** add github artifact backend ([#216](https://github.com/Ludy87/cache-the-planet/issues/216)) ([ea30c17](https://github.com/Ludy87/cache-the-planet/commit/ea30c17fdfc6b1e7eb3b9aebfd75f040e43d597b))
+* **storage:** expose branch cache scope in paths ([#213](https://github.com/Ludy87/cache-the-planet/issues/213)) ([1c98bd3](https://github.com/Ludy87/cache-the-planet/commit/1c98bd35df6a8d688f1f8f34a34d1ebbff8b3c8c))
+* **storage:** publish fork artifact metadata ([#217](https://github.com/Ludy87/cache-the-planet/issues/217)) ([c69180c](https://github.com/Ludy87/cache-the-planet/commit/c69180ce3df751973b353fa5815e0a7777474fdc))
+
+
+### 🐛 Bug Fixes
+
+* **action:** expose artifact retention in multi-cache ([#219](https://github.com/Ludy87/cache-the-planet/issues/219)) ([8c700eb](https://github.com/Ludy87/cache-the-planet/commit/8c700eb7a331073999ada774030b4e3d949f47c8))
+* allow Cargo dependency scan false positives ([#246](https://github.com/Ludy87/cache-the-planet/issues/246)) ([9e5ea7f](https://github.com/Ludy87/cache-the-planet/commit/9e5ea7ff7daa6c369428f7cdb98de54cec6e2ead))
+* allow Cargo registry dependency content ([#247](https://github.com/Ludy87/cache-the-planet/issues/247)) ([944aaf1](https://github.com/Ludy87/cache-the-planet/commit/944aaf15c8e01b0f308afbb89656f379a9ebee0b))
+* allow dependency security scan false positives ([#245](https://github.com/Ludy87/cache-the-planet/issues/245)) ([95a83a6](https://github.com/Ludy87/cache-the-planet/commit/95a83a6b13dd8a578f001a1e3581ef30564849d3))
+* **artifact:** prevent release creation for artifact storage ([#233](https://github.com/Ludy87/cache-the-planet/issues/233)) ([430f949](https://github.com/Ludy87/cache-the-planet/commit/430f9495972e3ef9867bac8b605ebdb2137aa9ee))
+* **artifact:** treat missing cache artifacts as misses ([#243](https://github.com/Ludy87/cache-the-planet/issues/243)) ([e8404be](https://github.com/Ludy87/cache-the-planet/commit/e8404be1b03844a2c57842eb5d6f20ba0c5e7c53))
+* **artifact:** treat stale manifest references as misses ([#244](https://github.com/Ludy87/cache-the-planet/issues/244)) ([fe614f1](https://github.com/Ludy87/cache-the-planet/commit/fe614f1109379369427013b7e6ca06518c34cd36))
+* **artifact:** validate availability during probe ([5b23cb5](https://github.com/Ludy87/cache-the-planet/commit/5b23cb596c9c9939e7b90a1901083d6fcfa6dd69))
+* **ci:** download all fork cache artifacts ([#220](https://github.com/Ludy87/cache-the-planet/issues/220)) ([85f59de](https://github.com/Ludy87/cache-the-planet/commit/85f59de7ef49b5687c0a73a2797f0f5bac26a128))
+* **ci:** match metadata artifact names ([d4b2cc5](https://github.com/Ludy87/cache-the-planet/commit/d4b2cc5a82f26255c2ec77eebb2e10a9891b6c91))
+* **ci:** match metadata artifact names ([#222](https://github.com/Ludy87/cache-the-planet/issues/222)) ([f2ec8b6](https://github.com/Ludy87/cache-the-planet/commit/f2ec8b6f42d4cd07daa1e0d63517c9a37ef4ce31))
+* **ci:** resolve fork metadata artifacts by API ([#223](https://github.com/Ludy87/cache-the-planet/issues/223)) ([9d10252](https://github.com/Ludy87/cache-the-planet/commit/9d10252590afbda92434571dd70c9bab067bb507))
+* dependency security scan paths on Windows ([#248](https://github.com/Ludy87/cache-the-planet/issues/248)) ([8a0dd01](https://github.com/Ludy87/cache-the-planet/commit/8a0dd0141f6cc4413ba89526dcb5d75699c656c8))
+* **deps:** update glob to supported version ([#228](https://github.com/Ludy87/cache-the-planet/issues/228)) ([76c12de](https://github.com/Ludy87/cache-the-planet/commit/76c12dee4a1f1dccdbadfd5eb6d64d4dc5c117b6))
+* exclude ([a0579a9](https://github.com/Ludy87/cache-the-planet/commit/a0579a9aed1ee9b346273ae6224741f29f19867b))
+* normalize dependency security scan paths ([#251](https://github.com/Ludy87/cache-the-planet/issues/251)) ([c910950](https://github.com/Ludy87/cache-the-planet/commit/c910950b897554cab93114ba51c309f1b8359c4b))
+* **restore:** normalize repeated archive separators ([#242](https://github.com/Ludy87/cache-the-planet/issues/242)) ([0ee233a](https://github.com/Ludy87/cache-the-planet/commit/0ee233abb958c456de69418c254052626d54a3f9))
+* **restore:** report archive paths outside cache roots ([636b60b](https://github.com/Ludy87/cache-the-planet/commit/636b60be4f3c19b990c253ff47b989741c8fad9d))
+* **restore:** report cache archive paths ([#237](https://github.com/Ludy87/cache-the-planet/issues/237)) ([26ee925](https://github.com/Ludy87/cache-the-planet/commit/26ee925b4054b6f9d6274dd299160aad3b11c3f0))
+* retry manifest compare-and-swap conflicts ([#232](https://github.com/Ludy87/cache-the-planet/issues/232)) ([99eff07](https://github.com/Ludy87/cache-the-planet/commit/99eff07751575b65a519664ce352889a56fa7140))
+* **security:** allow Cargo package key fixtures ([#234](https://github.com/Ludy87/cache-the-planet/issues/234)) ([ea6aa04](https://github.com/Ludy87/cache-the-planet/commit/ea6aa04213fec4fdcfcf77f133ee93bf2176bd38))
+* **security:** allow credential-like cargo example fixtures ([#236](https://github.com/Ludy87/cache-the-planet/issues/236)) ([88825ec](https://github.com/Ludy87/cache-the-planet/commit/88825ec76a1996ee569b138b316409024edb1028))
+* **security:** allow credential-like package source names ([0d14781](https://github.com/Ludy87/cache-the-planet/commit/0d14781c6f93dbbee0c24751b9f717051ad60b58))
+* **security:** allow harmless Cargo rsa examples ([#215](https://github.com/Ludy87/cache-the-planet/issues/215)) ([cabcf5b](https://github.com/Ludy87/cache-the-planet/commit/cabcf5bef812b3b6a432f184c7f49c2875c34475))
+* **security:** allow harmless Cargo source filenames ([#214](https://github.com/Ludy87/cache-the-planet/issues/214)) ([9b53ad9](https://github.com/Ludy87/cache-the-planet/commit/9b53ad9c0be1a6ea517a92497d0ff2144aecb8ac))
+* **security:** allow npm package lock metadata ([91f2be7](https://github.com/Ludy87/cache-the-planet/commit/91f2be7e1ffea50d287775cfb32a9e21f218498c))
+* **security:** allow npm package lock metadata ([#240](https://github.com/Ludy87/cache-the-planet/issues/240)) ([649fad1](https://github.com/Ludy87/cache-the-planet/commit/649fad1dbd4726ee95c84685f5e51b83bf587898))
+* **security:** apply excludes before cache scanning ([#211](https://github.com/Ludy87/cache-the-planet/issues/211)) ([e101718](https://github.com/Ludy87/cache-the-planet/commit/e1017182b8f7012649e48de6b0e25cc1425b7d4d))
+* **security:** harden fork artifact metadata ([#218](https://github.com/Ludy87/cache-the-planet/issues/218)) ([cc5688d](https://github.com/Ludy87/cache-the-planet/commit/cc5688d6a02f35b56e1b6c24fec2e3a7434b5daf))
+* **security:** match cargo registry fixture paths ([48ac5a1](https://github.com/Ludy87/cache-the-planet/commit/48ac5a17367c65aea2821488850a82c689bf9be5))
+* **security:** match cargo registry fixture paths ([#239](https://github.com/Ludy87/cache-the-planet/issues/239)) ([cec2aa9](https://github.com/Ludy87/cache-the-planet/commit/cec2aa9ecd833440b7000f6494eca426d7cdde07))
+* stale cache security scan bundle ([#250](https://github.com/Ludy87/cache-the-planet/issues/250)) ([c03524c](https://github.com/Ludy87/cache-the-planet/commit/c03524c81e0dc8291423e49fbdcb8e9ef7f80776))
+* **storage:** detect artifact conflict errors ([#227](https://github.com/Ludy87/cache-the-planet/issues/227)) ([fdf4ba5](https://github.com/Ludy87/cache-the-planet/commit/fdf4ba5e7ccff94b8879c8aefb5afabbf2c7fb95))
+* **storage:** detect artifact conflicts from SDK errors ([7520048](https://github.com/Ludy87/cache-the-planet/commit/75200489f17eaac5a8245e1113df806ec2b2a1fb))
+* **storage:** preserve artifact part suffix ([#229](https://github.com/Ludy87/cache-the-planet/issues/229)) ([f70d19c](https://github.com/Ludy87/cache-the-planet/commit/f70d19c4e3588cdf364bb171c4e0a66522daa9b7))
+* **storage:** prevent artifact uploads from using releases ([#235](https://github.com/Ludy87/cache-the-planet/issues/235)) ([fa4d306](https://github.com/Ludy87/cache-the-planet/commit/fa4d30687d40feb8ca23c59628cd3523df453424))
+* **storage:** reuse duplicate metadata artifacts ([#226](https://github.com/Ludy87/cache-the-planet/issues/226)) ([9d609f8](https://github.com/Ludy87/cache-the-planet/commit/9d609f86215d30fe8e655f99d2858288ace16af4))
+* **storage:** reuse duplicate run artifacts ([#225](https://github.com/Ludy87/cache-the-planet/issues/225)) ([7ca5e45](https://github.com/Ludy87/cache-the-planet/commit/7ca5e4595e8265847724b2ecc68fd9c8995171c4))
+* **storage:** send release make-latest as string ([#224](https://github.com/Ludy87/cache-the-planet/issues/224)) ([b2dd2fd](https://github.com/Ludy87/cache-the-planet/commit/b2dd2fd8ebfbeff73b35fb117a22fdd70dfd8e63))
+* **storage:** skip missing fork metadata ([a4aee56](https://github.com/Ludy87/cache-the-planet/commit/a4aee562b482fb0122a3d3c5412c42061e1071e1))
+* **storage:** skip missing fork metadata ([#221](https://github.com/Ludy87/cache-the-planet/issues/221)) ([6ad86c1](https://github.com/Ludy87/cache-the-planet/commit/6ad86c1704f3c287584b1457bdd17d27c9a29501))
+
+
+### 🔒 Security
+
+* harden Cargo cache path handling ([#230](https://github.com/Ludy87/cache-the-planet/issues/230)) ([0f09e90](https://github.com/Ludy87/cache-the-planet/commit/0f09e90ece95bbeecf4f38fbd9e56addfc618d06))
+* harden Cargo cache path handling ([#230](https://github.com/Ludy87/cache-the-planet/issues/230)) ([11441ea](https://github.com/Ludy87/cache-the-planet/commit/11441eaeb4d23a94dbca92b6d29c9627b28c8de4))
+* remove github-release fallbacks ([#231](https://github.com/Ludy87/cache-the-planet/issues/231)) ([312cd16](https://github.com/Ludy87/cache-the-planet/commit/312cd16c1c260990030b8b58e32dd784f805b9f2))
+
 ## [2.0.0](https://github.com/Ludy87/cache-the-planet/compare/v1.10.0...v2.0.0) (2026-09-27)
 
 
