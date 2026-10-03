@@ -51,7 +51,11 @@ jobs:
     if: ${{ inputs.save-cache }}
     name: Install and save npm cache asset
     needs: hash_pr
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
     timeout-minutes: 5
     permissions:
       contents: write
