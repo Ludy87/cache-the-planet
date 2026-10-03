@@ -1547,7 +1547,7 @@ const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // integration tests. Keep this exception limited to dependency fixture
 // directories; private keys elsewhere must still be rejected.
 const packageFixturePath =
-  /(?:^|[\\/])registry[\\/]src[\\/](?:[^\\/]+[\\/]){1,2}(?:test|tests|examples|testdata)(?:[\\/]|$)/i;
+  /(?:^|\/)registry\/src\/(?:[^\/]+\/){1,2}(?:test|tests|examples|testdata)(?:\/|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1612,6 +1612,7 @@ function securityScan(root, options = {}) {
       return;
     }
     const relative = path.relative(root, file);
+    const normalizedRelative = relative.split(path.sep).join("/");
     if (
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"
@@ -1623,26 +1624,26 @@ function securityScan(root, options = {}) {
     if (
       sensitiveDirectory.test(relative) ||
       (sensitiveName.test(path.basename(file)) &&
-        !cargoBinPath.test(relative.split(path.sep).join("/")) &&
+        !cargoBinPath.test(normalizedRelative) &&
         !isNodeModulesSourceFile(file, relative, root) &&
         !(
           sourceFileName.test(path.basename(file)) &&
-          (packageSourcePath.test(relative) ||
+          (packageSourcePath.test(normalizedRelative) ||
             nodeModulesPath.test(relative) ||
             path.basename(root).toLowerCase() === "node_modules")
         ) &&
         !(
-          packageSourcePath.test(relative) &&
+          packageSourcePath.test(normalizedRelative) &&
           /^(?:credential|credentials)$/i.test(path.basename(file))
         )) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
-        !cargoIndexPath.test(relative.split(path.sep).join("/")) &&
-        !cargoBinPath.test(relative.split(path.sep).join("/")) &&
+        !cargoIndexPath.test(normalizedRelative) &&
+        !cargoBinPath.test(normalizedRelative) &&
         !(
-          cargoRegistryCachePath.test(relative.split(path.sep).join("/")) &&
+          cargoRegistryCachePath.test(normalizedRelative) &&
           binaryFileName.test(path.basename(file))
         ) &&
-        !packageSourcePath.test(relative) &&
+        !packageSourcePath.test(normalizedRelative) &&
         !isNodeModulesSourceFile(file, relative, root) &&
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
@@ -1664,13 +1665,13 @@ function securityScan(root, options = {}) {
       const sourceOrMetadata =
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
-        npmIndexPath.test(file) ||
-        packageSourcePath.test(relative) ||
+        npmIndexPath.test(normalizedRelative) ||
+        packageSourcePath.test(normalizedRelative) ||
         isNodeModulesSourceFile(file, relative, root) ||
-        npmPackageLockPath.test(relative) ||
+        npmPackageLockPath.test(normalizedRelative) ||
         isNodeModulesDocumentation(file, relative, root);
       if (
-        !packageFixturePath.test(relative) &&
+        !packageFixturePath.test(normalizedRelative) &&
         !isNodeModulesFixture(relative, root) &&
         ((privateKeyContent.test(text) &&
           !isNodeModulesSourceFile(file, relative, root)) ||
