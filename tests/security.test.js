@@ -619,6 +619,238 @@ test("security scan allows Cargo sparse index entries when registry is the scan 
   }
 });
 
+test("security scan allows the reported npm and Cargo dependency paths", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-reported-dependencies-"),
+  );
+  const files = [
+    [
+      "frontend",
+      "node_modules",
+      ".package-lock.json",
+      '{"lockfileVersion":3,"packages":{}}\n',
+    ],
+    ["frontend", "node_modules", "dotenv", "README-es.md", "token example\n"],
+    ["frontend", "node_modules", "dotenv", "README.md", "token example\n"],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "hyper-rustls-0.27.7",
+      "examples",
+      "sample.rsa",
+      "-----BEGIN RSA PRIVATE KEY-----\nfixture\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "keyring-3.6.3",
+      "src",
+      "credential.rs",
+      "pub struct Credential;\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "reqwest-0.12.28",
+      "src",
+      "tls.rs",
+      'let api_key = "dependency-example-value";\n',
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "reqwest-0.13.2",
+      "src",
+      "tls.rs",
+      'let api_key = "dependency-example-value";\n',
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "rustls-0.23.37",
+      "src",
+      "crypto",
+      "aws_lc_rs",
+      "sign.rs",
+      "pub fn sign() {}\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "rustls-0.23.37",
+      "src",
+      "crypto",
+      "ring",
+      "sign.rs",
+      "pub fn sign() {}\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "schannel-0.1.28",
+      "src",
+      "crypt_prov.rs",
+      "pub struct Provider;\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "schannel-0.1.28",
+      "test",
+      "identity.p12",
+      "fixture",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "schannel-0.1.28",
+      "test",
+      "key.key",
+      "fixture",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "schannel-0.1.28",
+      "test",
+      "key.pem",
+      "-----BEGIN RSA PRIVATE KEY-----\nfixture\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "schannel-0.1.28",
+      "test",
+      "key_no_end_header.pem",
+      "-----BEGIN RSA PRIVATE KEY-----\nfixture\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "tiny_http-0.12.0",
+      "examples",
+      "ssl-key.pem",
+      "-----BEGIN RSA PRIVATE KEY-----\nfixture\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "tokio-rustls-0.26.4",
+      "tests",
+      "certs",
+      "end.key",
+      "fixture",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "tokio-util-0.7.18",
+      "src",
+      "sync",
+      "cancellation_token",
+      "pub struct CancellationToken;\n",
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "untrusted-0.9.0",
+      "mk",
+      "llvm-snapshot.gpg.key",
+      'key = "dependency-example-value"\n',
+    ],
+    [
+      ".cache",
+      "cargo",
+      "registry",
+      "src",
+      "index.crates.io-1949cf8c6b5b557f",
+      "winnow-0.7.14",
+      "src",
+      "token",
+      "pub fn token() {}\n",
+    ],
+  ];
+  const directories = [
+    ["match_token-0.1.0"],
+    ["windows-0.58.0", "src", "Windows", "Security", "Credentials"],
+    ["windows-0.58.0", "src", "Windows", "Win32", "Security", "Credentials"],
+    ["windows-0.61.3", "src", "Windows", "Security", "Credentials"],
+    ["windows-0.61.3", "src", "Windows", "Win32", "Security", "Credentials"],
+    ["windows-0.62.2", "src", "Windows", "Security", "Credentials"],
+    ["windows-0.62.2", "src", "Windows", "Win32", "Security", "Credentials"],
+  ];
+  try {
+    for (const entry of directories) {
+      fs.mkdirSync(
+        path.join(
+          root,
+          ".cache",
+          "cargo",
+          "registry",
+          "src",
+          "index.crates.io-1949cf8c6b5b557f",
+          ...entry,
+        ),
+        { recursive: true },
+      );
+    }
+    for (const entry of files) {
+      const content = entry.at(-1);
+      const file = path.join(root, ...entry.slice(0, -1));
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan skips explicitly excluded credential-like files", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-exclude-"),
