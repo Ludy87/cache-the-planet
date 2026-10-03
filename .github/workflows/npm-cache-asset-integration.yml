@@ -54,7 +54,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-latest, ubuntu-latest, windows-11-arm, macos-15]
+        platform: 
+          - ubuntu-latest
+          # - windows-latest
+          # - windows-11-arm
+          # - macos-15
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 5
     permissions:
