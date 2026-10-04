@@ -155,25 +155,25 @@
       "workflow_run_id": 37161519088
     },
     "shared/Ludy87/cache-the-planet/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v1": {
-      "object": "sha256:5811fc3bd1a1df441106426e84b9b22b476ac61999ffc1493dcd233f116195ac",
+      "object": "sha256:41ce375d7866f16d7592b5836009412a6b4e8308a6e1641d2f296f9e338c93fe",
       "storage": "github-artifact",
-      "updated_at": "2026-10-04T00:05:48.228Z",
+      "updated_at": "2026-10-04T09:14:52.829Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 16484602,
+      "size": 16484648,
       "parts": [
         {
           "index": 0,
-          "object": "sha256:5811fc3bd1a1df441106426e84b9b22b476ac61999ffc1493dcd233f116195ac",
-          "size": 16484602,
-          "artifact_id": 11288164482,
-          "artifact_name": "cache-shared-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v1--5811fc3bd1a1df441106426e84b9b22b476ac61999ffc1493dcd233f116195a-part-000000",
-          "workflow_run_id": 37163564187
+          "object": "sha256:41ce375d7866f16d7592b5836009412a6b4e8308a6e1641d2f296f9e338c93fe",
+          "size": 16484648,
+          "artifact_id": 11299561079,
+          "artifact_name": "cache-shared-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v1--41ce375d7866f16d7592b5836009412a6b4e8308a6e1641d2f296f9e338c93f-part-000000",
+          "workflow_run_id": 37191243332
         }
       ],
-      "artifact_id": 11288164482,
-      "artifact_name": "cache-shared-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v1--5811fc3bd1a1df441106426e84b9b22b476ac61999ffc1493dcd233f116195a-part-000000",
-      "workflow_run_id": 37163564187
+      "artifact_id": 11299561079,
+      "artifact_name": "cache-shared-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v1--41ce375d7866f16d7592b5836009412a6b4e8308a6e1641d2f296f9e338c93f-part-000000",
+      "workflow_run_id": 37191243332
     },
     "shared/Ludy87/cache-the-planet/gradle-java17/linux-x64/35c4d0d6d52b874a8a9a750e11e3d937f3f0d79bfb21c4c7456412984bcc9d24/v1": {
       "object": "sha256:d454dda92def31b014ebce57ae04606ab8ee9884484cd23ed70621981b3a3d09",
@@ -315,6 +315,6 @@
   },
   "monitoring": {
     "window_started_at": "2026-10-04T09:12:02.090Z",
-    "writes": 3
+    "writes": 4
   }
 }
