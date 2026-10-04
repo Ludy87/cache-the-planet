@@ -2317,24 +2317,7 @@ async function refs(repository, { fresh = false, key, filePath } = {}) {
 
 async function refsForKeys(repository, keys, { fresh = false } = {}) {
   const storagePaths = [...new Set(keys.map((key) => manifestPathForKey(key)))];
-  const paths = [];
-  // Preserve read compatibility for manifests written before storage was
-  // part of the manifest identity. New writes always use the storage-scoped
-  // path above; SFTP must never read GitHub-storage references.
-  if (storageMode() !== "sftp") {
-    for (const key of keys) {
-      const legacy = key.startsWith("trusted/")
-        ? `${manifestPath()}/v1/trusted.json`
-        : key.startsWith("shared/")
-          ? `${manifestPath()}/v1/shared.json`
-          : key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)
-            ? `${manifestPath()}/v1/untrusted/pr-${key.match(/^untrusted\/[^/]+\/[^/]+\/pr-([1-9]\d*)\//)[1]}.json`
-            : null;
-      if (legacy) paths.push(legacy);
-    }
-  }
-  // Storage-scoped manifests take precedence over legacy references.
-  paths.push(...storagePaths.filter((filePath) => !paths.includes(filePath)));
+  const paths = storagePaths;
   const manifests = await Promise.all(
     paths.map((filePath) => refs(repository, { fresh, filePath })),
   );

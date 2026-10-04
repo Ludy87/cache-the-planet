@@ -41,9 +41,9 @@ manifests/v1/sftp/untrusted/pr-<number>.json
 ```
 
 `storage: github-release` verwendet den Storage-Namen `github`, `storage: sftp`
-verwendet `sftp`. Alte GitHub-Manifeste direkt unter `manifests/v1/` werden
-beim Lesen als Legacy-Fallback unterstützt; neue Schreibvorgänge verwenden
-immer den storage-spezifischen Pfad. SFTP liest keine GitHub-Referenzen.
+verwendet `sftp`. Restore liest ausschließlich den storage-spezifischen
+Manifest-Pfad; ein Fehler oder fehlendes Objekt aktiviert keinen Fallback auf
+`github-release`.
 
 `storage: github-artifact` speichert die Archivdatei als GitHub-Actions-Artefakt.
 Die Manifest-Referenz enthält dafür `artifact_id`, `artifact_name` und
