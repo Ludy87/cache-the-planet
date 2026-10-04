@@ -424,6 +424,24 @@ test("security scan allows dependency type definitions and docs with credential 
   }
 });
 
+test("security scan allows node_modules root package lock files", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-node-lock-root-"),
+  );
+  const root = path.join(workspace, "node_modules");
+  const lock = path.join(root, ".package-lock.json");
+  try {
+    fs.mkdirSync(path.dirname(lock), { recursive: true });
+    fs.writeFileSync(
+      lock,
+      JSON.stringify({ token: "ghp_123456789012345678901234567890123456" }),
+    );
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows private-key templates in node_modules source files", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-ssh2-keygen-"),
@@ -616,6 +634,49 @@ test("security scan allows Cargo sparse index entries when registry is the scan 
     assert.doesNotThrow(() => common.securityScan(registry));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows Cargo registry source roots with credential-like names", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-src-root-"),
+  );
+  const root = path.join(
+    workspace,
+    "registry",
+    "src",
+    "index.crates.io-1949cf8c6b5b557f",
+  );
+  const files = [
+    ["keyring-3.6.3", "src", "credential.rs"],
+    ["tokio-rustls-0.26.4", "tests", "certs", "end.key"],
+    ["schannel-0.1.28", "test", "key.pem"],
+    ["dotenv-0.15.0", "README.md"],
+  ];
+  const directories = [
+    ["windows-0.62.2", "src", "Windows", "Security", "Credentials"],
+    [
+      "windows-sys-0.61.2",
+      "src",
+      "Windows",
+      "Win32",
+      "Security",
+      "Credentials",
+    ],
+    ["match_token-0.1.0"],
+  ];
+  try {
+    for (const parts of directories) {
+      fs.mkdirSync(path.join(root, ...parts), { recursive: true });
+    }
+    for (const parts of files) {
+      const file = path.join(root, ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'const token = "example-token-value";\n');
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
   }
 });
 

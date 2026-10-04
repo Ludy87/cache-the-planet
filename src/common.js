@@ -1554,6 +1554,8 @@ const packageFixturePath =
   /(?:^|\/)registry\/src\/(?:[^/]+\/){1,2}(?:test|tests|fixtures|examples|testdata)(?:\/|$)/i;
 const packagePublicKeyFixturePath =
   /(?:^|\/)registry\/src\/(?:[^/]+\/){1,2}(?:mk|test|tests|fixtures|examples|testdata)(?:\/|$)/i;
+const dependencyFixturePath =
+  /(?:^|\/)(?:mk|test|tests|fixtures|examples|testdata)(?:\/|$)/i;
 const sensitiveDirectory =
   /(^|[\\/])(?:\.ssh|\.aws|\.docker|\.kube)(?:[\\/]|$)/i;
 const virtualEnvironmentPath = /(^|[\\/])\.venv(?:[\\/]|$)/i;
@@ -1579,6 +1581,32 @@ function globToRegExp(pattern) {
     }
   }
   return new RegExp(`${result}$`, "i");
+}
+
+function isCargoRegistrySourcePath(normalizedRelative, root) {
+  const normalizedRoot = normalizeCachePath(root);
+  return (
+    packageSourcePath.test(normalizedRelative) ||
+    packageSourcePath.test(normalizedRoot)
+  );
+}
+
+function isCargoRegistryFixturePath(normalizedRelative, root) {
+  if (packageFixturePath.test(normalizedRelative)) return true;
+  return (
+    isCargoRegistrySourcePath(normalizedRelative, root) &&
+    dependencyFixturePath.test(normalizedRelative)
+  );
+}
+
+function isCargoRegistryPublicKeyFixturePath(normalizedRelative, root) {
+  if (packagePublicKeyFixturePath.test(normalizedRelative)) return true;
+  return (
+    isCargoRegistrySourcePath(normalizedRelative, root) &&
+    /(?:^|\/)(?:mk|test|tests|fixtures|examples|testdata)(?:\/|$)/i.test(
+      normalizedRelative,
+    )
+  );
 }
 
 function isExcludedPath(file, root, patterns, workspace) {
@@ -1622,6 +1650,9 @@ function securityScan(root, options = {}) {
     // process (for example Windows paths handled by a Linux runner). Always
     // normalize both separators before applying path-based exceptions.
     const normalizedRelative = normalizeCachePath(relative);
+    const dependencySourcePath =
+      isCargoRegistrySourcePath(normalizedRelative, root) ||
+      isNodeModulesPath(normalizedRelative, root);
     if (
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"
@@ -1635,14 +1666,15 @@ function securityScan(root, options = {}) {
       (sensitiveName.test(path.basename(file)) &&
         !cargoBinPath.test(normalizedRelative) &&
         !isNodeModulesSourceFile(file, relative, root) &&
+        !dependencySourcePath &&
         !(
           sourceFileName.test(path.basename(file)) &&
-          (packageSourcePath.test(normalizedRelative) ||
+          (dependencySourcePath ||
             nodeModulesPath.test(relative) ||
             path.basename(root).toLowerCase() === "node_modules")
         ) &&
         !(
-          packageSourcePath.test(normalizedRelative) &&
+          dependencySourcePath &&
           /^(?:credential|credentials)$/i.test(path.basename(file))
         )) ||
       (sensitiveKeywordName.test(path.basename(file)) &&
@@ -1652,7 +1684,7 @@ function securityScan(root, options = {}) {
           cargoRegistryCachePath.test(normalizedRelative) &&
           binaryFileName.test(path.basename(file))
         ) &&
-        !packageSourcePath.test(normalizedRelative) &&
+        !dependencySourcePath &&
         !isNodeModulesSourceFile(file, relative, root) &&
         !sourceFileName.test(path.basename(file)) &&
         !binaryFileName.test(path.basename(file)))
@@ -1675,20 +1707,22 @@ function securityScan(root, options = {}) {
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
         npmIndexPath.test(normalizedRelative) ||
-        packageSourcePath.test(normalizedRelative) ||
+        isCargoRegistrySourcePath(normalizedRelative, root) ||
         isNodeModulesSourceFile(file, relative, root) ||
         npmPackageLockPath.test(normalizedRelative) ||
+        (path.basename(root).toLowerCase() === "node_modules" &&
+          path.basename(file).toLowerCase() === ".package-lock.json") ||
         isNodeModulesDocumentation(file, relative, root);
-      const dependencySource =
-        packageSourcePath.test(normalizedRelative) ||
-        isNodeModulesPath(normalizedRelative, root);
+      const dependencySource = dependencySourcePath;
       const dependencyFixture =
-        packageFixturePath.test(normalizedRelative) ||
+        isCargoRegistryFixturePath(normalizedRelative, root) ||
         isNodeModulesFixture(normalizedRelative, root);
       const dependencyPublicKeyFixture =
-        packagePublicKeyFixturePath.test(normalizedRelative) || dependencyFixture;
+        isCargoRegistryPublicKeyFixturePath(normalizedRelative, root) ||
+        dependencyFixture;
       const dependencySourceFile =
-        (packageSourcePath.test(normalizedRelative) && sourceFileName.test(file)) ||
+        (isCargoRegistrySourcePath(normalizedRelative, root) &&
+          sourceFileName.test(file)) ||
         isNodeModulesSourceFile(file, relative, root);
       if (
         // Exact known token formats remain blocked everywhere. Generic
