@@ -1526,10 +1526,11 @@ function isNodeModulesSourceFile(file, relative, root) {
 
 function isNodeModulesDocumentation(file, relative, root) {
   const normalized = String(relative).replace(/\\/g, "/");
+  const basename = normalized.slice(normalized.lastIndexOf("/") + 1);
   return (
     isNodeModulesPath(relative, root) &&
     (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(
-      path.basename(file),
+      basename,
     ) ||
       /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized))
   );
