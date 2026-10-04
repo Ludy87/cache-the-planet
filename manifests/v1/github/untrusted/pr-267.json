@@ -50,10 +50,39 @@
       "artifact_id": 11303131718,
       "artifact_name": "cache-untrusted-pr-267-github-artifact-test-linux-x64-github-artifact-integration-v1-v2--a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d.tar.zst-part-000000",
       "workflow_run_id": 37201500459
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-267/npm-cache/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:61b617ab06c49123a554e82afcba950a7a80a531f0270d1728b80fcca0d4c2b3",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-04T12:19:11.604Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 33138096,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11302912500,
+          "artifact_name": "cache-untrusted-pr-267-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--61b617ab06c49123a554e82afcba950a7a80a531f0270d1728b80fcc-part-000000",
+          "workflow_run_id": 37201500459
+        },
+        {
+          "index": 1,
+          "object": "sha256:b2263674de1d0eba8d914f4efeafbbd70ac2b440ff84fbafcc7cfaa28343217a",
+          "size": 7972272,
+          "artifact_id": 11302892773,
+          "artifact_name": "cache-untrusted-pr-267-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--61b617ab06c49123a554e82afcba950a7a80a531f0270d1728b80fcc-part-000001",
+          "workflow_run_id": 37201500459
+        }
+      ],
+      "artifact_id": 11302912500,
+      "artifact_name": "cache-untrusted-pr-267-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--61b617ab06c49123a554e82afcba950a7a80a531f0270d1728b80fcc-part-000000",
+      "workflow_run_id": 37201500459
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-04T12:16:35.091Z",
-    "writes": 2
+    "writes": 3
   }
 }
