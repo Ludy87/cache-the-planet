@@ -124,6 +124,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       );
       return;
     }
+    c.log(
+      `post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
+    );
     c.assertPostStorage(storage);
     if (String(c.input(INPUTS.RESTORE_ONLY)).toLowerCase() === "true") {
       c.log("post-save skipped because restore-only is enabled");
