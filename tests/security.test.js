@@ -2022,7 +2022,7 @@ test("post-save storage must match the initiating restore storage", () => {
     common.recordInitiatingStorage("github-artifact");
     assert.match(
       fs.readFileSync(stateFile, "utf8"),
-      /storage-mode=github-artifact/,
+      /STORAGE_MODE=github-artifact/,
     );
 
     process.env.STATE_STORAGE_MODE = "github-artifact";

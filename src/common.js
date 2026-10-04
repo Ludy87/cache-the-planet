@@ -381,7 +381,7 @@ function storageMode() {
 function recordInitiatingStorage(mode) {
   const stateFile = process.env.GITHUB_STATE;
   if (!stateFile) return;
-  fs.appendFileSync(stateFile, `storage-mode=${mode}${os.EOL}`);
+  fs.appendFileSync(stateFile, `STORAGE_MODE=${mode}${os.EOL}`);
 }
 
 function assertPostStorage(mode) {
