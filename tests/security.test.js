@@ -2044,3 +2044,22 @@ test("post-save storage must match the initiating restore storage", () => {
     fs.rmSync(stateFile, { force: true });
   }
 });
+
+test("post-save inherits storage from restore when no save storage is configured", () => {
+  const previousInput = process.env["INPUT_STORAGE"];
+  const previousEnvironment = process.env.CACHE_STORAGE;
+  const previousState = process.env.STATE_STORAGE_MODE;
+  try {
+    delete process.env["INPUT_STORAGE"];
+    delete process.env.CACHE_STORAGE;
+    process.env.STATE_STORAGE_MODE = "github-artifact";
+    assert.equal(common.storageMode(), "github-artifact");
+  } finally {
+    if (previousInput === undefined) delete process.env["INPUT_STORAGE"];
+    else process.env["INPUT_STORAGE"] = previousInput;
+    if (previousEnvironment === undefined) delete process.env.CACHE_STORAGE;
+    else process.env.CACHE_STORAGE = previousEnvironment;
+    if (previousState === undefined) delete process.env.STATE_STORAGE_MODE;
+    else process.env.STATE_STORAGE_MODE = previousState;
+  }
+});

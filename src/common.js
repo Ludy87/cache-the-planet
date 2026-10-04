@@ -363,7 +363,8 @@ function storageMode() {
   const configured =
     input(INPUTS.STORAGE) ||
     process.env.CACHE_STORAGE ||
-    configuration().storage;
+    configuration().storage ||
+    process.env.STATE_STORAGE_MODE;
   if (!configured) throw new Error("storage is required");
   const value = String(configured).trim().toLowerCase();
   if (
