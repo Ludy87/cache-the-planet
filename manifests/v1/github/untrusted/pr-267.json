@@ -328,32 +328,32 @@
       "workflow_run_id": 37201500459
     },
     "untrusted/Ludy87/cache-the-planet/pr-267/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
-      "object": "sha256:17d0d8a3f627d7d4dca4d9a81a0ed7b40e9a477850bf7ec39d74888110d4292e",
+      "object": "sha256:ca2cb716ea7d4841ff4c653cc32ce6fd72ac72458d37f152f31a67c68c40fe3c",
       "storage": "github-artifact",
-      "updated_at": "2026-10-04T12:24:25.793Z",
+      "updated_at": "2026-10-04T12:25:10.612Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 33138250,
+      "size": 33135967,
       "parts": [
         {
           "index": 0,
           "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
           "size": 25165824,
-          "artifact_id": 11303521340,
-          "artifact_name": "cache-untrusted-pr-267-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--17d0d8a3f627d7d4dca4d9a81a0ed7b40e9a477850bf7ec39d74888110d429-part-000000",
+          "artifact_id": 11303172278,
+          "artifact_name": "cache-untrusted-pr-267-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--ca2cb716ea7d4841ff4c653cc32ce6fd72ac72458d37f152f31a67c68c40fe-part-000000",
           "workflow_run_id": 37201500459
         },
         {
           "index": 1,
-          "object": "sha256:7f741b51881484b1f04edeabcfbb5cfb242cc2b96ad2b50923e1c82a95012f73",
-          "size": 7972426,
-          "artifact_id": 11303152294,
-          "artifact_name": "cache-untrusted-pr-267-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--17d0d8a3f627d7d4dca4d9a81a0ed7b40e9a477850bf7ec39d74888110d429-part-000001",
+          "object": "sha256:ed5270953b1a18a020dc7a43fbf46b7b4dae9dc963355b717e9d8b297db6f8d7",
+          "size": 7970143,
+          "artifact_id": 11303097446,
+          "artifact_name": "cache-untrusted-pr-267-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--ca2cb716ea7d4841ff4c653cc32ce6fd72ac72458d37f152f31a67c68c40fe-part-000001",
           "workflow_run_id": 37201500459
         }
       ],
-      "artifact_id": 11303521340,
-      "artifact_name": "cache-untrusted-pr-267-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--17d0d8a3f627d7d4dca4d9a81a0ed7b40e9a477850bf7ec39d74888110d429-part-000000",
+      "artifact_id": 11303172278,
+      "artifact_name": "cache-untrusted-pr-267-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--ca2cb716ea7d4841ff4c653cc32ce6fd72ac72458d37f152f31a67c68c40fe-part-000000",
       "workflow_run_id": 37201500459
     },
     "untrusted/Ludy87/cache-the-planet/pr-267/docker-qemu/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62/v1": {
@@ -422,6 +422,6 @@
   },
   "monitoring": {
     "window_started_at": "2026-10-04T12:16:35.091Z",
-    "writes": 13
+    "writes": 14
   }
 }
