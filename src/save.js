@@ -142,10 +142,6 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       c.log(`untrusted pull request: save skipped (${reason})`);
       return;
     }
-    c.log(
-      `post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
-    );
-    c.assertPostStorage(storage);
     const repository = c.cacheRepository();
     const key = c.scopedKey(
       c.input(INPUTS.KEY),
@@ -197,6 +193,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "shared cache keys may only be saved from the repository default branch",
       );
     }
+    c.log(
+      `post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
+    );
+    c.assertPostStorage(storage);
     const current = await c.refs(repository, { key });
     const existingReference = current.json.references[key];
     const sharedCounterpart =
