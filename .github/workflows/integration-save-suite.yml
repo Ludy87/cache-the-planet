@@ -345,7 +345,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   rust-save-cache:
-    needs: [docker-save-cache, test]
+    needs: [test]
     if: ${{ !cancelled() && needs.docker-save-cache.result == 'success' }}
     uses: $/.github/workflows/rust-cache-asset-integration.yml
     with:
