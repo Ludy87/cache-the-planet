@@ -397,10 +397,31 @@
       "artifact_id": 11303027087,
       "artifact_name": "cache-untrusted-pr-267-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--4c69f7bf417347dddc4c98d305ec29c0ae8978505919b265f1e4b-part-000000",
       "workflow_run_id": 37201500459
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-267/uv/linux-x64/ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e/v1": {
+      "object": "sha256:b6c3dee6bcaaed6945d7fda1363222b02ad8e4bf31c53c20bee91a137e02877c",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-04T12:20:42.368Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 1445230,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:b6c3dee6bcaaed6945d7fda1363222b02ad8e4bf31c53c20bee91a137e02877c",
+          "size": 1445230,
+          "artifact_id": 11303141972,
+          "artifact_name": "cache-untrusted-pr-267-uv-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--b6c3dee6bcaaed6945d7fda1363222b02ad8e4bf31c53c20bee91a137e02877-part-000000",
+          "workflow_run_id": 37201500459
+        }
+      ],
+      "artifact_id": 11303141972,
+      "artifact_name": "cache-untrusted-pr-267-uv-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--b6c3dee6bcaaed6945d7fda1363222b02ad8e4bf31c53c20bee91a137e02877-part-000000",
+      "workflow_run_id": 37201500459
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-04T12:16:35.091Z",
-    "writes": 10
+    "writes": 11
   }
 }
