@@ -361,12 +361,33 @@
       "workflow_run_id": 37206625303
     },
     "shared/Ludy87/cache-the-planet/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
-      "object": "sha256:72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54",
+      "object": "sha256:19d1a1a2615d0cb78c2796e8a23a1a5943e8eea50b2faa3f5f76630b7c7a9ed8",
       "storage": "github-artifact",
-      "updated_at": "2026-10-04T18:43:39.854Z",
+      "updated_at": "2026-10-04T19:42:00.970Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 33138413
+      "size": 33138237,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11312639410,
+          "artifact_name": "cache-shared-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--19d1a1a2615d0cb78c2796e8a23a1a5943e8eea50b2faa3f5f76630b7c7a9ed8.tar.zst-part-000000",
+          "workflow_run_id": 37229122104
+        },
+        {
+          "index": 1,
+          "object": "sha256:fb94e911cd38e9c08d4a25e86a551d18a26649b85c0aa9e5ae032aa9a5652216",
+          "size": 7972413,
+          "artifact_id": 11312903656,
+          "artifact_name": "cache-shared-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--19d1a1a2615d0cb78c2796e8a23a1a5943e8eea50b2faa3f5f76630b7c7a9ed8.tar.zst-part-000001",
+          "workflow_run_id": 37229122104
+        }
+      ],
+      "artifact_id": 11312639410,
+      "artifact_name": "cache-shared-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--19d1a1a2615d0cb78c2796e8a23a1a5943e8eea50b2faa3f5f76630b7c7a9ed8.tar.zst-part-000000",
+      "workflow_run_id": 37229122104
     },
     "shared/Ludy87/cache-the-planet/npm-example/linux-x64/f6ba3dd0e5099e00bfbbe44d5e1eaccc92bf00453122fcbbc28a662e13554269/v2": {
       "object": "sha256:ae8b56f56f05bc114674f5398de0611a32c8c981f0cdd027d861fc1e6fef6f6e",
@@ -504,6 +525,6 @@
   },
   "monitoring": {
     "window_started_at": "2026-10-04T18:42:50.565Z",
-    "writes": 4
+    "writes": 5
   }
 }
