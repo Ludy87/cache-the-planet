@@ -297,10 +297,39 @@
       "artifact_id": 11302427291,
       "artifact_name": "cache-untrusted-pr-266-cargo-linux-x64-598cf03f573697d457b51a88c9c5bb10d6121e65bd669cbe496db7d20ad74eec-v1--af8ae16bf9f63ae41515fee98d1c6b45d1e4f385a2e11fb8ba2fc1177ec5-part-000000",
       "workflow_run_id": 37199891524
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-266/frontend-node-modules/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:90c7da16783527fa4722bc71b9284b0e4af62cce77ed7afbc7879ac870d99c70",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-04T11:50:38.760Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 39403105,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:8e6624bf9f054beb335c66bdc73ef51ef67797c8375f7ef5e81016de947420fd",
+          "size": 25165824,
+          "artifact_id": 11302628175,
+          "artifact_name": "cache-untrusted-pr-266-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000000",
+          "workflow_run_id": 37199891524
+        },
+        {
+          "index": 1,
+          "object": "sha256:1da4ca253dddc129a75465b54b434a0c0d72bfbc139281d1734bc216110731fc",
+          "size": 14237281,
+          "artifact_id": 11302418687,
+          "artifact_name": "cache-untrusted-pr-266-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000001",
+          "workflow_run_id": 37199891524
+        }
+      ],
+      "artifact_id": 11302628175,
+      "artifact_name": "cache-untrusted-pr-266-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000000",
+      "workflow_run_id": 37199891524
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-04T11:48:05.100Z",
-    "writes": 5
+    "writes": 6
   }
 }
