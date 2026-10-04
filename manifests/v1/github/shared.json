@@ -500,14 +500,6 @@
       "artifact_id": 11304861383,
       "artifact_name": "cache-shared-cargo-linux-x64-7df62907bae2c1e26ad9cb0f49b5ecd84877f698c76cf95ec5e4a02eb05db239-v1--e63a0232cb1e6a9fcb13c1f5dc9ac63e4a6f2de052dcd7dff1138c572e3962ab.tar.z-part-000000",
       "workflow_run_id": 37206625303
-    },
-    "shared/Ludy87/cache-the-planet/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
-      "object": "sha256:1b044ca5882ddb6ce64bace0caffccea7e4742f3f1b5e2910338725f74500db8",
-      "storage": "github-artifact",
-      "updated_at": "2026-10-04T13:47:01.744Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 16485071
     }
   },
   "monitoring": {
