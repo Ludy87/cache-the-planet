@@ -424,6 +424,21 @@ test("security scan allows dependency type definitions and docs with credential 
   }
 });
 
+test("security scan allows documentation when a nested node_modules package is the root", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-nested-node-modules-root-"),
+  );
+  const root = path.join(workspace, "node_modules", "dotenv");
+  const readme = path.join(root, "README.md");
+  try {
+    fs.mkdirSync(root, { recursive: true });
+    fs.writeFileSync(readme, 'Use token = "example-token-value" in this example.\n');
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows node_modules root package lock files", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-node-lock-root-"),
