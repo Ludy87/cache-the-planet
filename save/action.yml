@@ -38,6 +38,10 @@ inputs:
   path:
     description: "Newline separated files or directories to cache"
     required: true
+  restore-only:
+    description: "Only restore the cache; reserved for post-save behavior"
+    required: false
+    default: "false"
   compression-level:
     description: "zstd compression level; defaults to compression_level in config"
     required: false

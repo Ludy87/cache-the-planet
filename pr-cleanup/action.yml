@@ -8,6 +8,31 @@ inputs:
   token:
     description: GitHub token; defaults to GITHUB_TOKEN
     required: false
+  storage:
+    description: Storage backend whose manifests and objects should be cleaned
+    required: true
+  manifest-path:
+    description: Repository directory containing the cache manifest
+    required: false
+    default: ""
+  sftp-host:
+    description: SFTP hostname
+    required: false
+  sftp-port:
+    description: SFTP port
+    required: false
+  sftp-username:
+    description: SFTP username
+    required: false
+  sftp-private-key:
+    description: SFTP private key
+    required: false
+  sftp-password:
+    description: SFTP password
+    required: false
+  sftp-base-path:
+    description: Absolute SFTP directory for immutable cache objects
+    required: false
   pr-repository:
     description: owner/name of the repository that owns the pull request
     required: true
