@@ -77,7 +77,10 @@ const { INPUTS } = require("./constants");
       }
     }
     const assetPrefix = prefix.replace(/[^A-Za-z0-9._-]+/g, "-");
-    const assets = (await c.assets(repository)).assets;
+    const assets =
+      c.storageMode() === "github-artifact"
+        ? []
+        : (await c.assets(repository)).assets;
     for (const asset of assets.filter((item) =>
       item.name.endsWith(".tar.zst"),
     )) {

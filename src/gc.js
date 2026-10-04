@@ -71,7 +71,10 @@ const { INPUTS } = require("./constants");
     const liveObjects = new Set(
       Object.values(references).map((reference) => reference.object),
     );
-    const allAssets = (await c.assets(repository)).assets;
+    const allAssets =
+      c.storageMode() === "github-artifact"
+        ? []
+        : (await c.assets(repository)).assets;
     const now = Date.now();
     const cacheAssets = allAssets.filter((item) =>
       item.name.endsWith(".tar.zst"),
