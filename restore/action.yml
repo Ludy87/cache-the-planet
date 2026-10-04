@@ -39,6 +39,9 @@ inputs:
   path:
     description: "Newline separated files or directories to restore"
     required: true
+  storage:
+    description: "Object storage backend: github-release, github-branch, github-artifact, or sftp"
+    required: true
   token:
     description: "GitHub token; defaults to GITHUB_TOKEN"
     required: false
@@ -46,6 +49,24 @@ inputs:
     description: "Optional AES-256 encryption key or passphrase for cache contents"
     required: false
     default: ""
+  sftp-host:
+    description: "SFTP hostname"
+    required: false
+  sftp-port:
+    description: "SFTP port"
+    required: false
+  sftp-username:
+    description: "SFTP username"
+    required: false
+  sftp-private-key:
+    description: "SFTP private key; preferably supplied from a secret"
+    required: false
+  sftp-password:
+    description: "SFTP password; preferably supplied from a secret"
+    required: false
+  sftp-base-path:
+    description: "Absolute SFTP directory for immutable cache objects"
+    required: false
   strict:
     description: "Fail the step on cache errors"
     required: false
@@ -58,11 +79,17 @@ inputs:
     description: "Branch containing the cache manifest; defaults to manifest_branch in config or cache-data"
     required: false
     default: ""
+  manifest-path:
+    description: "Repository directory containing the manifest; when set without manifest-branch, the default branch is used"
+    required: false
+    default: ""
   allow-shared-restore:
     description: "Allow pull requests to restore explicitly selected shared caches"
     required: false
     default: "false"
 outputs:
+  error:
+    description: "Error message when cache restore fails"
   cache-hit:
     description: "true when an exact key was restored"
   matched-key:
