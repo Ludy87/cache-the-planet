@@ -948,6 +948,30 @@ test("security scan allows the reported npm and Cargo dependency paths", () => {
   }
 });
 
+test("security scan allows dotenv documentation in nested Windows node_modules", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-dotenv-windows-paths-"),
+  );
+  const root = path.join(workspace, "frontend");
+  const files = [
+    ["node_modules", "dotenv", "README-es.md"],
+    ["node_modules", "dotenv", "README.md"],
+  ];
+  try {
+    for (const parts of files) {
+      const file = path.join(root, ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(
+        file,
+        'Use npm_TOKEN=\"npm_123456789012345678901234\" in this example.\n',
+      );
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan ignores token-shaped text in dependency source and wasm", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-embedded-wasm-token-")
