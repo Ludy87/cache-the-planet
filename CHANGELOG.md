@@ -7,6 +7,13 @@
 * Paketmetadaten aktualisiert, Node.js 22 als Mindestversion festgelegt und
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
+## [2.0.1](https://github.com/Ludy87/cache-the-planet/compare/v2.0.0...v2.0.1) (2026-10-04)
+
+
+### 🐛 Bug Fixes
+
+* **security:** ignore dependency token false positives ([#255](https://github.com/Ludy87/cache-the-planet/issues/255)) ([6ce02f1](https://github.com/Ludy87/cache-the-planet/commit/6ce02f1d958d0a3e31e2ab64346fb7bd823a0f65))
+
 ## [2.0.0](https://github.com/Ludy87/cache-the-planet/compare/v1.10.0...v2.0.0) (2026-10-03)
 
 
