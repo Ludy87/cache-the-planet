@@ -131,25 +131,25 @@
       "workflow_run_id": 37163590757
     },
     "untrusted/Ludy87/cache-the-planet/pr-256/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
-      "object": "sha256:6868a18859ea5fc7bba9a3efce4d0caf6b9a5aeda9d4f2783626bc543ca0b2a9",
+      "object": "sha256:a09f997780327e687b329ac2f722721762a18241fd1eac86e8521789348fa36c",
       "storage": "github-artifact",
-      "updated_at": "2026-10-04T00:04:29.335Z",
+      "updated_at": "2026-10-04T11:57:04.461Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
-      "size": 16485109,
+      "size": 16485141,
       "parts": [
         {
           "index": 0,
-          "object": "sha256:6868a18859ea5fc7bba9a3efce4d0caf6b9a5aeda9d4f2783626bc543ca0b2a9",
-          "size": 16485109,
-          "artifact_id": 11288831081,
-          "artifact_name": "cache-untrusted-pr-256-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--6868a18859ea5fc7bba9a3efce4d0caf6b9a5aeda9d4f2783626b-part-000000",
-          "workflow_run_id": 37163590757
+          "object": "sha256:a09f997780327e687b329ac2f722721762a18241fd1eac86e8521789348fa36c",
+          "size": 16485141,
+          "artifact_id": 11302682421,
+          "artifact_name": "cache-untrusted-pr-256-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--a09f997780327e687b329ac2f722721762a18241fd1eac86e8521-part-000000",
+          "workflow_run_id": 37200196577
         }
       ],
-      "artifact_id": 11288831081,
-      "artifact_name": "cache-untrusted-pr-256-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--6868a18859ea5fc7bba9a3efce4d0caf6b9a5aeda9d4f2783626b-part-000000",
-      "workflow_run_id": 37163590757
+      "artifact_id": 11302682421,
+      "artifact_name": "cache-untrusted-pr-256-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--a09f997780327e687b329ac2f722721762a18241fd1eac86e8521-part-000000",
+      "workflow_run_id": 37200196577
     },
     "untrusted/Ludy87/cache-the-planet/pr-256/uv/linux-x64/ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e/v1": {
       "object": "sha256:ec48ab709efdafb0fdb4203293d649e2c12019c55c6d2248983b0dfdb701ec06",
@@ -546,6 +546,6 @@
   },
   "monitoring": {
     "window_started_at": "2026-10-04T11:45:23.868Z",
-    "writes": 4
+    "writes": 5
   }
 }
