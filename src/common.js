@@ -1508,9 +1508,11 @@ function normalizeCachePath(value) {
 }
 
 function isNodeModulesPath(relative, root) {
+  const normalizedRoot = normalizeCachePath(root);
   return (
     nodeModulesPath.test(normalizeCachePath(relative)) ||
-    path.basename(root).toLowerCase() === "node_modules"
+    path.basename(root).toLowerCase() === "node_modules" ||
+    nodeModulesPath.test(normalizedRoot)
   );
 }
 
