@@ -50,10 +50,39 @@
       "artifact_id": 11288751278,
       "artifact_name": "cache-untrusted-pr-256-npm-cache-linux-x64-fd29e19799bc78b85a77fb36e354f7e95345b2744f7b6a1d8a3b72269744ef06-v2--05b3b4b274e0a8455022df69e977ce4cbd4bed2cfbe38d9290cc2eec-part-000000",
       "workflow_run_id": 37163590757
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-256/frontend-node-modules/linux-x64/fd29e19799bc78b85a77fb36e354f7e95345b2744f7b6a1d8a3b72269744ef06-cache-64565b669ae2c797/v2": {
+      "object": "sha256:7c888c0b6842ae888bdfc48533d315f3725d5ab1c212fdd2bbd4a89883428f87",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-04T00:03:35.862Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 39403103,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:35d17995021e2cdacef7fede7d0b7cef106b1c0af2df4a837adac0e12986dfea",
+          "size": 25165824,
+          "artifact_id": 11288049679,
+          "artifact_name": "cache-untrusted-pr-256-frontend-node-modules-linux-x64-fd29e19799bc78b85a77fb36e354f7e95345b2744f7b6a1d8a3b72269744ef06-v2--7c888c0b6842ae888bdfc48533d315f3725d5ab1c212-part-000000",
+          "workflow_run_id": 37163590757
+        },
+        {
+          "index": 1,
+          "object": "sha256:4d86ce7610ccbde79cf616235ac6bc73f0e02e0f05d8592f77cd512495fe5416",
+          "size": 14237279,
+          "artifact_id": 11288224170,
+          "artifact_name": "cache-untrusted-pr-256-frontend-node-modules-linux-x64-fd29e19799bc78b85a77fb36e354f7e95345b2744f7b6a1d8a3b72269744ef06-v2--7c888c0b6842ae888bdfc48533d315f3725d5ab1c212-part-000001",
+          "workflow_run_id": 37163590757
+        }
+      ],
+      "artifact_id": 11288049679,
+      "artifact_name": "cache-untrusted-pr-256-frontend-node-modules-linux-x64-fd29e19799bc78b85a77fb36e354f7e95345b2744f7b6a1d8a3b72269744ef06-v2--7c888c0b6842ae888bdfc48533d315f3725d5ab1c212-part-000000",
+      "workflow_run_id": 37163590757
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-04T00:02:51.926Z",
-    "writes": 2
+    "writes": 3
   }
 }
