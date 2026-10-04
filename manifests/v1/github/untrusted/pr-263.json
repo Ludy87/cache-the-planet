@@ -212,10 +212,39 @@
       "artifact_id": 11302122559,
       "artifact_name": "cache-untrusted-pr-263-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000000",
       "workflow_run_id": 37199862805
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-263/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:16aa18c3445881b5c2999b34388e021f3d9964e6de0782eca263877317d9f3a5",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-04T11:49:29.044Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 33138255,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11302422261,
+          "artifact_name": "cache-untrusted-pr-263-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--16aa18c3445881b5c2999b34388e021f3d9964e6de0782eca263877317d9f3-part-000000",
+          "workflow_run_id": 37199862805
+        },
+        {
+          "index": 1,
+          "object": "sha256:ff496583d8c46c7ec4917c6e8f2ff20e60de5c1b0c4f6c3ac4fba40ecb4fa580",
+          "size": 7972431,
+          "artifact_id": 11301773012,
+          "artifact_name": "cache-untrusted-pr-263-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--16aa18c3445881b5c2999b34388e021f3d9964e6de0782eca263877317d9f3-part-000001",
+          "workflow_run_id": 37199862805
+        }
+      ],
+      "artifact_id": 11302422261,
+      "artifact_name": "cache-untrusted-pr-263-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--16aa18c3445881b5c2999b34388e021f3d9964e6de0782eca263877317d9f3-part-000000",
+      "workflow_run_id": 37199862805
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-04T11:46:18.108Z",
-    "writes": 4
+    "writes": 5
   }
 }
