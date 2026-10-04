@@ -105,6 +105,11 @@ jobs:
           version: 2
           strict: true
 
+      - name: Debug storage state
+        shell: bash
+        run: |
+          echo "STATE_STORAGE_MODE=${STATE_STORAGE_MODE:-<missing>}"
+
   restore-example-cache:
     if: ${{ inputs.restore-cache }}
     name: Restore npm example cache asset
