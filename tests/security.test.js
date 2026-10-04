@@ -2031,6 +2031,11 @@ test("post-save storage must match the initiating restore storage", () => {
       () => common.assertPostStorage("github-release"),
       /post-save storage does not match restore storage/,
     );
+    delete process.env.STATE_STORAGE_MODE;
+    assert.throws(
+      () => common.assertPostStorage("github-artifact"),
+      /restore storage state is missing/,
+    );
   } finally {
     if (previousStateFile === undefined) delete process.env.GITHUB_STATE;
     else process.env.GITHUB_STATE = previousStateFile;

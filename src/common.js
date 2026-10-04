@@ -385,7 +385,12 @@ function recordInitiatingStorage(mode) {
 
 function assertPostStorage(mode) {
   const initiatingStorage = process.env.STATE_STORAGE_MODE;
-  if (initiatingStorage && initiatingStorage !== mode) {
+  if (!initiatingStorage) {
+    throw new Error(
+      `post-save storage cannot be verified: restore storage state is missing (save storage=${mode})`,
+    );
+  }
+  if (initiatingStorage !== mode) {
     throw new Error(
       `post-save storage does not match restore storage: ${initiatingStorage} != ${mode}`,
     );
@@ -2883,8 +2888,17 @@ async function uploadBranchBlob(repository, buffer) {
   }
 }
 
+function assertObjectUploadStorage(storage) {
+  if (!["github-artifact", "github-branch", "github-release", "sftp"].includes(storage))
+    throw new Error(
+      `unsupported object storage for upload: ${storage}; refusing github-release fallback`,
+    );
+  return storage;
+}
+
 async function uploadObject(repository, file, name, contentType) {
-  if (storageMode() === "github-artifact") {
+  const storage = assertObjectUploadStorage(storageMode());
+  if (storage === "github-artifact") {
     const size = fs.statSync(file).size;
     const hash = digest(file);
     const totalParts = Math.ceil(size / githubBranchPartBytes);
@@ -2962,7 +2976,7 @@ async function uploadObject(repository, file, name, contentType) {
       removeTemporaryFile(directory);
     }
   }
-  if (storageMode() === "github-branch") {
+  if (storage === "github-branch") {
     const hash = digest(file);
     const size = fs.statSync(file).size;
     const branchPath = name.replace(/--[0-9a-f]{64}\.tar\.zst$/i, "");
@@ -3048,7 +3062,7 @@ async function uploadObject(repository, file, name, contentType) {
       path: branchPath,
     };
   }
-  if (storageMode() === "github-release") {
+  if (storage === "github-release") {
     const release = (await assets(repository)).release;
     const uploadUrl = release.upload_url.replace(
       "{?name,label}",
@@ -3056,28 +3070,33 @@ async function uploadObject(repository, file, name, contentType) {
     );
     return upload(uploadUrl, file, name, contentType);
   }
-  const hash = hashFromAssetName(name);
-  if (!hash)
-    throw new Error("SFTP object name must contain a valid sha256 hash");
-  const client = await sftpClient();
-  const settings = sftpSettings();
-  await client.mkdir(settings.basePath, true);
-  try {
-    await client.stat(sftpObjectPath(hash));
-    const error = new Error("object already exists");
-    error.status = 422;
-    throw error;
-  } catch (error) {
-    if (error.status === 422) throw error;
-    if (!(error.code === 2 || /no such file/i.test(error.message || "")))
+  if (storage === "sftp") {
+    const hash = hashFromAssetName(name);
+    if (!hash)
+      throw new Error("SFTP object name must contain a valid sha256 hash");
+    const client = await sftpClient();
+    const settings = sftpSettings();
+    await client.mkdir(settings.basePath, true);
+    try {
+      await client.stat(sftpObjectPath(hash));
+      const error = new Error("object already exists");
+      error.status = 422;
       throw error;
+    } catch (error) {
+      if (error.status === 422) throw error;
+      if (!(error.code === 2 || /no such file/i.test(error.message || "")))
+        throw error;
+    }
+    await client.fastPut(file, sftpObjectPath(hash), {
+      concurrency: 128,
+      chunkSize: 131072,
+      step: createSftpProgress("SFTP upload"),
+    });
+    return { id: hash, name, size: fs.statSync(file).size, sftp: true };
   }
-  await client.fastPut(file, sftpObjectPath(hash), {
-    concurrency: 128,
-    chunkSize: 131072,
-    step: createSftpProgress("SFTP upload"),
-  });
-  return { id: hash, name, size: fs.statSync(file).size, sftp: true };
+  throw new Error(
+    `unsupported object storage for upload: ${storage}; refusing github-release fallback`,
+  );
 }
 
 async function uploadForkArtifactMetadata(metadata) {
@@ -3328,6 +3347,7 @@ module.exports = {
   manifestBranch,
   manifestPath,
   storageMode,
+  assertObjectUploadStorage,
   recordInitiatingStorage,
   assertPostStorage,
   securityScan,
