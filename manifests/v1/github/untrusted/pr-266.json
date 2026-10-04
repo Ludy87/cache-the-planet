@@ -183,10 +183,39 @@
       "artifact_id": 11302054091,
       "artifact_name": "cache-untrusted-pr-266-npm-example-linux-x64-52f64356a18da70e1a64d5e4145d12cd32b253f329a15c3f99c1a5b612237dce-v2--02e40509c1e40e0068dbe631f596a36998bdd406d28594236000b3-part-000000",
       "workflow_run_id": 37199891524
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-266/npm-cache/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:4d31ea428b83ef7ab58dee80ec1cdda0fa372af00ffabd6966c0083cce1c0bbc",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-04T11:50:26.406Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 33138216,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11302697950,
+          "artifact_name": "cache-untrusted-pr-266-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4d31ea428b83ef7ab58dee80ec1cdda0fa372af00ffabd6966c0083c-part-000000",
+          "workflow_run_id": 37199891524
+        },
+        {
+          "index": 1,
+          "object": "sha256:fc2eae6cf179d2951982cf613b1f40d6ce2b8ce802c65f141fedd425fefe36e5",
+          "size": 7972392,
+          "artifact_id": 11302388709,
+          "artifact_name": "cache-untrusted-pr-266-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4d31ea428b83ef7ab58dee80ec1cdda0fa372af00ffabd6966c0083c-part-000001",
+          "workflow_run_id": 37199891524
+        }
+      ],
+      "artifact_id": 11302697950,
+      "artifact_name": "cache-untrusted-pr-266-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4d31ea428b83ef7ab58dee80ec1cdda0fa372af00ffabd6966c0083c-part-000000",
+      "workflow_run_id": 37199891524
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-04T11:48:05.100Z",
-    "writes": 3
+    "writes": 4
   }
 }
