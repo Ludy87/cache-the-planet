@@ -12,6 +12,7 @@
       "cargo",
       "github-artifact-test",
       "npm-cache",
+      "npm-example",
       "frontend-node-modules"
     ],
     "branch_part_bytes": "25165824"
