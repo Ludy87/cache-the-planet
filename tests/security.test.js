@@ -972,6 +972,29 @@ test("security scan allows dotenv documentation in nested Windows node_modules",
   }
 });
 
+test("security scan allows a dependency documentation file as the scan root", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-single-dependency-doc-")
+  );
+  const file = path.join(
+    workspace,
+    "frontend",
+    "node_modules",
+    "dotenv",
+    "README.md",
+  );
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(
+    file,
+    'Use npm_TOKEN="npm_123456789012345678901234" in this example.\n',
+  );
+  try {
+    assert.doesNotThrow(() => common.securityScan(file));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan ignores token-shaped text in dependency source and wasm", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-embedded-wasm-token-")
