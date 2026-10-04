@@ -1727,14 +1727,22 @@ function securityScan(root, options = {}) {
         (isCargoRegistrySourcePath(normalizedRelative, root) &&
           sourceFileName.test(file)) ||
         isNodeModulesSourceFile(file, relative, root);
+      const dependencyDocumentation = isNodeModulesDocumentation(
+        file,
+        relative,
+        root,
+      );
       if (
         // Exact known token formats remain blocked everywhere. Generic
         // credential assignments are ignored in recognized source/metadata
         // files and published dependency source. Private-key markers are
         // allowed only in dependency fixtures or dependency source files that
         // legitimately contain key templates/constants.
-        (!sourceOrMetadata && knownTokenContent.test(text)) ||
         (!sourceOrMetadata &&
+          !dependencyDocumentation &&
+          knownTokenContent.test(text)) ||
+        (!sourceOrMetadata &&
+          !dependencyDocumentation &&
           !dependencySource &&
           credentialAssignment.test(text)) ||
         (privateKeyContent.test(text) &&

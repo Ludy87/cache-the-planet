@@ -6,29 +6,29 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.5.3", features = [] }
+tauri-build = { version = "2.7.1", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.10.3", features = [ "devtools"] }
-tauri-plugin-log = "2.8.0"
-tauri-plugin-shell = "2.3.4"
-tauri-plugin-fs = "2.5.0"
-tauri-plugin-dialog = "2.7.0"
-tauri-plugin-http = { version = "2.5.8", features = ["dangerous-settings"] }
-tauri-plugin-single-instance = { version = "2.4.1", features = ["deep-link"] }
-tauri-plugin-store = "2.4.2"
-tauri-plugin-opener = "2.5.3"
-tauri-plugin-deep-link = "2.4.6"
-tauri-plugin-notification = "2.3.3"
+tauri = { version = "2.12.1", features = [ "devtools"] }
+tauri-plugin-log = "2.10.0"
+tauri-plugin-shell = "2.4.0"
+tauri-plugin-fs = "2.6.0"
+tauri-plugin-dialog = "2.8.1"
+tauri-plugin-http = { version = "2.8.0", features = ["dangerous-settings"] }
+tauri-plugin-single-instance = { version = "2.5.2", features = ["deep-link"] }
+tauri-plugin-store = "2.5.0"
+tauri-plugin-opener = "2.7.0"
+tauri-plugin-deep-link = "2.6.1"
+tauri-plugin-notification = "2.5.1"
 tauri-plugin-updater = "2"
-tauri-plugin-window-state = "2.2.1"
-keyring = { version = "3.6.1", features = ["apple-native", "windows-native"] }
-tokio = { version = "1.50", features = ["time", "sync"] }
+tauri-plugin-window-state = "2.5.0"
+keyring = { version = "4.2.0", features = ["apple-native-keyring-store", "windows-native-keyring-store"] }
+tokio = { version = "1.53", features = ["time", "sync"] }
 notify = "8.2"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "rustls-tls-native-roots"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "rustls-native-certs"] }
 tiny_http = "0.12"
 url = "2.5"
 urlencoding = "2.1"
@@ -45,7 +45,7 @@ objc2-foundation = { version = "0.3.2", features = ["NSObject", "NSString", "NSU
 objc2-pdf-kit = { version = "0.3.2", features = ["PDFDocument", "objc2-app-kit"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-webview2-com = "0.38.2"
+webview2-com = "0.39.1"
 webview2-core = { package = "windows-core", version = "0.61" }
 windows = { version = "0.62", features = [
     "Win32_Foundation",
