@@ -20,7 +20,6 @@ on:
 env:
   FILES_TO_HASH: |
     ${{ github.workspace }}/package-lock.json
-  NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
 
 permissions:
   contents: read
@@ -34,6 +33,7 @@ jobs:
       contents: read
     outputs:
       files_hash: ${{ steps.hash.outputs.files_hash }}
+      example_files_hash: ${{ steps.hash-example.outputs.files_hash }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,9 +47,108 @@ jobs:
         run: |
           HASH="$FILES_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
+      - name: Hash npm example package
+        id: hash-example
+        env:
+          FILES_HASH: ${{ hashFiles('examples/npm-cache/package.json') }}
+        run: |
+          HASH="$FILES_HASH"
+          echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
+
+  save-example-cache:
+    if: ${{ inputs.save-cache }}
+    name: Install and save npm example cache asset
+    needs: hash_pr
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm-example
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Create AstraGermany-Bot token for trusted save
+        if: ${{ github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Ludy87
+          repositories: cache-the-planet
+          permission-contents: write
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install npm example dependencies
+        working-directory: examples/npm-cache
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Save npm example cache asset
+        uses: $/
+        with:
+          cache-name: npm-example
+          storage: github-artifact
+          save-scope: shared
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          key: ${{ needs.hash_pr.outputs.example_files_hash }}
+          allow-shared-restore: true
+          path: .cache/npm-example
+          version: 2
+          strict: true
+
+  restore-example-cache:
+    if: ${{ inputs.restore-cache }}
+    name: Restore npm example cache asset
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm-example
+    needs: hash_pr
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Restore npm example cache asset
+        uses: $/
+        with:
+          cache-name: npm-example
+          storage: github-artifact
+          scope: shared
+          key: ${{ needs.hash_pr.outputs.example_files_hash }}
+          path: .cache/npm-example
+          allow-shared-restore: true
+          restore-only: true
+          strict: true
+          version: 2
+      - name: Configure npm example cache directory
+        run: npm config set cache "${{ github.workspace }}/.cache/npm-example" --global
+      - name: Verify npm example can use restored cache
+        working-directory: examples/npm-cache
+        run: npm install --prefer-offline --ignore-scripts --no-audit --no-fund
+
   save-cache:
     if: ${{ inputs.save-cache }}
     name: Install and save npm cache asset
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
     needs: hash_pr
     strategy:
       fail-fast: false
@@ -180,6 +279,8 @@ jobs:
   restore-cache:
     if: ${{ inputs.restore-cache }}
     name: Restore npm cache asset in a fresh job
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
     needs: [hash_pr]
     runs-on: ubuntu-latest
     timeout-minutes: 5

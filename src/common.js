@@ -1587,7 +1587,8 @@ function isCargoRegistrySourcePath(normalizedRelative, root) {
   const normalizedRoot = normalizeCachePath(root);
   return (
     packageSourcePath.test(normalizedRelative) ||
-    packageSourcePath.test(normalizedRoot)
+    packageSourcePath.test(normalizedRoot) ||
+    /(?:^|\/)registry(?:\/src)?\/?$/i.test(normalizedRoot)
   );
 }
 
@@ -1762,81 +1763,116 @@ function tarPath(value, platform = process.platform) {
 async function makeArchive() {
   if (!have("tar") || !have("zstd"))
     throw new Error("tar and zstd are required on the runner");
+  const excludes = excludePatterns();
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cac-"));
   const output = path.join(directory, "object.tar.zst");
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-  const paths = [];
-  for (const value of entries()) {
-    const absolute = path.resolve(workspace, value);
-    const relative = path.relative(workspace, absolute);
-    if (
-      path.isAbsolute(relative) ||
-      relative === ".." ||
-      relative.startsWith(`..${path.sep}`)
-    ) {
-      throw new Error(`cache path must be inside the workspace: ${value}`);
-    }
-    if (fs.existsSync(absolute)) {
+  try {
+    const requestedPaths = [];
+    for (const value of entries()) {
+      const absolute = path.resolve(workspace, value);
+      const relative = path.relative(workspace, absolute);
       if (
-        virtualEnvironmentPath.test(relative) ||
-        path.basename(absolute) === ".venv"
+        path.isAbsolute(relative) ||
+        relative === ".." ||
+        relative.startsWith(`..${path.sep}`)
       ) {
-        throw new Error(
-          `cache path must not contain a virtual environment: ${value}`,
-        );
+        throw new Error(`cache path must be inside the workspace: ${value}`);
       }
-      securityScan(absolute, { excludes: excludePatterns(), workspace });
-      paths.push((relative || ".").split(path.sep).join("/"));
-    } else log(`cache path missing: ${value}`);
-  }
-  if (!paths.length) throw new Error("no cache paths exist");
-  const excludes = excludePatterns().flatMap((value) => ["--exclude", value]);
-  const tar = cp.spawn(
-    "tar",
-    [
-      "--sort=name",
-      "--mtime=UTC 1970-01-01",
-      "--owner=0",
-      "--group=0",
-      "--numeric-owner",
-      "--dereference",
-      "--hard-dereference",
-      "--exclude-vcs",
-      "--format=gnu",
-      "-cf",
-      "-",
-      ...excludes,
-      "-C",
-      tarPath(workspace),
-      ...paths,
-    ],
-    { stdio: ["ignore", "pipe", "inherit"] },
-  );
-  const zstd = cp.spawn(
-    "zstd",
-    ["-q", `-${compressionLevel()}`, "-o", output],
-    {
-      stdio: ["pipe", "inherit", "inherit"],
-    },
-  );
-  tar.stdout.pipe(zstd.stdin);
-  await Promise.all([
-    new Promise((resolve, reject) => {
-      tar.once("error", reject);
+      if (fs.existsSync(absolute)) {
+        if (
+          virtualEnvironmentPath.test(relative) ||
+          path.basename(absolute) === ".venv"
+        ) {
+          throw new Error(
+            `cache path must not contain a virtual environment: ${value}`,
+          );
+        }
+        requestedPaths.push({
+          absolute,
+          relative: (relative || ".").split(path.sep).join("/"),
+        });
+      } else log(`cache path missing: ${value}`);
+    }
+    const paths = [];
+    for (const candidate of requestedPaths.sort((a, b) =>
+      a.relative.localeCompare(b.relative),
+    )) {
+      if (
+        paths.some(
+          (value) =>
+            value === "." ||
+            candidate.relative === value ||
+            candidate.relative.startsWith(`${value}/`),
+        )
+      )
+        continue;
+      securityScan(candidate.absolute, { excludes, workspace });
+      paths.push(candidate.relative);
+    }
+    if (!paths.length) throw new Error("no cache paths exist");
+    const tar = cp.spawn(
+      "tar",
+      [
+        "--sort=name",
+        "--mtime=UTC 1970-01-01",
+        "--owner=0",
+        "--group=0",
+        "--numeric-owner",
+        "--dereference",
+        "--hard-dereference",
+        "--exclude-vcs",
+        "--format=gnu",
+        "-cf",
+        "-",
+        ...excludes.flatMap((value) => ["--exclude", value]),
+        "-C",
+        tarPath(workspace),
+        ...paths,
+      ],
+      { stdio: ["ignore", "pipe", "inherit"] },
+    );
+    const zstd = cp.spawn(
+      "zstd",
+      ["-q", `-${compressionLevel()}`, "-o", output],
+      {
+        stdio: ["pipe", "inherit", "inherit"],
+      },
+    );
+    const stopOther = (process) => {
+      if (!process.killed) process.kill("SIGKILL");
+    };
+    const tarExit = new Promise((resolve, reject) => {
+      tar.once("error", (error) => {
+        stopOther(zstd);
+        reject(error);
+      });
       tar.once("close", (code) =>
-        code === 0 ? resolve() : reject(new Error("tar failed")),
+        code === 0
+          ? resolve()
+          : (stopOther(zstd), reject(new Error("tar failed"))),
       );
-    }),
-    new Promise((resolve, reject) => {
-      zstd.once("error", reject);
+    });
+    const zstdExit = new Promise((resolve, reject) => {
+      zstd.once("error", (error) => {
+        stopOther(tar);
+        reject(error);
+      });
       zstd.once("close", (code) =>
-        code === 0 ? resolve() : reject(new Error("zstd failed")),
+        code === 0
+          ? resolve()
+          : (stopOther(tar), reject(new Error("zstd failed"))),
       );
-    }),
-  ]);
-  await validateArchive(output);
-  encryptFile(output);
-  return { file: output, dir: directory };
+    });
+    tar.stdout.pipe(zstd.stdin);
+    await Promise.all([tarExit, zstdExit]);
+    await validateArchive(output);
+    encryptFile(output);
+    return { file: output, dir: directory };
+  } catch (error) {
+    removeTemporaryFile(directory);
+    throw error;
+  }
 }
 
 async function decompressZstd(inputFile, outputFile, maxBytes) {
