@@ -108,30 +108,11 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
 (async () => {
   try {
     const storage = c.storageMode();
-    c.assertPostStorage(storage);
-    if (String(c.input(INPUTS.RESTORE_ONLY)).toLowerCase() === "true") {
-      c.log("post-save skipped because restore-only is enabled");
-      c.summary("Cache Save", {
-        Status: "SKIPPED",
-        Reason: "restore-only is enabled",
-      });
-      return;
-    }
-    const repository = c.cacheRepository();
     const isFork = c.isForkPullRequest();
     const setOutput = c.setOutput;
     setOutput("is-fork", isFork ? "true" : "false");
     setOutput("read-only", isFork ? "true" : "false");
-    const key = c.scopedKey(
-      c.input(INPUTS.KEY),
-      INPUTS.SAVE_SCOPE,
-      INPUTS.SCOPE,
-    );
-    const refreshMissingArtifact =
-      storage === "github-artifact" && c.isArtifactMissingForSave();
-    const isPullRequest = c.isPullRequestEvent();
-    const requestedScope = c.cacheScope("save-scope", "scope");
-    if (isFork && c.storageMode() !== "github-artifact") {
+    if (isFork && storage !== "github-artifact") {
       c.summary("Cache Save", {
         Status: "SKIPPED",
         Reason: "Fork pull request is read-only",
@@ -143,8 +124,16 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       );
       return;
     }
+    if (String(c.input(INPUTS.RESTORE_ONLY)).toLowerCase() === "true") {
+      c.log("post-save skipped because restore-only is enabled");
+      c.summary("Cache Save", {
+        Status: "SKIPPED",
+        Reason: "restore-only is enabled",
+      });
+      return;
+    }
     if (
-      isPullRequest &&
+      c.isPullRequestEvent() &&
       String(c.input(INPUTS.ALLOW_PR_CACHE)).toLowerCase() !== "true"
     ) {
       const reason =
@@ -153,6 +142,16 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       c.log(`untrusted pull request: save skipped (${reason})`);
       return;
     }
+    const repository = c.cacheRepository();
+    const key = c.scopedKey(
+      c.input(INPUTS.KEY),
+      INPUTS.SAVE_SCOPE,
+      INPUTS.SCOPE,
+    );
+    const refreshMissingArtifact =
+      storage === "github-artifact" && c.isArtifactMissingForSave();
+    const isPullRequest = c.isPullRequestEvent();
+    const requestedScope = c.cacheScope("save-scope", "scope");
     if (isPullRequest) {
       const event = JSON.parse(
         fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"),
@@ -194,6 +193,10 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "shared cache keys may only be saved from the repository default branch",
       );
     }
+    c.log(
+      `post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
+    );
+    c.assertPostStorage(storage);
     const current = await c.refs(repository, { key });
     const existingReference = current.json.references[key];
     const sharedCounterpart =

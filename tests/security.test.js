@@ -2022,7 +2022,7 @@ test("post-save storage must match the initiating restore storage", () => {
     common.recordInitiatingStorage("github-artifact");
     assert.match(
       fs.readFileSync(stateFile, "utf8"),
-      /storage-mode=github-artifact/,
+      /STORAGE_MODE=github-artifact/,
     );
 
     process.env.STATE_STORAGE_MODE = "github-artifact";
@@ -2031,11 +2031,35 @@ test("post-save storage must match the initiating restore storage", () => {
       () => common.assertPostStorage("github-release"),
       /post-save storage does not match restore storage/,
     );
+    delete process.env.STATE_STORAGE_MODE;
+    assert.throws(
+      () => common.assertPostStorage("github-artifact"),
+      /restore storage state is missing/,
+    );
   } finally {
     if (previousStateFile === undefined) delete process.env.GITHUB_STATE;
     else process.env.GITHUB_STATE = previousStateFile;
     if (previousState === undefined) delete process.env.STATE_STORAGE_MODE;
     else process.env.STATE_STORAGE_MODE = previousState;
     fs.rmSync(stateFile, { force: true });
+  }
+});
+
+test("post-save inherits storage from restore when no save storage is configured", () => {
+  const previousInput = process.env["INPUT_STORAGE"];
+  const previousEnvironment = process.env.CACHE_STORAGE;
+  const previousState = process.env.STATE_STORAGE_MODE;
+  try {
+    delete process.env["INPUT_STORAGE"];
+    delete process.env.CACHE_STORAGE;
+    process.env.STATE_STORAGE_MODE = "github-artifact";
+    assert.equal(common.storageMode(), "github-artifact");
+  } finally {
+    if (previousInput === undefined) delete process.env["INPUT_STORAGE"];
+    else process.env["INPUT_STORAGE"] = previousInput;
+    if (previousEnvironment === undefined) delete process.env.CACHE_STORAGE;
+    else process.env.CACHE_STORAGE = previousEnvironment;
+    if (previousState === undefined) delete process.env.STATE_STORAGE_MODE;
+    else process.env.STATE_STORAGE_MODE = previousState;
   }
 });
