@@ -1526,13 +1526,15 @@ function isNodeModulesSourceFile(file, relative, root) {
 
 function isNodeModulesDocumentation(file, relative, root) {
   const normalized = String(relative).replace(/\\/g, "/");
-  const basename = normalized.slice(normalized.lastIndexOf("/") + 1);
+  const normalizedFile = normalizeCachePath(file);
+  const basename = normalizedFile.slice(normalizedFile.lastIndexOf("/") + 1);
   return (
     isNodeModulesPath(relative, root) &&
     (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(
       basename,
     ) ||
-      /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized))
+      /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized) ||
+      /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalizedFile))
   );
 }
 
@@ -1737,7 +1739,7 @@ function securityScan(root, options = {}) {
         // Exact known token formats remain blocked everywhere. Generic
         // credential assignments are ignored in recognized source/metadata
         // files and published dependency source. Private-key markers are
-        // allowed only in dependency fixtures or dependency source files that
+        // allowed only in dependency documentation, fixtures or source files that
         // legitimately contain key templates/constants.
         (!sourceOrMetadata &&
           !dependencyDocumentation &&
@@ -1747,6 +1749,7 @@ function securityScan(root, options = {}) {
           !dependencySource &&
           credentialAssignment.test(text)) ||
         (privateKeyContent.test(text) &&
+          !dependencyDocumentation &&
           !dependencyPublicKeyFixture &&
           !dependencySourceFile)
       ) {

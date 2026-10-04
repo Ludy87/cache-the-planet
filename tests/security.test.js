@@ -727,8 +727,8 @@ test("security scan allows the reported npm and Cargo dependency paths", () => {
       ".package-lock.json",
       '{"lockfileVersion":3,"packages":{}}\n',
     ],
-    ["frontend", "node_modules", "dotenv", "README-es.md", "token example\n"],
-    ["frontend", "node_modules", "dotenv", "README.md", "token example\n"],
+    ["frontend", "node_modules", "dotenv", "README-es.md", 'PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nplaceholder\n-----END RSA PRIVATE KEY-----"\n'],
+    ["frontend", "node_modules", "dotenv", "README.md", 'PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\\nplaceholder\\n-----END RSA PRIVATE KEY-----"\n'],
     [
       ".cache",
       "cargo",
@@ -963,10 +963,35 @@ test("security scan allows dotenv documentation in nested Windows node_modules",
       fs.mkdirSync(path.dirname(file), { recursive: true });
       fs.writeFileSync(
         file,
-        'Use npm_TOKEN=\"npm_123456789012345678901234\" in this example.\n',
+        'Use npm_TOKEN=\"npm_123456789012345678901234\" in this example.\n' +
+          'PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nplaceholder\n-----END RSA PRIVATE KEY-----"\n',
       );
     }
     assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows a dependency documentation file as the scan root", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-single-dependency-doc-")
+  );
+  const file = path.join(
+    workspace,
+    "frontend",
+    "node_modules",
+    "dotenv",
+    "README.md",
+  );
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(
+    file,
+    'Use npm_TOKEN="npm_123456789012345678901234" in this example.\n' +
+      'PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\\nplaceholder\\n-----END RSA PRIVATE KEY-----"\n',
+  );
+  try {
+    assert.doesNotThrow(() => common.securityScan(file));
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
