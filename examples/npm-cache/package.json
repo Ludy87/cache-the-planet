@@ -58,7 +58,7 @@
     "jszip": "^3.10.1",
     "license-report": "^6.8.5",
     "lucide-static": "^1.41.0",
-    "pdfjs-dist": "^5.4.149",
+    "pdfjs-dist": "^6.2.108",
     "peerjs": "^1.5.5",
     "pixelmatch": "^7.1.0",
     "posthog-js": "^1.405.2",
