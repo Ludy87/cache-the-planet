@@ -680,6 +680,27 @@ test("security scan allows Cargo registry source roots with credential-like name
   }
 });
 
+test("security scan recognizes a Cargo registry root when scanning registry directly", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-registry-root-"),
+  );
+  const root = path.join(workspace, ".cache", "cargo", "registry");
+  const files = [
+    ["src", "index.crates.io-1949cf8c6b5b557f", "keyring-3.6.3", "src", "credential.rs", "pub struct Credential;\n"],
+    ["src", "index.crates.io-1949cf8c6b5b557f", "reqwest-0.12.28", "src", "tls.rs", 'let api_key = "dependency-example-value";\n'],
+  ];
+  try {
+    for (const entry of files) {
+      const file = path.join(root, ...entry.slice(0, -1));
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, entry.at(-1));
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows the reported npm and Cargo dependency paths", () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-reported-dependencies-"),
