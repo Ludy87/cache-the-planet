@@ -2073,8 +2073,13 @@ async function assets(repository) {
             ? new Date(entry.modifyTime).toISOString()
             : new Date(0).toISOString(),
           sftp: true,
-        })),
+      })),
     };
+  }
+  if (storageMode() === "github-artifact") {
+    throw new Error(
+      "release assets are unavailable for github-artifact storage",
+    );
   }
   if (assetsCache.has(repository)) return assetsCache.get(repository);
   const pending = (async () => {
