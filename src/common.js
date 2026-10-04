@@ -1587,7 +1587,8 @@ function isCargoRegistrySourcePath(normalizedRelative, root) {
   const normalizedRoot = normalizeCachePath(root);
   return (
     packageSourcePath.test(normalizedRelative) ||
-    packageSourcePath.test(normalizedRoot)
+    packageSourcePath.test(normalizedRoot) ||
+    /(?:^|\/)registry(?:\/src)?\/?$/i.test(normalizedRoot)
   );
 }
 
