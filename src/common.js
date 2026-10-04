@@ -1497,7 +1497,7 @@ const sensitiveKeywordName =
 const sourceFileName =
   /\.(?:css|scss|sass|less|map|html|toml|py|js|mjs|cjs|ts|tsx|mts|cts|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
 const binaryFileName =
-  /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|png|pyc|so|tar|tgz|war|webp|zip|zst)$/i;
+  /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|png|pyc|so|tar|tgz|war|wasm|webp|zip|zst)$/i;
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmPackageLockPath = /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
@@ -1696,7 +1696,7 @@ function securityScan(root, options = {}) {
         // files and published dependency source. Private-key markers are
         // allowed only in dependency fixtures or dependency source files that
         // legitimately contain key templates/constants.
-        knownTokenContent.test(text) ||
+        (!sourceOrMetadata && knownTokenContent.test(text)) ||
         (!sourceOrMetadata &&
           !dependencySource &&
           credentialAssignment.test(text)) ||
