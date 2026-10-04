@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "references": {
+    "untrusted/Ludy87/cache-the-planet/pr-256/npm/linux-x64/fd29e19799bc78b85a77fb36e354f7e95345b2744f7b6a1d8a3b72269744ef06-cache-ee039838b25c950a/v1": {
+      "object": "sha256:f7fccb102de7c6dba29498553837ce7e5f751371187d3fae93a48311a772715f",
+      "storage": "sftp",
+      "updated_at": "2026-10-04T00:02:35.678Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33127715
+    }
+  },
+  "monitoring": {
+    "window_started_at": "2026-10-04T00:02:35.678Z",
+    "writes": 1
+  }
+}
