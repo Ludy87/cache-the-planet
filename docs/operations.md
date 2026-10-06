@@ -105,6 +105,11 @@ Vor dem produktiven Einsatz sollten folgende Punkte geprüft werden:
 Ohne `strict: true` behandelt Restore fehlende, beschädigte oder nicht
 entschlüsselbare Cache-Objekte als Miss und lässt den Workflow weiterlaufen.
 Mit `strict: true` wird derselbe Restore-Fehler an den Workflow weitergegeben.
+Mit `cleanup-path-after-save: true` werden die konfigurierten Cache-Pfade erst
+nach einem erfolgreichen Save aus dem Workspace gelöscht. Der Standard bleibt
+`false`, damit nachfolgende Workflow-Schritte die Arbeitsdateien verwenden
+können. Fehler beim Aufräumen werden protokolliert, lassen den erfolgreichen
+Cache-Save aber bestehen.
 Save-Fehler werden mit `strict-save` gesteuert. Wenn der Input fehlt, übernimmt
 er den Wert von `strict`; mit `strict-save: true` werden sie als Step-Fehler
 gemeldet; ein teilweise

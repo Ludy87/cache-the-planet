@@ -4,6 +4,7 @@ const INPUTS = Object.freeze({
   ARCH: "arch",
   CACHE_NAME: "cache-name",
   COMPRESSION_LEVEL: "compression-level",
+  CLEANUP_PATH_AFTER_SAVE: "cleanup-path-after-save",
   CONFIG_FILE: "config-file",
   DELETE_SHARED: "delete-shared",
   DRY_RUN: "dry-run",

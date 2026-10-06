@@ -115,6 +115,10 @@ inputs:
     description: "Newline separated workspace-relative files containing exclusion patterns for post-save"
     required: false
     default: ""
+  cleanup-path-after-save:
+    description: "Delete the configured cache paths from the workspace after a successful post-save; defaults to false"
+    required: false
+    default: "false"
   allow-pr-cache:
     description: "Allow saving an isolated untrusted cache for a pull request during post-save"
     required: false

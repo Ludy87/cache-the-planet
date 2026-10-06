@@ -74,25 +74,17 @@ jobs:
           owner: Ludy87
           repositories: cache-the-planet
           permission-contents: write
+
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          package-manager-cache: false
-
-      - name: Install npm example dependencies
-        working-directory: examples/npm-cache
-        run: npm install --ignore-scripts --no-audit --no-fund
-
       - name: Save npm example cache asset
         uses: $/
         with:
+          cleanup-path-after-save: true
           cache-name: npm-example
           storage: github-artifact
           save-scope: shared
@@ -102,6 +94,16 @@ jobs:
           path: .cache/npm-example
           version: 2
           strict: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Install npm example dependencies
+        working-directory: examples/npm-cache
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
   restore-example-cache:
     if: ${{ inputs.restore-cache }}
@@ -119,11 +121,7 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          package-manager-cache: false
+
       - name: Restore npm example cache asset
         uses: $/
         with:
@@ -136,8 +134,16 @@ jobs:
           restore-only: true
           strict: true
           version: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
       - name: Configure npm example cache directory
         run: npm config set cache "${{ github.workspace }}/.cache/npm-example" --global
+
       - name: Verify npm example can use restored cache
         working-directory: examples/npm-cache
         run: npm install --prefer-offline --ignore-scripts --no-audit --no-fund
@@ -225,6 +231,7 @@ jobs:
         id: multi-cache
         uses: $/multi-cache
         with:
+          cleanup-path-after-save: true
           multi-cache: |
             npm-cache:
               path: .cache/npm

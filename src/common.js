@@ -1213,6 +1213,15 @@ function githubApiError(status, message, headers) {
       `GitHub authorization failed (403): the token is valid but is not allowed to access the cache repository. ${message}`,
     );
   }
+  if (status >= 500 && status <= 599) {
+    const requestId = headerValue(headers, "x-github-request-id");
+    const detail = String(message || "").trim() || "GitHub returned no diagnostic message";
+    return new Error(
+      `GitHub API server error (${status}): ${detail}${
+        requestId ? ` (request ID: ${requestId})` : ""
+      }`,
+    );
+  }
   return new Error(`${status} ${message}`);
 }
 
@@ -1346,6 +1355,33 @@ function entries() {
     .split(/\r?\n/)
     .map((value) => value.trim())
     .filter(Boolean);
+}
+
+function cleanupCachePathsAfterSave() {
+  if (
+    String(input(INPUTS.CLEANUP_PATH_AFTER_SAVE)).toLowerCase() !== "true"
+  )
+    return;
+  const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+  for (const value of entries()) {
+    const absolute = path.resolve(workspace, value);
+    const relative = path.relative(workspace, absolute);
+    if (
+      path.isAbsolute(relative) ||
+      relative === "" ||
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`)
+    ) {
+      log(`cache path cleanup skipped outside workspace: ${value}`);
+      continue;
+    }
+    try {
+      fs.rmSync(absolute, { force: true, recursive: true });
+      log(`removed cache path after successful save: ${value}`);
+    } catch (error) {
+      log(`cache path cleanup failed for ${value}: ${error.message}`);
+    }
+  }
 }
 
 function excludePatterns() {
@@ -3367,6 +3403,7 @@ module.exports = {
   cacheDownloadDisabled,
   sftpSettings,
   entries,
+  cleanupCachePathsAfterSave,
   excludePatterns,
   refName,
   manifestBranch,
@@ -3403,6 +3440,7 @@ module.exports = {
   refsForKeys,
   refsAll,
   updateManifest,
+  githubApiError,
   setRef,
   replaceRef,
   deleteObject,
