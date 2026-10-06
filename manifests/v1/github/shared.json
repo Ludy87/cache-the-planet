@@ -521,10 +521,18 @@
       "artifact_id": 11441504996,
       "artifact_name": "cache-shared-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v1--1d1fae828023e3ade51b64aeea1cfdd984ee7f6ab54b1f45f05f46dc38f425ee.tar.zst-part-000000",
       "workflow_run_id": 37526354610
+    },
+    "shared/Ludy87/cache-the-planet/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:c823b0d5644c892276532943a16347dbacc8a5d7bf99980c5960006f64cb9b8f",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-06T20:28:53.764Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 33135905
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-06T20:17:36.635Z",
-    "writes": 4
+    "writes": 5
   }
 }
