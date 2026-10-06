@@ -10,7 +10,7 @@ on:
         required: false
         type: boolean
         default: false
-      gradle-hash:
+      npm-hash:
         required: true
         type: string
 
@@ -19,10 +19,6 @@ on:
         required: false
       APP_PRIVATE_KEY:
         required: false
-
-env:
-  FILES_TO_HASH: |
-    ${{ github.workspace }}/package-lock.json
 
 permissions:
   contents: read
@@ -46,13 +42,9 @@ jobs:
       - name: Hash npm files
         id: hash
         env:
-          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
-          INPUT_GRADLE_HASH: ${{ inputs.gradle-hash }}
+          INPUT_NPM_HASH: ${{ inputs.npm-hash }}
         run: |
-          HASH="$FILES_HASH"
-          echo "$FILES_HASH"
-          echo "$INPUT_GRADLE_HASH"
-          echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "files_hash=$INPUT_NPM_HASH" >> "$GITHUB_OUTPUT"
       - name: Hash npm example package
         id: hash-example
         env:

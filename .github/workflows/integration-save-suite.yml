@@ -80,10 +80,9 @@ jobs:
       - name: Hash npm files
         id: hash
         env:
-          FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
+          NPM_FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          HASH="$FILES_HASH"
-          echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "npm_files_hash=$NPM_FILES_HASH" >> "$GITHUB_OUTPUT"
 
   test:
     needs: [build-dist, hash_pr]
@@ -104,7 +103,7 @@ jobs:
 
       - uses: $/
         with:
-          key: ${{ needs.hash_pr.outputs.files_hash }}
+          key: ${{ needs.hash_pr.outputs.npm_files_hash }}
           token: ${{ github.token }}
           cache-name: npm
           path: .cache/npm
@@ -187,7 +186,7 @@ jobs:
 
       - uses: $/
         with:
-          key: ${{ needs.hash_pr.outputs.files_hash }}
+          key: ${{ needs.hash_pr.outputs.npm_files_hash }}
           token: ${{ github.token }}
           restore-only: true
           cache-name: npm

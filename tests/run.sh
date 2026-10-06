@@ -109,6 +109,20 @@ try {
     'make-fetch-happen:request-cache:https://registry.npmjs.org/example\n',
   );
   securityScan(root);
+  fs.mkdirSync(path.join(root, '_cacache', 'content-v2', 'sha512', 'b2', 'cb'), { recursive: true });
+  fs.writeFileSync(
+    path.join(root, '_cacache', 'content-v2', 'sha512', 'b2', 'cb', 'registry-metadata'),
+    '{"name":"@vue/server-renderer","dist-tags":{"latest":"3.5.43"},"versions":{},"modified":"2026-09-30T09:02:06.130Z"}',
+  );
+  securityScan(root);
+  fs.writeFileSync(
+    path.join(root, '_cacache', 'content-v2', 'sha512', 'b2', 'cb', 'credential-like'),
+    '{"name":"@vue/server-renderer","dist-tags":{"latest":"3.5.43"},"description":"-----BEGIN PRIVATE KEY-----"}',
+  );
+  rejected = false;
+  try { securityScan(root); } catch { rejected = true; }
+  if (!rejected) throw new Error('credential-like npm content was not rejected');
+  fs.rmSync(path.join(root, '_cacache', 'content-v2'), { recursive: true });
   fs.writeFileSync(path.join(root, 'target.txt'), 'internal target\n');
   let symlinkSupported = true;
   try {
