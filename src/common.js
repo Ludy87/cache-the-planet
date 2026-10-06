@@ -1554,6 +1554,8 @@ function isNodeModulesFixture(relative, root) {
   );
 }
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
+const npmContentPath = /(?:^|[\\/])_cacache[\\/]content-v\d+[\\/]/i;
+const npmRegistryMetadata = /^\s*\{\s*"name"\s*:\s*"[^"\r\n]+"\s*,\s*"dist-tags"\s*:\s*\{/i;
 const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
@@ -1619,6 +1621,10 @@ function isCargoRegistryPublicKeyFixturePath(normalizedRelative, root) {
       normalizedRelative,
     )
   );
+}
+
+function isNpmRegistryMetadata(normalizedRelative, text) {
+  return npmContentPath.test(normalizedRelative) && npmRegistryMetadata.test(text);
 }
 
 function isExcludedPath(file, root, patterns, workspace) {
@@ -1719,6 +1725,7 @@ function securityScan(root, options = {}) {
         sourceFileName.test(file) ||
         packageMetadataPath.test(file) ||
         npmIndexPath.test(normalizedRelative) ||
+        isNpmRegistryMetadata(normalizedRelative, text) ||
         isCargoRegistrySourcePath(normalizedRelative, root) ||
         isNodeModulesSourceFile(file, relative, root) ||
         npmPackageLockPath.test(normalizedRelative) ||
@@ -1856,9 +1863,14 @@ async function makeArchive() {
       "zstd",
       ["-q", `-${compressionLevel()}`, "-o", output],
       {
-        stdio: ["pipe", "inherit", "inherit"],
+        stdio: ["pipe", "inherit", "pipe"],
       },
     );
+    let zstdStderr = "";
+    zstd.stderr.setEncoding("utf8");
+    zstd.stderr.on("data", (chunk) => {
+      zstdStderr += chunk;
+    });
     const stopOther = (process) => {
       if (!process.killed) process.kill("SIGKILL");
     };
@@ -1881,7 +1893,14 @@ async function makeArchive() {
       zstd.once("close", (code) =>
         code === 0
           ? resolve()
-          : (stopOther(tar), reject(new Error("zstd failed"))),
+          : (stopOther(tar),
+            reject(
+              new Error(
+                zstdStderr.trim()
+                  ? `zstd failed: ${zstdStderr.trim()}`
+                  : `zstd failed with exit code ${code}`,
+              ),
+            )),
       );
     });
     tar.stdout.pipe(zstd.stdin);
