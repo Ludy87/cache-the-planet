@@ -87,6 +87,10 @@ inputs:
     description: "Newline separated workspace-relative files containing exclusion patterns"
     required: false
     default: ""
+  cleanup-path-after-save:
+    description: "Delete the configured cache paths from the workspace after a successful save; defaults to false"
+    required: false
+    default: "false"
   strict:
     description: "Deprecated; save errors are controlled by strict-save"
     required: false

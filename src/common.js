@@ -1348,6 +1348,33 @@ function entries() {
     .filter(Boolean);
 }
 
+function cleanupCachePathsAfterSave() {
+  if (
+    String(input(INPUTS.CLEANUP_PATH_AFTER_SAVE)).toLowerCase() !== "true"
+  )
+    return;
+  const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+  for (const value of entries()) {
+    const absolute = path.resolve(workspace, value);
+    const relative = path.relative(workspace, absolute);
+    if (
+      path.isAbsolute(relative) ||
+      relative === "" ||
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`)
+    ) {
+      log(`cache path cleanup skipped outside workspace: ${value}`);
+      continue;
+    }
+    try {
+      fs.rmSync(absolute, { force: true, recursive: true });
+      log(`removed cache path after successful save: ${value}`);
+    } catch (error) {
+      log(`cache path cleanup failed for ${value}: ${error.message}`);
+    }
+  }
+}
+
 function excludePatterns() {
   const patterns = input(INPUTS.EXCLUDE)
     .split(/\r?\n/)
@@ -3367,6 +3394,7 @@ module.exports = {
   cacheDownloadDisabled,
   sftpSettings,
   entries,
+  cleanupCachePathsAfterSave,
   excludePatterns,
   refName,
   manifestBranch,

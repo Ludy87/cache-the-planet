@@ -380,6 +380,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
             "Asset name": existing?.name || name,
             "Content hash": hash,
           });
+          c.cleanupCachePathsAfterSave();
           return;
         } finally {
           c.removeTemporaryFile(archive.dir);
@@ -496,6 +497,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           "Content hash": hash,
           "Metadata artifact": metadataArtifact.name,
         });
+        c.cleanupCachePathsAfterSave();
         return;
       }
 
@@ -561,6 +563,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "Asset name": existing?.name || name,
         "Content hash": hash,
       });
+      c.cleanupCachePathsAfterSave();
     } finally {
       c.removeTemporaryFile(archive.dir);
     }
