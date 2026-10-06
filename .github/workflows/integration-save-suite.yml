@@ -82,7 +82,7 @@ jobs:
         env:
           NPM_FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
         run: |
-          echo "npm_files_hash=$NPM_FILES_HASH" >> "$GITHUB_OUTPUT"
+          echo "files_hash=$NPM_FILES_HASH" >> "$GITHUB_OUTPUT"
 
   test:
     needs: [build-dist, hash_pr]
@@ -103,7 +103,7 @@ jobs:
 
       - uses: $/
         with:
-          key: ${{ needs.hash_pr.outputs.npm_files_hash }}
+          key: ${{ needs.hash_pr.outputs.files_hash }}
           token: ${{ github.token }}
           cache-name: npm
           path: .cache/npm
@@ -186,7 +186,7 @@ jobs:
 
       - uses: $/
         with:
-          key: ${{ needs.hash_pr.outputs.npm_files_hash }}
+          key: ${{ needs.hash_pr.outputs.files_hash }}
           token: ${{ github.token }}
           restore-only: true
           cache-name: npm
@@ -221,7 +221,7 @@ jobs:
     uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
-      gradle-hash: ${{ needs.hash_pr.outputs.files_hash }}
+      npm-hash: ${{ needs.hash_pr.outputs.files_hash }}
     permissions:
       contents: write
     secrets:
