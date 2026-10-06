@@ -339,7 +339,7 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   docker-save-cache:
-    needs: [gradle-save-cache, test]
+    needs: [gradle-save-cache, test, hash_pr]
     if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-cache-asset-integration.yml
     with:
