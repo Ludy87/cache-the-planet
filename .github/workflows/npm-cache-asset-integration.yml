@@ -10,6 +10,9 @@ on:
         required: false
         type: boolean
         default: false
+      gradle-hash:
+        required: true
+        type: string
 
     secrets:
       APP_ID:
@@ -44,8 +47,11 @@ jobs:
         id: hash
         env:
           FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
+          INPUT_GRADLE_HASH: ${{ inputs.gradle-hash }}
         run: |
           HASH="$FILES_HASH"
+          echo "$FILES_HASH"
+          echo "$INPUT_GRADLE_HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
       - name: Hash npm example package
         id: hash-example

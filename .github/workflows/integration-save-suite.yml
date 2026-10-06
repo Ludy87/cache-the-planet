@@ -217,11 +217,12 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   node-save-cache:
-    needs: [build-dist, test]
+    needs: [build-dist, test, hash_pr]
     if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
+      gradle-hash: ${{ needs.hash_pr.outputs.files_hash }}
     permissions:
       contents: write
     secrets:
