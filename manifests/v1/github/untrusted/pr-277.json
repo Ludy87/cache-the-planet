@@ -183,10 +183,39 @@
       "artifact_id": 11433235496,
       "artifact_name": "cache-untrusted-pr-277-npm-example-linux-x64-61a22a00fe48defc4152a01926f855cfc8a197f8853423d97a98bb86309ad774-v2--5c14199158b7879102e82dac29c108a043e947a62932901ea43469-part-000000",
       "workflow_run_id": 37507837599
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-277/frontend-node-modules/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:90c7da16783527fa4722bc71b9284b0e4af62cce77ed7afbc7879ac870d99c70",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-06T18:02:00.707Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 39403105,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:8e6624bf9f054beb335c66bdc73ef51ef67797c8375f7ef5e81016de947420fd",
+          "size": 25165824,
+          "artifact_id": 11431644830,
+          "artifact_name": "cache-untrusted-pr-277-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000000",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 1,
+          "object": "sha256:1da4ca253dddc129a75465b54b434a0c0d72bfbc139281d1734bc216110731fc",
+          "size": 14237281,
+          "artifact_id": 11432692310,
+          "artifact_name": "cache-untrusted-pr-277-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000001",
+          "workflow_run_id": 37507837599
+        }
+      ],
+      "artifact_id": 11431644830,
+      "artifact_name": "cache-untrusted-pr-277-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000000",
+      "workflow_run_id": 37507837599
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-06T18:01:23.112Z",
-    "writes": 3
+    "writes": 4
   }
 }
