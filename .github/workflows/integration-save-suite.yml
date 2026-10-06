@@ -89,9 +89,9 @@ jobs:
         id: hash
         env:
           FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
-          TEST_FILES_HASH: ${{ steps.changes.outputs.project-hash_files }}
+          TEST_HASH: ${{ steps.changes.outputs.project-hash_files }}
         run: |
-          TEST_FILES_HASH="$TEST_FILES_HASH"
+          TEST_FILES_HASH="$TEST_HASH"
           HASH="$FILES_HASH"
           echo "$TEST_FILES_HASH"
           echo "$HASH"
