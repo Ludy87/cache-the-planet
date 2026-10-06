@@ -10,3 +10,6 @@ gradle-hash:
 docker-hash:
   - examples/docker-cache/Dockerfile
   - examples/docker-cache/hello.txt
+
+project-hash:
+  - package-lock.json
