@@ -84,6 +84,7 @@ jobs:
       - name: Save npm example cache asset
         uses: $/
         with:
+          cleanup-path-after-save: true
           cache-name: npm-example
           storage: github-artifact
           save-scope: shared
@@ -230,6 +231,7 @@ jobs:
         id: multi-cache
         uses: $/multi-cache
         with:
+          cleanup-path-after-save: true
           multi-cache: |
             npm-cache:
               path: .cache/npm
