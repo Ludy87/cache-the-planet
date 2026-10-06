@@ -58,10 +58,39 @@
       "artifact_id": 11441126889,
       "artifact_name": "cache-untrusted-pr-278-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--90c7da16783527fa4722bc71b9284b0e4af62cce77ed-part-000000",
       "workflow_run_id": 37521357203
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-278/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:c62ef08ef64f2b9bf83ea4a55d8d010521b418049d08ff963fb87e4b1963aeb7",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-06T19:49:55.657Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33135862,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11440946856,
+          "artifact_name": "cache-untrusted-pr-278-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c62ef08ef64f2b9bf83ea4a55d8d010521b418049d08ff963fb87e4b1963ae-part-000000",
+          "workflow_run_id": 37521357203
+        },
+        {
+          "index": 1,
+          "object": "sha256:28b45bdb1d525c6304e24bc4bb0e9872c4597856d90cf79c0b2b4c70fc75754d",
+          "size": 7970038,
+          "artifact_id": 11441061801,
+          "artifact_name": "cache-untrusted-pr-278-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c62ef08ef64f2b9bf83ea4a55d8d010521b418049d08ff963fb87e4b1963ae-part-000001",
+          "workflow_run_id": 37521357203
+        }
+      ],
+      "artifact_id": 11440946856,
+      "artifact_name": "cache-untrusted-pr-278-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c62ef08ef64f2b9bf83ea4a55d8d010521b418049d08ff963fb87e4b1963ae-part-000000",
+      "workflow_run_id": 37521357203
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-06T19:45:35.074Z",
-    "writes": 2
+    "writes": 3
   }
 }
