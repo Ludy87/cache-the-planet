@@ -94,6 +94,9 @@ Die übrigen Action-Inputs wie `scope`, `save-scope`, `version`,
 `encryption-key`, `exclude` und `allow-pr-cache` werden auf jeden Eintrag
 angewendet. Bei Pull Requests ist `allow-shared-restore: true` erforderlich,
 wenn ein Shared-Cache als Fallback gelesen werden soll.
+Mit `cleanup-path-after-save: true` werden die Pfade der einzelnen Einträge
+erst nach einem erfolgreichen Post-Save gelöscht; standardmäßig bleibt diese
+Option deaktiviert.
 
 Bei genau einem Eintrag verwendet `multi-cache` die normalen Singular-Outputs
 `cache-hit`, `matched-key`, `asset-name`, `content-hash` und `cache-size`. Bei

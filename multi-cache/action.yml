@@ -93,6 +93,10 @@ inputs:
     description: Newline separated workspace files containing exclusions
     required: false
     default: ""
+  cleanup-path-after-save:
+    description: Delete each configured cache path after a successful save
+    required: false
+    default: "false"
   config-file:
     description: Optional JSON configuration file
     required: false
