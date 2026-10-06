@@ -41,12 +41,24 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+
+      - name: Check for file changes
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: changes
+        with:
+          list-files: json
+          filters: .github/config/.files.yaml
+
       - name: Hash Docker files
         id: hash
         env:
           FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
+          TEST_FILES_HASH: ${{ steps.changes.outputs.docker-hash_files }}
         run: |
+          TEST_FILES_HASH="$TEST_FILES_HASH"
           HASH="$FILES_HASH"
+          echo "$TEST_FILES_HASH"
+          echo "$HASH"
           echo "files_hash=$HASH" >> "$GITHUB_OUTPUT"
   save-cache:
     if: ${{ inputs.save-cache }}

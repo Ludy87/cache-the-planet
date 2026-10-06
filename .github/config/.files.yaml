@@ -1,0 +1,12 @@
+gradle-hash:
+  - gradle/wrapper/gradle-wrapper.properties
+  - gradle/libs.versions.toml
+  - buildSrc/**
+  - settings.gradle
+  - build.gradle
+  - app/**/build.gradle
+  - gradle/**/*.gradle
+
+docker-hash:
+  - examples/docker-cache/Dockerfile
+  - examples/docker-cache/hello.txt
