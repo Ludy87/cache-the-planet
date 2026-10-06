@@ -224,6 +224,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           );
           setOutput("asset-name", sharedAsset.name);
         }
+        c.cleanupCachePathsAfterSave();
         return;
       }
     }
@@ -285,6 +286,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           existingReference.object,
           updated,
         );
+        c.cleanupCachePathsAfterSave();
         return;
       }
     }
