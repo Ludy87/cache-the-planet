@@ -1213,6 +1213,15 @@ function githubApiError(status, message, headers) {
       `GitHub authorization failed (403): the token is valid but is not allowed to access the cache repository. ${message}`,
     );
   }
+  if (status >= 500 && status <= 599) {
+    const requestId = headerValue(headers, "x-github-request-id");
+    const detail = String(message || "").trim() || "GitHub returned no diagnostic message";
+    return new Error(
+      `GitHub API server error (${status}): ${detail}${
+        requestId ? ` (request ID: ${requestId})` : ""
+      }`,
+    );
+  }
   return new Error(`${status} ${message}`);
 }
 
@@ -3431,6 +3440,7 @@ module.exports = {
   refsForKeys,
   refsAll,
   updateManifest,
+  githubApiError,
   setRef,
   replaceRef,
   deleteObject,
