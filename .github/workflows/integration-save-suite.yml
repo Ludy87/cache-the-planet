@@ -20,8 +20,11 @@ permissions:
   contents: read
 
 env:
-  FILES_TO_HASH: |
+  NPM_FILES_TO_HASH: |
     package-lock.json
+  DOCKER_FILES_TO_HASH: |
+    examples/docker-cache/Dockerfile
+    examples/docker-cache/hello.txt
 
 jobs:
   should-run:
@@ -71,6 +74,7 @@ jobs:
       contents: read
     outputs:
       npm_files_hash: ${{ steps.hash.outputs.npm_files_hash }}
+      docker_files_hash: ${{ steps.hash.outputs.docker_files_hash }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -80,9 +84,11 @@ jobs:
       - name: Hash npm files
         id: hash
         env:
-          NPM_FILES_HASH: ${{ hashFiles(env.FILES_TO_HASH) }}
+          NPM_FILES_HASH: ${{ hashFiles(env.NPM_FILES_TO_HASH) }}
+          DOCKER_FILES_HASH: ${{ hashFiles(env.DOCKER_FILES_TO_HASH) }}
         run: |
           echo "npm_files_hash=$NPM_FILES_HASH" >> "$GITHUB_OUTPUT"
+          echo "docker_files_hash=$DOCKER_FILES_HASH" >> "$GITHUB_OUTPUT"
 
   test:
     needs: [build-dist, hash_pr]
@@ -338,6 +344,7 @@ jobs:
     uses: $/.github/workflows/docker-cache-asset-integration.yml
     with:
       save-cache: true
+      docker-hash: ${{ needs.hash_pr.outputs.docker_files_hash }}
     permissions:
       contents: write
     secrets:
