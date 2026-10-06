@@ -389,10 +389,79 @@
       "artifact_id": 11432622906,
       "artifact_name": "cache-untrusted-pr-277-uv-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--ba1d127ab8bf4f722f6b339b03b2422958ab19d1caa8831b6589b2cbb000a59-part-000000",
       "workflow_run_id": 37507837599
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-277/uv-python-3-13/linux-x64/ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e/v1": {
+      "object": "sha256:2f360213f44d463159eeaae57d940e0caec33b5f266b923597007397ada8af4d",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-06T18:08:07.260Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 174000384,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:e63468da7280ca33fd4dc67e9534d64b6ba3e1e9644e0412586db6b25e726e48",
+          "size": 25165824,
+          "artifact_id": 11432614298,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000000",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 1,
+          "object": "sha256:a06666d72a98a4a3847829b257d2dd41d8852c3bd4384f3234be6b3b707e67ea",
+          "size": 25165824,
+          "artifact_id": 11433097297,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000001",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 2,
+          "object": "sha256:0c59cc66634dd23c1d373d87ed62b43f90b8f84a7d0855ed955e726b2c2e0003",
+          "size": 25165824,
+          "artifact_id": 11433007456,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000002",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 3,
+          "object": "sha256:8b058c71a005c01cbc259688e7bbef634ff1c3c4aa025394de812737ed0303ee",
+          "size": 25165824,
+          "artifact_id": 11431814578,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000003",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 4,
+          "object": "sha256:f19cfc1ec00fd7ce50d1e141b31675c5f935e119866462891cb1f8319663c31f",
+          "size": 25165824,
+          "artifact_id": 11432887763,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000004",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 5,
+          "object": "sha256:f67ddda306af750b49bf70980be4a04498a6d334ec502d037258f2ae24b2a98f",
+          "size": 25165824,
+          "artifact_id": 11433201505,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000005",
+          "workflow_run_id": 37507837599
+        },
+        {
+          "index": 6,
+          "object": "sha256:8e63a54d380ff5567618cd4796d0ec54baed93d1e2e091a24384ef7df81af8e8",
+          "size": 23005440,
+          "artifact_id": 11433206990,
+          "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000006",
+          "workflow_run_id": 37507837599
+        }
+      ],
+      "artifact_id": 11432614298,
+      "artifact_name": "cache-untrusted-pr-277-uv-python-3-13-linux-x64-ab6a8136ae789d40f7fb0b79f965410608b774b13fcb831056b1d6326db4e45e-v1--2f360213f44d463159eeaae57d940e0caec33b5f266b9235970-part-000000",
+      "workflow_run_id": 37507837599
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-06T18:01:23.112Z",
-    "writes": 10
+    "writes": 11
   }
 }
