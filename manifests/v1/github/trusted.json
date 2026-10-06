@@ -23,37 +23,37 @@
       "workflow_run_id": 37161519088
     },
     "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
-      "object": "sha256:72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54",
+      "object": "sha256:c823b0d5644c892276532943a16347dbacc8a5d7bf99980c5960006f64cb9b8f",
       "storage": "github-artifact",
-      "updated_at": "2026-10-03T23:42:34.521Z",
+      "updated_at": "2026-10-06T20:17:35.432Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
-      "size": 33138413,
+      "size": 33135905,
       "parts": [
         {
           "index": 0,
           "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
           "size": 25165824,
-          "artifact_id": 11288451646,
-          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54.t-part-000000",
-          "workflow_run_id": 37162532998
+          "artifact_id": 11442296576,
+          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c823b0d5644c892276532943a16347dbacc8a5d7bf99980c5960006f64cb9b8f.t-part-000000",
+          "workflow_run_id": 37524910771
         },
         {
           "index": 1,
-          "object": "sha256:446e8c2ab8a010d69c168eb8e8bd00d15c81772ea8b6d36eed17ac27e7b72975",
-          "size": 7972589,
-          "artifact_id": 11288317133,
-          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54.t-part-000001",
-          "workflow_run_id": 37162532998
+          "object": "sha256:fdbdfd5de4a31ee47b8c2dad6bb1041d989cb6eaa3c3505b65a1e2a1377b98fd",
+          "size": 7970081,
+          "artifact_id": 11441682480,
+          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c823b0d5644c892276532943a16347dbacc8a5d7bf99980c5960006f64cb9b8f.t-part-000001",
+          "workflow_run_id": 37524910771
         }
       ],
-      "artifact_id": 11288451646,
-      "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--72f6d4f48edc5b4d44a6d9580328a37e50c9da18071eee77b7dcf50abf5a6a54.t-part-000000",
-      "workflow_run_id": 37162532998
+      "artifact_id": 11442296576,
+      "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c823b0d5644c892276532943a16347dbacc8a5d7bf99980c5960006f64cb9b8f.t-part-000000",
+      "workflow_run_id": 37524910771
     }
   },
   "monitoring": {
-    "window_started_at": "2026-10-03T23:23:15.512Z",
-    "writes": 4
+    "window_started_at": "2026-10-06T20:17:35.432Z",
+    "writes": 1
   }
 }
