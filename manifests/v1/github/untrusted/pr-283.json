@@ -318,10 +318,39 @@
       "artifact_id": 11612770849,
       "artifact_name": "cache-untrusted-pr-283-docker-qemu-linux-x64-174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-v1--39fe0c2597276999b927d8773b504d69fc506f2bedeba37866c5c6-part-000000",
       "workflow_run_id": 37921884645
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-283/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:83bd4329f468b3f0b921c5c819924efa74fd55e3566e4809f1f5cf59f449dd0c",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T11:12:07.943Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 33135942,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11611599733,
+          "artifact_name": "cache-untrusted-pr-283-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--83bd4329f468b3f0b921c5c819924efa74fd55e3566e4809f1f5cf59f449dd-part-000000",
+          "workflow_run_id": 37921884645
+        },
+        {
+          "index": 1,
+          "object": "sha256:d4f959f56ee5f9693f802bd4ee49080341f11c1b1d394299ebc8ffaaf3476646",
+          "size": 7970118,
+          "artifact_id": 11612731082,
+          "artifact_name": "cache-untrusted-pr-283-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--83bd4329f468b3f0b921c5c819924efa74fd55e3566e4809f1f5cf59f449dd-part-000001",
+          "workflow_run_id": 37921884645
+        }
+      ],
+      "artifact_id": 11611599733,
+      "artifact_name": "cache-untrusted-pr-283-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--83bd4329f468b3f0b921c5c819924efa74fd55e3566e4809f1f5cf59f449dd-part-000000",
+      "workflow_run_id": 37921884645
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T11:09:54.519Z",
-    "writes": 6
+    "writes": 7
   }
 }
