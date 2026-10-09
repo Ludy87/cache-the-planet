@@ -21,10 +21,39 @@
       "artifact_id": 11611523885,
       "artifact_name": "cache-untrusted-pr-283-github-artifact-test-linux-x64-github-artifact-integration-v1-v2--a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d.tar.zst-part-000000",
       "workflow_run_id": 37921884645
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-283/npm-cache/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:633f3bdada7217815f49f248edd19a5ef8dae2702ad18db49c2770351fc5f60e",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T11:10:24.801Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 33138074,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11612027661,
+          "artifact_name": "cache-untrusted-pr-283-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--633f3bdada7217815f49f248edd19a5ef8dae2702ad18db49c277035-part-000000",
+          "workflow_run_id": 37921884645
+        },
+        {
+          "index": 1,
+          "object": "sha256:bcf41b58df5dc2b7782acc28138d8e31f7302d1540e19a2d168625476475df3e",
+          "size": 7972250,
+          "artifact_id": 11612372561,
+          "artifact_name": "cache-untrusted-pr-283-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--633f3bdada7217815f49f248edd19a5ef8dae2702ad18db49c277035-part-000001",
+          "workflow_run_id": 37921884645
+        }
+      ],
+      "artifact_id": 11612027661,
+      "artifact_name": "cache-untrusted-pr-283-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--633f3bdada7217815f49f248edd19a5ef8dae2702ad18db49c277035-part-000000",
+      "workflow_run_id": 37921884645
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T11:09:54.519Z",
-    "writes": 1
+    "writes": 2
   }
 }
