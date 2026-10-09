@@ -537,10 +537,31 @@
       "artifact_id": 11612393250,
       "artifact_name": "cache-untrusted-pr-283-gradle-java17-linux-x64-5a6a3ba46601b3d400d5f0f352667ba25983dbb62a3a7c27c92274b33df2c79f-v1--4a297edabaf262a0a1dd6e1d93506caa344a25e66670aed34eb5-part-000000",
       "workflow_run_id": 37921884645
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-283/docker/linux-x64/174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62/v1": {
+      "object": "sha256:6d2695b402968973a0133473c374ef336942b197b199ea524f158a10b95fc964",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T11:16:24.287Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 4101317,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:6d2695b402968973a0133473c374ef336942b197b199ea524f158a10b95fc964",
+          "size": 4101317,
+          "artifact_id": 11612578182,
+          "artifact_name": "cache-untrusted-pr-283-docker-linux-x64-174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-v1--6d2695b402968973a0133473c374ef336942b197b199ea524f158a10b95-part-000000",
+          "workflow_run_id": 37921884645
+        }
+      ],
+      "artifact_id": 11612578182,
+      "artifact_name": "cache-untrusted-pr-283-docker-linux-x64-174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-v1--6d2695b402968973a0133473c374ef336942b197b199ea524f158a10b95-part-000000",
+      "workflow_run_id": 37921884645
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T11:09:54.519Z",
-    "writes": 13
+    "writes": 14
   }
 }
