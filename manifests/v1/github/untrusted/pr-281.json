@@ -376,10 +376,39 @@
       "artifact_id": 11610249001,
       "artifact_name": "cache-untrusted-pr-281-docker-qemu-linux-x64-174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-v1--39fe0c2597276999b927d8773b504d69fc506f2bedeba37866c5c6-part-000000",
       "workflow_run_id": 37919203852
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-281/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
+      "object": "sha256:132346497a99e8cbaed931c65414bba89c382adf84c52f26a37d3dfc8efdc45b",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T10:45:24.360Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 29716625,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:3db1775d56e060bcfb7b5fd9b033c806a01237b2b6943f5e15dae6ee4691b999",
+          "size": 25165824,
+          "artifact_id": 11610144093,
+          "artifact_name": "cache-untrusted-pr-281-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--132346497a99e8cbaed931c65414bba89c382adf84c52f26a37d3-part-000000",
+          "workflow_run_id": 37919203852
+        },
+        {
+          "index": 1,
+          "object": "sha256:b7b8b8267a32b38541aa6ddf6539267ba06d77b3fee9aaa4b10648ffb7aa8e0a",
+          "size": 4550801,
+          "artifact_id": 11610423982,
+          "artifact_name": "cache-untrusted-pr-281-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--132346497a99e8cbaed931c65414bba89c382adf84c52f26a37d3-part-000001",
+          "workflow_run_id": 37919203852
+        }
+      ],
+      "artifact_id": 11610144093,
+      "artifact_name": "cache-untrusted-pr-281-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--132346497a99e8cbaed931c65414bba89c382adf84c52f26a37d3-part-000000",
+      "workflow_run_id": 37919203852
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T10:35:39.728Z",
-    "writes": 13
+    "writes": 14
   }
 }
