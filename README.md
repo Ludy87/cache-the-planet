@@ -61,6 +61,30 @@ Action-Schnittstelle ist. Die aktuelle Restore-Action extrahiert das geprüfte
 Archiv vollständig in `GITHUB_WORKSPACE`; `path` ist kein nachträglicher
 Filter für einzelne Archivdateien.
 
+## Geschwindigkeitsvergleich
+
+Der manuell startbare Workflow
+[`cache-speed-benchmark.yml`](.github/workflows/cache-speed-benchmark.yml)
+vergleicht `github-artifact` mit `actions/cache` auf identischen
+`ubuntu-latest`-Runnern. Er misst Save und Restore getrennt und lädt die
+Rohdaten als Workflow-Artefakte hoch. Die Größe des Test-Caches kann beim
+Start gewählt werden, zum Beispiel 64, 256 oder 1024 MiB.
+
+```mermaid
+xychart-beta
+    title "Benchmark: niedrigere Zeit ist besser"
+    x-axis [Save, Restore]
+    y-axis "Millisekunden" 0 --> 100
+    bar [0, 0]
+    bar [0, 0]
+```
+
+Die Grafik ist bewusst als Ergebnisfläche angelegt: Messwerte hängen von
+Runner-Auslastung, Region, Cache-Größe und Netzwerk ab und dürfen nicht als
+feste Projektwerte behauptet werden. Für belastbare Aussagen sollten beide
+Backends mehrfach mit derselben Cache-Größe ausgeführt und Medianwerte aus den
+Workflow-Artefakten verglichen werden.
+
 Die Root-Action kann mit `restore-only: true` auf reines Restore beschränkt
 werden. Mit `save-scope` lässt sich der Scope des Post-Save-Schritts unabhängig
 von `scope` konfigurieren; ohne Angabe übernimmt er `scope`.

@@ -1,0 +1,122 @@
+name: Cache speed benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      size_mb:
+        description: "Random cache payload size in MiB"
+        required: false
+        default: "256"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  benchmark:
+    name: ${{ matrix.backend }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [cache-the-planet, actions-cache]
+    env:
+      SIZE_MB: ${{ inputs.size_mb }}
+      CACHE_KEY: benchmark-${{ github.run_id }}-${{ matrix.backend }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create deterministic benchmark payload
+        run: |
+          set -euo pipefail
+          mkdir -p benchmark-payload
+          fallocate -l "$((SIZE_MB * 1024 * 1024))" benchmark-payload/payload.bin
+          sha256sum benchmark-payload/payload.bin
+
+      - name: Save with cache-the-planet
+        if: matrix.backend == 'cache-the-planet'
+        shell: bash
+        run: |
+          start=$(date +%s%3N)
+          echo "BENCHMARK_SAVE_START=$start" >> "$GITHUB_ENV"
+          echo "Save timing starts immediately before the action"
+      - name: Save cache-the-planet
+        if: matrix.backend == 'cache-the-planet'
+        uses: ./save
+        with:
+          repository: ${{ github.repository }}
+          cache-name: benchmark
+          key: ${{ env.CACHE_KEY }}
+          path: benchmark-payload
+          storage: github-artifact
+          token: ${{ github.token }}
+          scope: trusted
+      - name: Record cache-the-planet save time
+        if: matrix.backend == 'cache-the-planet'
+        run: echo "save_ms=$(( $(date +%s%3N) - BENCHMARK_SAVE_START ))" >> benchmark-results.txt
+
+      - name: Save with actions/cache
+        if: matrix.backend == 'actions-cache'
+        run: echo "BENCHMARK_SAVE_START=$(date +%s%3N)" >> "$GITHUB_ENV"
+      - name: Save actions/cache
+        if: matrix.backend == 'actions-cache'
+        uses: actions/cache/save@v4
+        with:
+          path: benchmark-payload
+          key: ${{ env.CACHE_KEY }}
+      - name: Record actions/cache save time
+        if: matrix.backend == 'actions-cache'
+        run: echo "save_ms=$(( $(date +%s%3N) - BENCHMARK_SAVE_START ))" >> benchmark-results.txt
+
+      - name: Reset payload
+        run: rm -rf benchmark-payload
+
+      - name: Restore with cache-the-planet
+        if: matrix.backend == 'cache-the-planet'
+        shell: bash
+        run: |
+          start=$(date +%s%3N)
+          echo "BENCHMARK_RESTORE_START=$start" >> "$GITHUB_ENV"
+      - name: Restore cache-the-planet
+        if: matrix.backend == 'cache-the-planet'
+        uses: ./restore
+        with:
+          repository: ${{ github.repository }}
+          cache-name: benchmark
+          key: ${{ env.CACHE_KEY }}
+          path: benchmark-payload
+          storage: github-artifact
+          token: ${{ github.token }}
+          scope: trusted
+          strict: true
+      - name: Record cache-the-planet restore time
+        if: matrix.backend == 'cache-the-planet'
+        run: echo "restore_ms=$(( $(date +%s%3N) - BENCHMARK_RESTORE_START ))" >> benchmark-results.txt
+
+      - name: Restore with actions/cache
+        if: matrix.backend == 'actions-cache'
+        run: echo "BENCHMARK_RESTORE_START=$(date +%s%3N)" >> "$GITHUB_ENV"
+      - name: Restore actions/cache
+        if: matrix.backend == 'actions-cache'
+        uses: actions/cache/restore@v4
+        with:
+          path: benchmark-payload
+          key: ${{ env.CACHE_KEY }}
+      - name: Record actions/cache restore time
+        if: matrix.backend == 'actions-cache'
+        run: echo "restore_ms=$(( $(date +%s%3N) - BENCHMARK_RESTORE_START ))" >> benchmark-results.txt
+
+      - name: Write benchmark result
+        run: |
+          {
+            echo "backend=${{ matrix.backend }}"
+            echo "size_mb=$SIZE_MB"
+            echo "runner=${RUNNER_OS}-${RUNNER_ARCH}"
+            cat benchmark-results.txt 2>/dev/null || true
+          } > benchmark-${{ matrix.backend }}.txt
+
+      - name: Upload benchmark result
+        uses: actions/upload-artifact@v4
+        with:
+          name: cache-speed-${{ matrix.backend }}
+          path: benchmark-${{ matrix.backend }}.txt
