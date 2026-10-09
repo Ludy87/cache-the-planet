@@ -1971,6 +1971,13 @@ test("workflow security invariants remain present", () => {
     .readdirSync(workflowRoot)
     .filter((name) => name.endsWith(".yml"))) {
     const content = fs.readFileSync(path.join(workflowRoot, file), "utf8");
+    const isBenchmarkWorkflow = file === "cache-speed-benchmark.yml";
+    if (isBenchmarkWorkflow) {
+      assert.match(content, /workflow_dispatch:/);
+      assert.match(content, /actions\/cache\/(save|restore)@v4/);
+      assert.doesNotMatch(content, /schedule:|push:|pull_request:/);
+      continue;
+    }
     assert.doesNotMatch(
       content,
       /actions\/cache|enable-cache:\s*true|cache-image:\s*true|package-manager-cache:\s*true/,
