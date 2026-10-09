@@ -67,7 +67,6 @@ jobs:
           fi
   hash_pr:
     needs: [build-dist]
-    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     name: Hash npm files
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -98,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
     env:
       NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
     steps:
@@ -108,13 +107,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
-      # SFTP credentials are only available to trusted main-branch code.
       - uses: $/
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
         with:
           key: ${{ needs.hash_pr.outputs.npm_files_hash }}
           token: ${{ github.token }}
-          restore-only: true
           cache-name: npm
           path: .cache/npm
           save-scope: shared
@@ -179,19 +175,19 @@ jobs:
         run: bash tests/run.sh
   test-restore-cache:
     needs: [test, hash_pr]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped')) }}
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     name: Restore npm cache asset for trusted publisher
     runs-on: ubuntu-latest
     timeout-minutes: 1
     permissions:
-      contents: read
+      contents: write
     env:
       NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
           persist-credentials: false
 
       - uses: $/
@@ -214,12 +210,11 @@ jobs:
             .cache/npm/_logs
 
   build-dist:
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     needs: [should-run]
     uses: $/.github/workflows/build-dist.yml
     with:
-      dry-run: true
-      write-pr-branch: false
+      dry-run: ${{ !(github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository) }}
+      write-pr-branch: ${{ github.event.pull_request.user.login == 'Ludy87' && github.event.pull_request.head.repo.full_name == github.repository }}
     permissions:
       contents: write
     secrets:
@@ -228,7 +223,7 @@ jobs:
 
   node-save-cache:
     needs: [build-dist, test, hash_pr]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')) }}
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/npm-cache-asset-integration.yml
     with:
       save-cache: true
@@ -241,7 +236,7 @@ jobs:
 
   github-branch-storage-save:
     needs: [build-dist, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')) }}
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/github-branch-storage-test.yml
     permissions:
       contents: write
@@ -251,7 +246,7 @@ jobs:
 
   github-artifact-storage-save:
     needs: [build-dist, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped')) }}
+    if: ${{ !cancelled() && (needs.build-dist.result == 'success' || needs.build-dist.result == 'skipped') }}
     uses: $/.github/workflows/github-artifact-storage-test.yml
     with:
       save-cache: true
@@ -261,7 +256,7 @@ jobs:
 
   docker-qemu-save-cache:
     needs: [node-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.node-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-qemu-cache-asset-integration.yml
     with:
       save-cache: true
@@ -273,7 +268,7 @@ jobs:
 
   multi-save-cache:
     needs: [node-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.node-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.node-save-cache.result == 'success' }}
     uses: $/.github/workflows/multi-cache-asset-integration.yml
     with:
       save-cache: true
@@ -285,7 +280,7 @@ jobs:
 
   uv-save-cache:
     needs: [multi-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.multi-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.multi-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-cache-asset-integration.yml
     with:
       save-cache: true
@@ -297,7 +292,7 @@ jobs:
 
   uv-python-save-cache:
     needs: [uv-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.uv-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.uv-save-cache.result == 'success' }}
     uses: $/.github/workflows/uv-python-cache-asset-integration.yml
     with:
       save-cache: true
@@ -309,7 +304,7 @@ jobs:
 
   task-save-cache:
     needs: [uv-python-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.uv-python-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.uv-python-save-cache.result == 'success' }}
     uses: $/.github/workflows/task-cache-asset-integration.yml
     with:
       save-cache: true
@@ -321,7 +316,7 @@ jobs:
 
   java-save-cache:
     needs: [task-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.task-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.task-save-cache.result == 'success' }}
     uses: $/.github/workflows/maven-cache-asset-integration.yml
     with:
       save-cache: true
@@ -333,7 +328,7 @@ jobs:
 
   gradle-save-cache:
     needs: [java-save-cache, test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.java-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.java-save-cache.result == 'success' }}
     uses: $/.github/workflows/gradle-cache-asset-integration.yml
     with:
       save-cache: true
@@ -345,7 +340,7 @@ jobs:
 
   docker-save-cache:
     needs: [gradle-save-cache, test, hash_pr]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.gradle-save-cache.result == 'success') }}
+    if: ${{ !cancelled() && needs.gradle-save-cache.result == 'success' }}
     uses: $/.github/workflows/docker-cache-asset-integration.yml
     with:
       save-cache: true
@@ -358,7 +353,7 @@ jobs:
 
   rust-save-cache:
     needs: [test]
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && (!cancelled() && needs.test.result == 'success') }}
+    if: ${{ !cancelled() && needs.test.result == 'success' }}
     # if: ${{ !cancelled() && needs.docker-save-cache.result == 'success' }}
     uses: $/.github/workflows/rust-cache-asset-integration.yml
     with:
