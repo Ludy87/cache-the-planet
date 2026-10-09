@@ -347,10 +347,39 @@
       "artifact_id": 11611599733,
       "artifact_name": "cache-untrusted-pr-283-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--83bd4329f468b3f0b921c5c819924efa74fd55e3566e4809f1f5cf59f449dd-part-000000",
       "workflow_run_id": 37921884645
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-283/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
+      "object": "sha256:1f4baaf54fc0bbba757a562c45fcb31f6775204cb6e55873f78e6dd8bd15125d",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T11:12:13.426Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 29716619,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:bfe93d492fa083a06c0f65f84706968bf034363d29ade82ac48c63786724920d",
+          "size": 25165824,
+          "artifact_id": 11612785845,
+          "artifact_name": "cache-untrusted-pr-283-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--1f4baaf54fc0bbba757a562c45fcb31f6775204cb6e55873f78e6-part-000000",
+          "workflow_run_id": 37921884645
+        },
+        {
+          "index": 1,
+          "object": "sha256:6651e00b54214fc808015356c8b5581adf3015273db37d3f97c1cf43f0001e56",
+          "size": 4550795,
+          "artifact_id": 11611814434,
+          "artifact_name": "cache-untrusted-pr-283-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--1f4baaf54fc0bbba757a562c45fcb31f6775204cb6e55873f78e6-part-000001",
+          "workflow_run_id": 37921884645
+        }
+      ],
+      "artifact_id": 11612785845,
+      "artifact_name": "cache-untrusted-pr-283-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--1f4baaf54fc0bbba757a562c45fcb31f6775204cb6e55873f78e6-part-000000",
+      "workflow_run_id": 37921884645
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T11:09:54.519Z",
-    "writes": 7
+    "writes": 8
   }
 }
