@@ -3043,6 +3043,10 @@ async function uploadObject(repository, file, name, contentType) {
           artifact_name: artifactName,
           workflow_run_id: Number(process.env.GITHUB_RUN_ID),
         });
+        // Uploads are sequential, so the part is no longer needed once its
+        // artifact metadata has been recorded. Keep runner disk usage bounded
+        // to the archive plus one part instead of retaining every part.
+        removeTemporaryFile(partFile);
       }
       return {
         id: parts[0].artifact_id,
