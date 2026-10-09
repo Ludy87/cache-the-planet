@@ -326,10 +326,39 @@
       "artifact_id": 11610283831,
       "artifact_name": "cache-untrusted-pr-281-cargo-linux-x64-7df62907bae2c1e26ad9cb0f49b5ecd84877f698c76cf95ec5e4a02eb05db239-v1--e63a0232cb1e6a9fcb13c1f5dc9ac63e4a6f2de052dcd7dff1138c572e39-part-000000",
       "workflow_run_id": 37919203852
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-281/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:c231663ef33556ba69747030e4a075ac3566dcd11205798159a8c43d401ad127",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T10:45:18.041Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33135795,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11610368854,
+          "artifact_name": "cache-untrusted-pr-281-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c231663ef33556ba69747030e4a075ac3566dcd11205798159a8c43d401ad1-part-000000",
+          "workflow_run_id": 37919203852
+        },
+        {
+          "index": 1,
+          "object": "sha256:2f0bafe6bdd3dec22b4ed777413d4fcc7796ecb7c969625521a684fb1cacdf0a",
+          "size": 7969971,
+          "artifact_id": 11610458833,
+          "artifact_name": "cache-untrusted-pr-281-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c231663ef33556ba69747030e4a075ac3566dcd11205798159a8c43d401ad1-part-000001",
+          "workflow_run_id": 37919203852
+        }
+      ],
+      "artifact_id": 11610368854,
+      "artifact_name": "cache-untrusted-pr-281-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--c231663ef33556ba69747030e4a075ac3566dcd11205798159a8c43d401ad1-part-000000",
+      "workflow_run_id": 37919203852
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T10:35:39.728Z",
-    "writes": 11
+    "writes": 12
   }
 }
