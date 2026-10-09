@@ -347,10 +347,39 @@
       "artifact_id": 11612667048,
       "artifact_name": "cache-untrusted-pr-284-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--2f292e860bdb9360e33ea882cfb6376e6130aeecef983636673532759c312b-part-000000",
       "workflow_run_id": 37922305901
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-284/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
+      "object": "sha256:d549e2dbd7227279a1bc62f76c04e83b8e70d5bd30287de3876e5d3d4632c59f",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-09T11:16:18.943Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 29716636,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:d538e168c34a75d2b586259c7c701e033e01431abb1aa64b47ddc8f8ef5325e4",
+          "size": 25165824,
+          "artifact_id": 11612850327,
+          "artifact_name": "cache-untrusted-pr-284-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--d549e2dbd7227279a1bc62f76c04e83b8e70d5bd30287de3876e5-part-000000",
+          "workflow_run_id": 37922305901
+        },
+        {
+          "index": 1,
+          "object": "sha256:90f222fa60c9f199a89a2fdae2e76e2f9051b19af041085821c4530963261548",
+          "size": 4550812,
+          "artifact_id": 11612945181,
+          "artifact_name": "cache-untrusted-pr-284-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--d549e2dbd7227279a1bc62f76c04e83b8e70d5bd30287de3876e5-part-000001",
+          "workflow_run_id": 37922305901
+        }
+      ],
+      "artifact_id": 11612850327,
+      "artifact_name": "cache-untrusted-pr-284-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--d549e2dbd7227279a1bc62f76c04e83b8e70d5bd30287de3876e5-part-000000",
+      "workflow_run_id": 37922305901
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-09T11:13:58.064Z",
-    "writes": 7
+    "writes": 8
   }
 }
