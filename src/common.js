@@ -1614,6 +1614,7 @@ const npmRegistryMetadata = /^\s*\{\s*"name"\s*:\s*"[^"\r\n]+"\s*,\s*"dist-tags"
 const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
+const uvPackageArchivePath = /^archive-v\d+[^/]*\/[^/]+\/.+/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // Public package source trees commonly ship dummy keys for TLS examples and
 // integration tests. Keep this exception limited to dependency fixture
@@ -1678,6 +1679,13 @@ function isCargoRegistryPublicKeyFixturePath(normalizedRelative, root) {
   );
 }
 
+function isUvPackageSourceFile(file, relative) {
+  const normalizedRelative = normalizeCachePath(relative);
+  if (!uvPackageArchivePath.test(normalizedRelative)) return false;
+  const basename = path.basename(file);
+  return sourceFileName.test(basename) || /^[A-Za-z0-9_-]+$/.test(basename);
+}
+
 function isNpmRegistryMetadata(normalizedRelative, text) {
   return npmContentPath.test(normalizedRelative) && npmRegistryMetadata.test(text);
 }
@@ -1725,7 +1733,8 @@ function securityScan(root, options = {}) {
     const normalizedRelative = normalizeCachePath(relative);
     const dependencySourcePath =
       isCargoRegistrySourcePath(normalizedRelative, root) ||
-      isNodeModulesPath(normalizedRelative, root);
+      isNodeModulesPath(normalizedRelative, root) ||
+      isUvPackageSourceFile(file, relative);
     if (
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"
