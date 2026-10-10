@@ -7,6 +7,42 @@
 * Paketmetadaten aktualisiert, Node.js 22 als Mindestversion festgelegt und
   npm-Abhängigkeiten für reproduzierbare Installationen exakt gepinnt.
 * Nicht mehr benötigte `license-checker`-Abhängigkeit entfernt.
+## [2.1.0](https://github.com/Ludy87/cache-the-planet/compare/v2.0.0...v2.1.0) (2026-10-10)
+
+
+### 🎉 Features
+
+* **logging:** group cache storage diagnostics ([#290](https://github.com/Ludy87/cache-the-planet/issues/290)) ([9849041](https://github.com/Ludy87/cache-the-planet/commit/9849041d21a99f78e4b4c376640c05b7ea1d92fc))
+* **multi-cache:** support cleanup after save ([#279](https://github.com/Ludy87/cache-the-planet/issues/279)) ([508760e](https://github.com/Ludy87/cache-the-planet/commit/508760e654a7fbcb16767aef50c60a769b12b1ce))
+* **save:** optionally clean cache paths after save ([#278](https://github.com/Ludy87/cache-the-planet/issues/278)) ([d34f6b4](https://github.com/Ludy87/cache-the-planet/commit/d34f6b4c9a171dc62c07706e6fe6ac3c7306d062))
+
+
+### 🐛 Bug Fixes
+
+* **actions:** synchronize action metadata inputs ([#266](https://github.com/Ludy87/cache-the-planet/issues/266)) ([3c91501](https://github.com/Ludy87/cache-the-planet/commit/3c91501c68a3517a8432659f6e9903e69b1e58a2))
+* **cache:** harden archive pipeline cleanup ([#258](https://github.com/Ludy87/cache-the-planet/issues/258)) ([6ce6a12](https://github.com/Ludy87/cache-the-planet/commit/6ce6a12f18b28223aa44c01d1eae7b3ee1f019d9))
+* enforce matching restore and save storage ([#272](https://github.com/Ludy87/cache-the-planet/issues/272)) ([5723e2b](https://github.com/Ludy87/cache-the-planet/commit/5723e2b4f71fdb265d0f839156fffa58bb0342e6))
+* prevent release creation for artifact storage ([#273](https://github.com/Ludy87/cache-the-planet/issues/273)) ([8951fe1](https://github.com/Ludy87/cache-the-planet/commit/8951fe17ca090ba363f95e4dc78854d04b926ed6))
+* reduce security scan false positives for dependency caches ([97b8a8a](https://github.com/Ludy87/cache-the-planet/commit/97b8a8ae50f5192064b8aa2cec17867c04ca912f))
+* reduce security scan false positives for dependency caches ([#257](https://github.com/Ludy87/cache-the-planet/issues/257)) ([4f3a4e0](https://github.com/Ludy87/cache-the-planet/commit/4f3a4e08a8fb977c2ad83af8c57b48b0da2c5d81))
+* remove github-release storage fallback ([#271](https://github.com/Ludy87/cache-the-planet/issues/271)) ([516494a](https://github.com/Ludy87/cache-the-planet/commit/516494aa412b74fc8a5f4a8ddba799fa50c66a58))
+* **restore:** capture disk state before cleanup ([#291](https://github.com/Ludy87/cache-the-planet/issues/291)) ([347832d](https://github.com/Ludy87/cache-the-planet/commit/347832d7665d1e5564acac40cca71ae7ea0fd335))
+* **restore:** preserve zstd failure details ([#288](https://github.com/Ludy87/cache-the-planet/issues/288)) ([26dcae4](https://github.com/Ludy87/cache-the-planet/commit/26dcae497b500a85f0ac2383ff6ad36d3d2c1754))
+* **restore:** report storage details on decompression errors ([#287](https://github.com/Ludy87/cache-the-planet/issues/287)) ([c731d1c](https://github.com/Ludy87/cache-the-planet/commit/c731d1c5da95198ab5216686970b1be9da4f0e01))
+* **save:** apply exclude patterns during archiving ([#286](https://github.com/Ludy87/cache-the-planet/issues/286)) ([103a69c](https://github.com/Ludy87/cache-the-planet/commit/103a69c7d774206009d93b1d701c7d31d9bd2b15))
+* **security:** allow dependency documentation cache roots ([#267](https://github.com/Ludy87/cache-the-planet/issues/267)) ([44addc7](https://github.com/Ludy87/cache-the-planet/commit/44addc754e31d627aec5089ec95f3ea97e28389b))
+* **security:** allow nested dependency documentation ([#268](https://github.com/Ludy87/cache-the-planet/issues/268)) ([fb44147](https://github.com/Ludy87/cache-the-planet/commit/fb44147aa916b113d41e4704e8f966ca8afe5491))
+* **security:** avoid false positives for npm registry metadata ([#276](https://github.com/Ludy87/cache-the-planet/issues/276)) ([2275210](https://github.com/Ludy87/cache-the-planet/commit/2275210b57156c2c99d8d57ccf444630ac6a3e8f))
+* **security:** handle dependency documentation file roots ([#270](https://github.com/Ludy87/cache-the-planet/issues/270)) ([ee4c915](https://github.com/Ludy87/cache-the-planet/commit/ee4c91581835dd986fcf12ffaba34eed5c085d03))
+* **security:** ignore dependency token false positives ([#255](https://github.com/Ludy87/cache-the-planet/issues/255)) ([6ce02f1](https://github.com/Ludy87/cache-the-planet/commit/6ce02f1d958d0a3e31e2ab64346fb7bd823a0f65))
+* **security:** normalize dependency documentation paths ([#269](https://github.com/Ludy87/cache-the-planet/issues/269)) ([ed01b09](https://github.com/Ludy87/cache-the-planet/commit/ed01b093f8c4163df0bf9eb02498f21db6b47c10))
+* **security:** recognize uv package source files ([#289](https://github.com/Ludy87/cache-the-planet/issues/289)) ([86a2518](https://github.com/Ludy87/cache-the-planet/commit/86a25184d1eb86c9481908e2582a0eed7e1f3e84))
+
+
+### ⚡ Performance
+
+* **artifact:** download cache parts concurrently ([#281](https://github.com/Ludy87/cache-the-planet/issues/281)) ([88733e1](https://github.com/Ludy87/cache-the-planet/commit/88733e1e80083b56562693c807b50e8ac10b3f3b))
+
 ## [2.0.0](https://github.com/Ludy87/cache-the-planet/compare/v1.10.0...v2.0.0) (2026-10-03)
 
 
