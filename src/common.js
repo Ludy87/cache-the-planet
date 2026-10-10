@@ -2024,8 +2024,16 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
     const message = String(error?.message || "zstd decompression failed");
     const noSpace =
       error?.code === "ENOSPC" || /no space left on device/i.test(message);
+    const diagnostics = temporaryStorageDiagnostics(
+      inputFile,
+      outputFile,
+      maxBytes,
+    );
+    console.log("::group::Cache decompression diagnostics");
+    console.log(`::notice title=Cache storage::${diagnostics}`);
+    console.log("::endgroup::");
     throw new Error(
-      `zstd decompression failed${noSpace ? ": no space left on device" : `: ${message}`} (${temporaryStorageDiagnostics(inputFile, outputFile, maxBytes)})`,
+      `zstd decompression failed${noSpace ? ": no space left on device" : `: ${message}`} (${diagnostics})`,
       { cause: error },
     );
   }
