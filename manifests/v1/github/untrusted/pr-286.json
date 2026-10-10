@@ -135,10 +135,39 @@
       "artifact_id": 11667468919,
       "artifact_name": "cache-untrusted-pr-286-cargo-linux-x64-7df62907bae2c1e26ad9cb0f49b5ecd84877f698c76cf95ec5e4a02eb05db239-v1--e63a0232cb1e6a9fcb13c1f5dc9ac63e4a6f2de052dcd7dff1138c572e39-part-000000",
       "workflow_run_id": 38045739408
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-286/npm-cache/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:4cef35bf05c0b47f8a420c3b02134f45516d1ea67ab2fa6854a8b9f4a83df033",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-10T10:43:39.625Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33142870,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11667394166,
+          "artifact_name": "cache-untrusted-pr-286-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4cef35bf05c0b47f8a420c3b02134f45516d1ea67ab2fa6854a8b9f4-part-000000",
+          "workflow_run_id": 38045739408
+        },
+        {
+          "index": 1,
+          "object": "sha256:c3220b98d59ceaecacd3a32ccffd9eaa2e74cc4e66c96ef063f929f706ddb8ca",
+          "size": 7977046,
+          "artifact_id": 11667354197,
+          "artifact_name": "cache-untrusted-pr-286-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4cef35bf05c0b47f8a420c3b02134f45516d1ea67ab2fa6854a8b9f4-part-000001",
+          "workflow_run_id": 38045739408
+        }
+      ],
+      "artifact_id": 11667394166,
+      "artifact_name": "cache-untrusted-pr-286-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4cef35bf05c0b47f8a420c3b02134f45516d1ea67ab2fa6854a8b9f4-part-000000",
+      "workflow_run_id": 38045739408
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-10T10:40:47.659Z",
-    "writes": 3
+    "writes": 4
   }
 }
