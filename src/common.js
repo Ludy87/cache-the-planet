@@ -300,7 +300,25 @@ function removeTemporaryFile(file) {
   if (!file) return;
   try {
     fs.rmSync(file, { force: true, recursive: true });
+    normalLog(`Removed temporary file: ${file}`);
+  } catch (error) {
+    normalLog(`Failed to remove temporary file: ${file}`);
+  }
+}
+
+function temporaryStorageDiagnostics(inputFile, outputFile, maxBytes) {
+  const details = [];
+  try {
+    details.push(`compressed=${formatTransferSize(fs.statSync(inputFile).size)}`);
   } catch {}
+  details.push(`output-limit=${formatTransferSize(maxBytes)}`);
+  try {
+    const stats = fs.statfsSync(path.dirname(outputFile));
+    const freeBytes = Number(stats.bavail) * Number(stats.bsize);
+    details.push(`free=${formatTransferSize(freeBytes)}`);
+  } catch {}
+  details.push(`output=${outputFile}`);
+  return details.join(", ");
 }
 
 function configuredCacheNames() {
@@ -1986,6 +2004,15 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
   } catch (error) {
     zstd.kill("SIGKILL");
     removeTemporaryFile(outputFile);
+    if (
+      error?.code === "ENOSPC" ||
+      /no space left on device/i.test(String(error?.message || ""))
+    ) {
+      throw new Error(
+        `zstd decompression failed: no space left on device (${temporaryStorageDiagnostics(inputFile, outputFile, maxBytes)})`,
+        { cause: error },
+      );
+    }
     throw error;
   }
 }
@@ -3463,6 +3490,7 @@ module.exports = {
   validateManifestReference,
   validateManifest,
   createBoundedTransform,
+  temporaryStorageDiagnostics,
   downloadToFile,
   decompressZstd,
   validateArchiveFile,
