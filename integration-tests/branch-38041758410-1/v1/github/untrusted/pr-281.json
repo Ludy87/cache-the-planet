@@ -181,10 +181,31 @@
       "artifact_id": 11666117185,
       "artifact_name": "cache-untrusted-pr-281-npm-linux-x64-branch-test-38041758410-1-npm-v1--d6470ccb5be1ab22752e1a384e806eba0adfef9e4c3fb8d906b38f835c9ffcd2.tar.zst-part-000000",
       "workflow_run_id": 38041758410
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-281/maven-java17/linux-x64/branch-test-38041758410-1-maven/v1": {
+      "object": "sha256:b1caa414d1fb7e9bc5e9500a5b6a7bcab25e10862d4b459c7f7751fe79bac08f",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-10T09:35:50.871Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 135,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:b1caa414d1fb7e9bc5e9500a5b6a7bcab25e10862d4b459c7f7751fe79bac08f",
+          "size": 135,
+          "artifact_id": 11666092264,
+          "artifact_name": "cache-untrusted-pr-281-maven-java17-linux-x64-branch-test-38041758410-1-maven-v1--b1caa414d1fb7e9bc5e9500a5b6a7bcab25e10862d4b459c7f7751fe79bac08f.tar.zst-part-000000",
+          "workflow_run_id": 38041758410
+        }
+      ],
+      "artifact_id": 11666092264,
+      "artifact_name": "cache-untrusted-pr-281-maven-java17-linux-x64-branch-test-38041758410-1-maven-v1--b1caa414d1fb7e9bc5e9500a5b6a7bcab25e10862d4b459c7f7751fe79bac08f.tar.zst-part-000000",
+      "workflow_run_id": 38041758410
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-10T09:35:48.407Z",
-    "writes": 1
+    "writes": 2
   }
 }
