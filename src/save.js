@@ -125,7 +125,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       return;
     }
     if (String(c.input(INPUTS.RESTORE_ONLY)).toLowerCase() === "true") {
-      c.log("post-save skipped because restore-only is enabled");
+      c.normalLog("post-save skipped because restore-only is enabled");
       c.summary("Cache Save", {
         Status: "SKIPPED",
         Reason: "restore-only is enabled",
@@ -193,7 +193,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "shared cache keys may only be saved from the repository default branch",
       );
     }
-    c.log(
+    c.normalLog(
       `post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
     );
     c.assertPostStorage(storage);
@@ -214,7 +214,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           Reason: "Shared cache already exists",
           "Matched key": sharedEquivalent,
         });
-        c.log(
+        c.normalLog(
           `shared cache already exists; isolated PR cache publish skipped: key=${sharedEquivalent}`,
         );
         if (process.env.GITHUB_OUTPUT) {
@@ -263,7 +263,7 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
           );
         }
         const existingAssetName = existingAsset.name;
-        c.log(
+        c.normalLog(
           `cache already exists for key=${key}; asset=${existingAssetName}`,
         );
         if (process.env.GITHUB_OUTPUT) {
