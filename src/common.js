@@ -13,6 +13,7 @@ let githubClientPromise;
 let sftpClientPromise;
 let artifactClientPromise;
 const artifactMetadataCache = new Map();
+const artifactDownloadConcurrency = 10;
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -2830,8 +2831,30 @@ async function downloadArtifactParts(reference) {
   const file = path.join(directory, "archive.tar.zst");
   try {
     const output = fs.createWriteStream(file, { flags: "wx" });
-    for (const part of reference.parts) {
-      const partFile = await downloadArtifactPart(part, directory);
+    const partFiles = new Array(reference.parts.length);
+    let nextIndex = 0;
+    const downloadWorker = async () => {
+      while (true) {
+        const index = nextIndex++;
+        if (index >= reference.parts.length) return;
+        partFiles[index] = await downloadArtifactPart(
+          reference.parts[index],
+          directory,
+        );
+      }
+    };
+    await Promise.all(
+      Array.from(
+        {
+          length: Math.min(
+            artifactDownloadConcurrency,
+            reference.parts.length,
+          ),
+        },
+        downloadWorker,
+      ),
+    );
+    for (const partFile of partFiles) {
       output.write(fs.readFileSync(partFile));
       removeTemporaryFile(path.dirname(partFile));
     }
@@ -2975,14 +2998,10 @@ async function uploadObject(repository, file, name, contentType) {
           directory,
           `part-${String(index).padStart(6, "0")}.bin`,
         );
-        const descriptor = fs.openSync(file, "r");
-        const buffer = Buffer.allocUnsafe(length);
-        try {
-          fs.readSync(descriptor, buffer, 0, length, offset);
-        } finally {
-          fs.closeSync(descriptor);
-        }
-        fs.writeFileSync(partFile, buffer, { flag: "wx" });
+        await pipeline(
+          fs.createReadStream(file, { start: offset, end: offset + length - 1 }),
+          fs.createWriteStream(partFile, { flags: "wx" }),
+        );
         const partSuffix = `-part-${String(index).padStart(6, "0")}`;
         const artifactPrefix = `cache-${name.replace(/[^A-Za-z0-9._-]/g, "-")}`;
         const artifactName = `${artifactPrefix.slice(0, 180 - partSuffix.length)}${partSuffix}`;
@@ -3018,12 +3037,16 @@ async function uploadObject(repository, file, name, contentType) {
           throw new Error("artifact upload returned no valid artifact id");
         parts.push({
           index,
-          object: `sha256:${crypto.createHash("sha256").update(buffer).digest("hex")}`,
+          object: digest(partFile),
           size: length,
           artifact_id: result.id,
           artifact_name: artifactName,
           workflow_run_id: Number(process.env.GITHUB_RUN_ID),
         });
+        // Uploads are sequential, so the part is no longer needed once its
+        // artifact metadata has been recorded. Keep runner disk usage bounded
+        // to the archive plus one part instead of retaining every part.
+        removeTemporaryFile(partFile);
       }
       return {
         id: parts[0].artifact_id,
