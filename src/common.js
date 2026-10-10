@@ -1679,14 +1679,9 @@ function isCargoRegistryPublicKeyFixturePath(normalizedRelative, root) {
   );
 }
 
-function isUvPackageSourceFile(file, relative, root) {
-  const normalizedRoot = normalizeCachePath(root);
+function isUvPackageSourceFile(file, relative) {
   const normalizedRelative = normalizeCachePath(relative);
-  const isUvCacheRoot =
-    /(?:^|\/)\.cache\/setup-uv-cache(?:\/|$)/i.test(normalizedRoot) ||
-    path.basename(root).toLowerCase() === "setup-uv-cache";
-  if (!isUvCacheRoot || !uvPackageArchivePath.test(normalizedRelative))
-    return false;
+  if (!uvPackageArchivePath.test(normalizedRelative)) return false;
   const basename = path.basename(file);
   return sourceFileName.test(basename) || /^[A-Za-z0-9_-]+$/.test(basename);
 }
@@ -1739,7 +1734,7 @@ function securityScan(root, options = {}) {
     const dependencySourcePath =
       isCargoRegistrySourcePath(normalizedRelative, root) ||
       isNodeModulesPath(normalizedRelative, root) ||
-      isUvPackageSourceFile(file, relative, root);
+      isUvPackageSourceFile(file, relative);
     if (
       virtualEnvironmentPath.test(relative) ||
       path.basename(file) === ".venv"

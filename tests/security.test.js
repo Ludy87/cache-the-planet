@@ -1088,6 +1088,56 @@ test("security scan allows credential-named Python source in the setup-uv cache"
   }
 });
 
+test("security scan allows credential-named Python source in the uv cache", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-uv-short-name-"),
+  );
+  const root = path.join(workspace, ".cache", "uv");
+  const source = path.join(
+    root,
+    "archive-v0",
+    "nHkwNGvdahQM-x1E",
+    "openai",
+    "types",
+    "beta",
+    "agents",
+    "vaults",
+    "credential_deleted.py",
+  );
+  try {
+    fs.mkdirSync(path.dirname(source), { recursive: true });
+    fs.writeFileSync(source, "class CredentialDeleted: pass\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("security scan recognizes uv package sources under a custom cache root", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-custom-uv-root-"),
+  );
+  const root = path.join(workspace, "my-custom-cache-location");
+  const source = path.join(
+    root,
+    "archive-v0",
+    "package-hash",
+    "openai",
+    "types",
+    "beta",
+    "agents",
+    "vaults",
+    "credential_deleted.py",
+  );
+  try {
+    fs.mkdirSync(path.dirname(source), { recursive: true });
+    fs.writeFileSync(source, "class CredentialDeleted: pass\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-config-test-"),
