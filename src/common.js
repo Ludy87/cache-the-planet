@@ -1181,6 +1181,15 @@ function normalLog(message) {
   console.log(message);
 }
 
+async function withLogGroup(title, action) {
+  console.log(`::group::${title}`);
+  try {
+    return await action();
+  } finally {
+    console.log("::endgroup::");
+  }
+}
+
 function progressLog(action, hash, current, total) {
   const completed = Math.max(0, Math.min(current, total));
   const percent = total ? Math.floor((completed / total) * 100) : 100;
@@ -2859,28 +2868,33 @@ async function downloadArtifactObject(reference) {
     throw new Error("artifact reference has no valid workflow run id");
   if (typeof reference.artifact_name !== "string" || !reference.artifact_name)
     throw new Error("artifact reference has no valid artifact name");
-  await validateArtifactReference(reference);
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
-  try {
-    await (
-      await artifactClient()
-    ).downloadArtifact(reference.artifact_id, {
-      path: directory,
-      findBy: artifactFindBy(reference.workflow_run_id),
-    });
-    const files = fs.readdirSync(directory);
-    if (files.length !== 1)
-      throw new Error("artifact must contain exactly one archive");
-    const file = path.join(directory, files[0]);
-    if (reference.size != null && fs.statSync(file).size !== reference.size)
-      throw new Error("artifact cache size mismatch");
-    if (digest(file) !== reference.object)
-      throw new Error("artifact cache integrity check failed: sha256 mismatch");
-    return file;
-  } catch (error) {
-    removeTemporaryFile(directory);
-    throw error;
-  }
+  return withLogGroup(
+    `Artifact download: ${reference.artifact_name}`,
+    async () => {
+      await validateArtifactReference(reference);
+      const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
+      try {
+        await (
+          await artifactClient()
+        ).downloadArtifact(reference.artifact_id, {
+          path: directory,
+          findBy: artifactFindBy(reference.workflow_run_id),
+        });
+        const files = fs.readdirSync(directory);
+        if (files.length !== 1)
+          throw new Error("artifact must contain exactly one archive");
+        const file = path.join(directory, files[0]);
+        if (reference.size != null && fs.statSync(file).size !== reference.size)
+          throw new Error("artifact cache size mismatch");
+        if (digest(file) !== reference.object)
+          throw new Error("artifact cache integrity check failed: sha256 mismatch");
+        return file;
+      } catch (error) {
+        removeTemporaryFile(directory);
+        throw error;
+      }
+    },
+  );
 }
 
 async function downloadArtifactPart(part, directory) {
@@ -2890,24 +2904,29 @@ async function downloadArtifactPart(part, directory) {
     throw new Error("artifact part has no valid workflow run id");
   if (typeof part.artifact_name !== "string" || !part.artifact_name)
     throw new Error("artifact part has no valid artifact name");
-  await validateArtifactReference(part);
-  const partDirectory = path.join(directory, `part-${part.index}`);
-  fs.mkdirSync(partDirectory);
-  await (
-    await artifactClient()
-  ).downloadArtifact(part.artifact_id, {
-    path: partDirectory,
-    findBy: artifactFindBy(part.workflow_run_id),
-  });
-  const files = fs.readdirSync(partDirectory);
-  if (files.length !== 1)
-    throw new Error("artifact part must contain exactly one file");
-  const file = path.join(partDirectory, files[0]);
-  if (fs.statSync(file).size !== part.size)
-    throw new Error("artifact part size mismatch");
-  if (digest(file) !== part.object)
-    throw new Error("artifact part integrity check failed: sha256 mismatch");
-  return file;
+  return withLogGroup(
+    `Artifact download: ${part.artifact_name}`,
+    async () => {
+      await validateArtifactReference(part);
+      const partDirectory = path.join(directory, `part-${part.index}`);
+      fs.mkdirSync(partDirectory);
+      await (
+        await artifactClient()
+      ).downloadArtifact(part.artifact_id, {
+        path: partDirectory,
+        findBy: artifactFindBy(part.workflow_run_id),
+      });
+      const files = fs.readdirSync(partDirectory);
+      if (files.length !== 1)
+        throw new Error("artifact part must contain exactly one file");
+      const file = path.join(partDirectory, files[0]);
+      if (fs.statSync(file).size !== part.size)
+        throw new Error("artifact part size mismatch");
+      if (digest(file) !== part.object)
+        throw new Error("artifact part integrity check failed: sha256 mismatch");
+      return file;
+    },
+  );
 }
 
 async function downloadArtifactParts(reference) {
