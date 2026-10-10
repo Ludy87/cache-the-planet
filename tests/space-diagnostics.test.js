@@ -12,10 +12,16 @@ test("temporary storage diagnostics report archive and disk information", () => 
   const output = path.join(directory, "validation.tar");
   try {
     fs.writeFileSync(input, Buffer.alloc(1024));
+    fs.writeFileSync(output, Buffer.alloc(2048));
     const diagnostics = temporaryStorageDiagnostics(input, output, 1024 * 1024);
+    assert.match(diagnostics, /partial-output=2(?:\.00)?KB/);
     assert.match(diagnostics, /compressed=1(?:\.00)?KB/);
     assert.match(diagnostics, /output-limit=1(?:\.00)?MB/);
-    assert.match(diagnostics, /free=\d+(\.\d+)?(KB|MB|GB|TB)/);
+    assert.match(diagnostics, /filesystem=[A-Za-z]:\\/);
+    assert.match(
+      diagnostics,
+      /free-before-cleanup=\d+(\.\d+)?(KB|MB|GB|TB)/,
+    );
     assert.match(diagnostics, /validation\.tar$/);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });

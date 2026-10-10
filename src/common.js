@@ -309,13 +309,22 @@ function removeTemporaryFile(file) {
 function temporaryStorageDiagnostics(inputFile, outputFile, maxBytes) {
   const details = [];
   try {
+    details.push(
+      `partial-output=${formatTransferSize(fs.statSync(outputFile).size)}`,
+    );
+  } catch {
+    details.push("partial-output=unavailable");
+  }
+  try {
     details.push(`compressed=${formatTransferSize(fs.statSync(inputFile).size)}`);
   } catch {}
   details.push(`output-limit=${formatTransferSize(maxBytes)}`);
   try {
-    const stats = fs.statfsSync(path.dirname(outputFile));
+    const filesystem = path.parse(outputFile).root || path.dirname(outputFile);
+    const stats = fs.statfsSync(filesystem);
     const freeBytes = Number(stats.bavail) * Number(stats.bsize);
-    details.push(`free=${formatTransferSize(freeBytes)}`);
+    details.push(`filesystem=${filesystem}`);
+    details.push(`free-before-cleanup=${formatTransferSize(freeBytes)}`);
   } catch {}
   details.push(`output=${outputFile}`);
   return details.join(", ");
@@ -2020,7 +2029,6 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
     }
   } catch (error) {
     zstd.kill("SIGKILL");
-    removeTemporaryFile(outputFile);
     const message = String(error?.message || "zstd decompression failed");
     const noSpace =
       error?.code === "ENOSPC" || /no space left on device/i.test(message);
@@ -2032,6 +2040,7 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
     console.log("::group::Cache decompression diagnostics");
     console.log(`::notice title=Cache storage::${diagnostics}`);
     console.log("::endgroup::");
+    removeTemporaryFile(outputFile);
     throw new Error(
       `zstd decompression failed${noSpace ? ": no space left on device" : `: ${message}`} (${diagnostics})`,
       { cause: error },
