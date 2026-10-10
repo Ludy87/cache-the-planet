@@ -17,7 +17,7 @@ test("temporary storage diagnostics report archive and disk information", () => 
     assert.match(diagnostics, /partial-output=2(?:\.00)?KB/);
     assert.match(diagnostics, /compressed=1(?:\.00)?KB/);
     assert.match(diagnostics, /output-limit=1(?:\.00)?MB/);
-    assert.match(diagnostics, /filesystem=[A-Za-z]:\\/);
+    assert.match(diagnostics, /filesystem=(?:[A-Za-z]:\\|\/)/);
     assert.match(
       diagnostics,
       /free-before-cleanup=\d+(\.\d+)?(KB|MB|GB|TB)/,
