@@ -347,10 +347,39 @@
       "artifact_id": 11677998288,
       "artifact_name": "cache-untrusted-pr-293-docker-qemu-linux-x64-174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-v1--39fe0c2597276999b927d8773b504d69fc506f2bedeba37866c5c6-part-000000",
       "workflow_run_id": 38074569770
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-293/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:f83c989b00e7c274e719343c3e647e5d5c51c5eafcb6d8010d2fc1939b4820a5",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-10T18:12:16.489Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33138188,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11678257865,
+          "artifact_name": "cache-untrusted-pr-293-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--f83c989b00e7c274e719343c3e647e5d5c51c5eafcb6d8010d2fc1939b4820-part-000000",
+          "workflow_run_id": 38074569770
+        },
+        {
+          "index": 1,
+          "object": "sha256:268f8698f2f3ddcc3f6af5b29377452fa31a5fea49113f4dc211ba8f7fbb09e7",
+          "size": 7972364,
+          "artifact_id": 11677788627,
+          "artifact_name": "cache-untrusted-pr-293-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--f83c989b00e7c274e719343c3e647e5d5c51c5eafcb6d8010d2fc1939b4820-part-000001",
+          "workflow_run_id": 38074569770
+        }
+      ],
+      "artifact_id": 11678257865,
+      "artifact_name": "cache-untrusted-pr-293-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--f83c989b00e7c274e719343c3e647e5d5c51c5eafcb6d8010d2fc1939b4820-part-000000",
+      "workflow_run_id": 38074569770
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-10T18:08:20.345Z",
-    "writes": 7
+    "writes": 8
   }
 }
