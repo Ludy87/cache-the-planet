@@ -518,10 +518,18 @@
       "artifact_id": 11671669476,
       "artifact_name": "cache-shared-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v1--16012607b4ac6382bff8a79f91474cac00a334d73f93e76f12790eb0180d1ef-part-000000",
       "workflow_run_id": 38057624354
+    },
+    "shared/Ludy87/cache-the-planet/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
+      "object": "sha256:1b1912da5b73860db58ab4005a5cb15d6be239d4474bc3a7794257e1b20e4626",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-10T14:48:57.135Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 16937861
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-10T13:59:00.597Z",
-    "writes": 2
+    "writes": 3
   }
 }
