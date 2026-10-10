@@ -526,10 +526,87 @@
       "artifact_id": 11672864214,
       "artifact_name": "cache-shared-uv-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--8c21eb95252758c01433b176939592d06e60827bdab77e79717340397da87a99.tar.zst-part-000000",
       "workflow_run_id": 38060897100
+    },
+    "shared/Ludy87/cache-the-planet/uv-python-3-13/linux-x64/0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611/v1": {
+      "object": "sha256:02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2ada4",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-10T14:49:58.556Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 184284976,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:1204625157aa855eb488208fda410e5c9f2d26609c2c61a509e55f6b232d51a5",
+          "size": 25165824,
+          "artifact_id": 11673246881,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000000",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 1,
+          "object": "sha256:7ee08f9fdb9abd8bcbde24d8bb61ef8bc0c3d7f6594217f82c5c28b0579ed3ae",
+          "size": 25165824,
+          "artifact_id": 11673211920,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000001",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 2,
+          "object": "sha256:616fac8319d856e1ca3ec45594b4037a6680957bd8c3220ef3c4d01671dc9dbd",
+          "size": 25165824,
+          "artifact_id": 11673306856,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000002",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 3,
+          "object": "sha256:0c475a93f36bb9548cb33394e824334aefc91b10de16f11a3832e994e10cb92f",
+          "size": 25165824,
+          "artifact_id": 11672992158,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000003",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 4,
+          "object": "sha256:2e34306a0a302b5f603701222f5d8549bc06a6d50bb9e5e49633fae01a6ae8cb",
+          "size": 25165824,
+          "artifact_id": 11673291814,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000004",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 5,
+          "object": "sha256:8cf31dd6e9b4a4b38218a42c4bb13109969aed9211f55ad379b79e95ce1f193c",
+          "size": 25165824,
+          "artifact_id": 11673256907,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000005",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 6,
+          "object": "sha256:a5a95737bb54888db1b46cf54d6982516ff753347b0c8e2abc76f28caafadd55",
+          "size": 25165824,
+          "artifact_id": 11673082105,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000006",
+          "workflow_run_id": 38060897100
+        },
+        {
+          "index": 7,
+          "object": "sha256:ef9ee268b815fddce24c6333f90740a8c2fcf6a385a08c9dd9f2a6f6f5fcc0bb",
+          "size": 8124208,
+          "artifact_id": 11672992162,
+          "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000007",
+          "workflow_run_id": 38060897100
+        }
+      ],
+      "artifact_id": 11673246881,
+      "artifact_name": "cache-shared-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--02fc4340fc2a96d1d2f6699ace020688b468d1054cc694ff2b60e3e0eae2a-part-000000",
+      "workflow_run_id": 38060897100
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-10T13:59:00.597Z",
-    "writes": 4
+    "writes": 5
   }
 }
