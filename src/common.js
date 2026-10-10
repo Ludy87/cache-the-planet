@@ -1830,8 +1830,24 @@ async function makeArchive() {
   const excludes = excludePatterns();
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cac-"));
   const output = path.join(directory, "object.tar.zst");
+  const excludeFile = path.join(directory, "tar-excludes.txt");
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   try {
+    const tarExcludes = [
+      ...new Set(
+        excludes.flatMap((pattern) =>
+          pattern.endsWith("/**")
+            ? [pattern.slice(0, -3), pattern]
+            : [pattern],
+        ),
+      ),
+    ];
+    if (tarExcludes.length) {
+      fs.writeFileSync(excludeFile, `${tarExcludes.join("\n")}\n`, {
+        encoding: "utf8",
+        mode: 0o600,
+      });
+    }
     const requestedPaths = [];
     for (const value of entries()) {
       const absolute = path.resolve(workspace, value);
@@ -1889,7 +1905,7 @@ async function makeArchive() {
         "--format=gnu",
         "-cf",
         "-",
-        ...excludes.flatMap((value) => ["--exclude", value]),
+        ...(tarExcludes.length ? ["--exclude-from", excludeFile] : []),
         "-C",
         tarPath(workspace),
         ...paths,
