@@ -1060,6 +1060,34 @@ test("security scan skips explicitly excluded credential-like files", () => {
   }
 });
 
+test("security scan allows credential-named Python source in the setup-uv cache", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-uv-source-"),
+  );
+  const root = path.join(workspace, ".cache", "setup-uv-cache");
+  const source = path.join(
+    root,
+    "archive-v0",
+    "7HopJMvkDNjp_hA_",
+    "openai",
+    "types",
+    "beta",
+    "agents",
+    "vaults",
+    "credential_deleted.py",
+  );
+  const realCredential = path.join(root, "credentials.json");
+  try {
+    fs.mkdirSync(path.dirname(source), { recursive: true });
+    fs.writeFileSync(source, "class CredentialDeleted: pass\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+    fs.writeFileSync(realCredential, '{"token":"not-a-real-token"}\n');
+    assert.throws(() => common.securityScan(root), /sensitive-looking file/);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-config-test-"),
