@@ -330,6 +330,22 @@ function temporaryStorageDiagnostics(inputFile, outputFile, maxBytes) {
   return details.join(", ");
 }
 
+function classifyZstdFailure(error) {
+  const message = String(error?.message || "zstd decompression failed");
+  if (error?.code === "ENOSPC" || /no space left on device/i.test(message)) {
+    return "no space left on device";
+  }
+  if (
+    error?.code === "EPIPE" ||
+    error?.code === "ERR_STREAM_PREMATURE_CLOSE" ||
+    /broken pipe|write after end|premature close/i.test(message) ||
+    /zstd exited with code 70/i.test(message)
+  ) {
+    return "output pipe closed (broken pipe; zstd exit code 70)";
+  }
+  return message;
+}
+
 function configuredCacheNames() {
   const environmentValue = process.env.CACHE_ALLOWED_CACHE_NAMES;
   const configValue = configuration().security?.allowed_cache_names;
@@ -2005,33 +2021,30 @@ async function makeArchive() {
 
 async function decompressZstd(inputFile, outputFile, maxBytes) {
   let zstdStderr = "";
-  const zstd = cp.spawn("zstd", ["-q", "-d", "-c", inputFile], {
-    stdio: ["ignore", "pipe", "pipe"],
+  const zstd = cp.spawn("zstd", ["-q", "-d", inputFile, "-o", outputFile], {
+    stdio: ["ignore", "ignore", "pipe"],
   });
   zstd.stderr.on("data", (chunk) => {
     zstdStderr += chunk.toString();
   });
   const exit = new Promise((resolve, reject) => {
     zstd.once("error", reject);
-    zstd.once("close", resolve);
+    zstd.once("close", (code) => resolve(code));
   });
-  const limiter = createBoundedTransform(
-    maxBytes,
-    "cache archive exceeds the uncompressed size limit",
-  );
   try {
-    await pipeline(zstd.stdout, limiter, fs.createWriteStream(outputFile));
     const code = await exit;
     if (code !== 0) {
       throw new Error(
         zstdStderr.trim() || `zstd exited with code ${code}`,
       );
     }
+    const outputSize = fs.statSync(outputFile).size;
+    if (outputSize > maxBytes) {
+      throw new Error("cache archive exceeds the uncompressed size limit");
+    }
   } catch (error) {
     zstd.kill("SIGKILL");
-    const message = String(error?.message || "zstd decompression failed");
-    const noSpace =
-      error?.code === "ENOSPC" || /no space left on device/i.test(message);
+    const reason = classifyZstdFailure(error);
     const diagnostics = temporaryStorageDiagnostics(
       inputFile,
       outputFile,
@@ -2042,7 +2055,7 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
     console.log("::endgroup::");
     removeTemporaryFile(outputFile);
     throw new Error(
-      `zstd decompression failed${noSpace ? ": no space left on device" : `: ${message}`} (${diagnostics})`,
+      `zstd decompression failed: ${reason} (${diagnostics})`,
       { cause: error },
     );
   }
@@ -3522,6 +3535,7 @@ module.exports = {
   validateManifest,
   createBoundedTransform,
   temporaryStorageDiagnostics,
+  classifyZstdFailure,
   downloadToFile,
   decompressZstd,
   validateArchiveFile,
