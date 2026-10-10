@@ -526,10 +526,31 @@
       "source": "Ludy87/cache-the-planet",
       "created_by": "Ludy87",
       "size": 16937861
+    },
+    "shared/Ludy87/cache-the-planet/uv/linux-x64/0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611/v1": {
+      "object": "sha256:8c21eb95252758c01433b176939592d06e60827bdab77e79717340397da87a99",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-10T14:49:23.804Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 11771880,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:8c21eb95252758c01433b176939592d06e60827bdab77e79717340397da87a99",
+          "size": 11771880,
+          "artifact_id": 11672864214,
+          "artifact_name": "cache-shared-uv-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--8c21eb95252758c01433b176939592d06e60827bdab77e79717340397da87a99.tar.zst-part-000000",
+          "workflow_run_id": 38060897100
+        }
+      ],
+      "artifact_id": 11672864214,
+      "artifact_name": "cache-shared-uv-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--8c21eb95252758c01433b176939592d06e60827bdab77e79717340397da87a99.tar.zst-part-000000",
+      "workflow_run_id": 38060897100
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-10T13:59:00.597Z",
-    "writes": 3
+    "writes": 4
   }
 }
