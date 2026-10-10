@@ -1405,7 +1405,7 @@ function cleanupCachePathsAfterSave() {
     }
     try {
       fs.rmSync(absolute, { force: true, recursive: true });
-      log(`removed cache path after successful save: ${value}`);
+      normalLog(`removed cache path after successful save: ${value}`);
     } catch (error) {
       log(`cache path cleanup failed for ${value}: ${error.message}`);
     }
