@@ -1986,8 +1986,12 @@ async function makeArchive() {
 }
 
 async function decompressZstd(inputFile, outputFile, maxBytes) {
+  let zstdStderr = "";
   const zstd = cp.spawn("zstd", ["-q", "-d", "-c", inputFile], {
-    stdio: ["ignore", "pipe", "inherit"],
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  zstd.stderr.on("data", (chunk) => {
+    zstdStderr += chunk.toString();
   });
   const exit = new Promise((resolve, reject) => {
     zstd.once("error", reject);
@@ -2000,20 +2004,21 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
   try {
     await pipeline(zstd.stdout, limiter, fs.createWriteStream(outputFile));
     const code = await exit;
-    if (code !== 0) throw new Error("zstd decompression failed");
+    if (code !== 0) {
+      throw new Error(
+        zstdStderr.trim() || `zstd exited with code ${code}`,
+      );
+    }
   } catch (error) {
     zstd.kill("SIGKILL");
     removeTemporaryFile(outputFile);
-    if (
-      error?.code === "ENOSPC" ||
-      /no space left on device/i.test(String(error?.message || ""))
-    ) {
-      throw new Error(
-        `zstd decompression failed: no space left on device (${temporaryStorageDiagnostics(inputFile, outputFile, maxBytes)})`,
-        { cause: error },
-      );
-    }
-    throw error;
+    const message = String(error?.message || "zstd decompression failed");
+    const noSpace =
+      error?.code === "ENOSPC" || /no space left on device/i.test(message);
+    throw new Error(
+      `zstd decompression failed${noSpace ? ": no space left on device" : `: ${message}`} (${temporaryStorageDiagnostics(inputFile, outputFile, maxBytes)})`,
+      { cause: error },
+    );
   }
 }
 
