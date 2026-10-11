@@ -953,9 +953,9 @@ test("security scan allows generated Cargo target dependency artifacts", () => {
     path.join(os.tmpdir(), "cache-security-cargo-target-artifacts-"),
   );
   const files = [
-    ["target", "release", ".fingerprint", "secret-service-hash", "lib-secret_service.json"],
-    ["target", "release", "build", "aws-lc-sys-hash", "out", "trust_token.o"],
-    ["target", "release", "deps", "libzbus_secret_service_keyring_store.rlib"],
+    ["target", "release", ".fingerprint", "secret-service-3104b2f7aff5d870", "lib-secret_service.json"],
+    ["target", "release", "build", "aws-lc-sys-4e9c2e12477b", "out", "4696e3d2cc941c84-trust_token.o"],
+    ["target", "release", "deps", "libzbus_secret_service_keyring_store-a6d634d4e7e97b68.rlib"],
   ];
   try {
     for (const entry of files) {
@@ -964,6 +964,9 @@ test("security scan allows generated Cargo target dependency artifacts", () => {
       fs.writeFileSync(file, "generated dependency artifact\n");
     }
     assert.doesNotThrow(() => common.securityScan(root));
+    const userFile = path.join(root, "target", "release", "deps", "secret-token");
+    fs.writeFileSync(userFile, "user-controlled content\n");
+    assert.throws(() => common.securityScan(root), /sensitive-looking file/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

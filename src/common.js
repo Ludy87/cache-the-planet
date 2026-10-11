@@ -1641,10 +1641,22 @@ const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 // Cargo target metadata and dependency outputs can contain crate names such as
 // `secret-service` or generated symbols such as `trust_token`. These are build
-// artifacts, not user credentials. Keep the exception limited to Cargo's
-// generated fingerprint, build-output, and dependency directories.
-const cargoGeneratedArtifactPath =
-  /(?:^|\/)target\/(?:debug|release)\/(?:\.fingerprint|build\/[^/]+\/out|deps)(?:\/|$)/i;
+// artifacts, not user credentials. Match Cargo's generated filename shapes as
+// well as its directories; users may choose any cache path.
+function isCargoGeneratedArtifactPath(normalizedRelative, file) {
+  const basename = path.basename(file);
+  const fingerprint =
+    /(?:^|\/)target\/(?:debug|release)\/\.fingerprint\/(?:[^/]+-[0-9a-f]{16,}(?:\/|$)|[^/]+-[0-9a-f]{16,}\/(?:dep-|lib-|output-|run-|invoked|test-bin-))/i;
+  const buildOutput =
+    /(?:^|\/)target\/(?:debug|release)\/build\/[^/]+\/out\/[0-9a-f]{16,}-[^/]+\.(?:o|obj|rlib|rmeta)$/i;
+  const dependency =
+    /(?:^|\/)target\/(?:debug|release)\/deps\/(?:lib-)?[a-z0-9_]+-[0-9a-f]{16,}\.(?:d|rlib|rmeta|so|a|lib)$/i;
+  return (
+    fingerprint.test(normalizedRelative) ||
+    buildOutput.test(normalizedRelative) ||
+    dependency.test(normalizedRelative)
+  );
+}
 const uvPackageArchivePath = /^archive-v\d+[^/]*\/[^/]+\/.+/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // Public package source trees commonly ship dummy keys for TLS examples and
@@ -1793,7 +1805,7 @@ function securityScan(root, options = {}) {
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(normalizedRelative) &&
         !cargoBinPath.test(normalizedRelative) &&
-        !cargoGeneratedArtifactPath.test(normalizedRelative) &&
+        !isCargoGeneratedArtifactPath(normalizedRelative, file) &&
         !(
           cargoRegistryCachePath.test(normalizedRelative) &&
           binaryFileName.test(path.basename(file))
