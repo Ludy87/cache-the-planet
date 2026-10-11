@@ -369,6 +369,7 @@ jobs:
     if: ${{ !cancelled() && needs.test.result == 'success' }}
     uses: $/.github/workflows/tauri-cache-asset-integration.yml
     with:
+      project-path: examples/tauri-cache
       save-cache: true
     permissions:
       contents: write

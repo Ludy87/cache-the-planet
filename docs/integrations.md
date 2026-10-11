@@ -143,15 +143,17 @@ jobs:
   tauri:
     uses: Ludy87/cache-the-planet/.github/workflows/tauri-cache-asset-integration.yml@v1
     with:
-      project-path: desktop
+      project-path: examples/tauri-cache
       save-cache: true
     secrets: inherit
 ```
 
-Der Workflow erwartet `package-lock.json`, `src-tauri/Cargo.lock` und ein
-`tauri`-Build-Script im `package.json`. Da `src-tauri/target` Build-Ausgaben
-enthalten kann, sollten Projekte keine Secrets oder produktiven Zugangsdaten
-in den Build-Kontext legen; der Cache ersetzt keine eigene Artefaktprüfung.
+Das Repository enthält mit `examples/tauri-cache` ein minimales Tauri-v2-
+Projekt, das diese Integrationssuite verwendet. Der Workflow erwartet
+`package-lock.json`, `src-tauri/Cargo.lock` und ein `tauri`-Build-Script im
+`package.json`. Da `src-tauri/target` Build-Ausgaben enthalten kann, sollten
+Projekte keine Secrets oder produktiven Zugangsdaten in den Build-Kontext
+legen; der Cache ersetzt keine eigene Artefaktprüfung.
 
 ## Scope-Muster für Integrationen
 
