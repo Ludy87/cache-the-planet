@@ -972,6 +972,29 @@ test("security scan allows generated Cargo target dependency artifacts", () => {
   }
 });
 
+test("security scan recognizes a Cargo target when it is the cache root", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-target-root-"),
+  );
+  const root = path.join(workspace, "src-tauri", "target");
+  try {
+    fs.mkdirSync(path.join(workspace, "src-tauri"), { recursive: true });
+    fs.writeFileSync(path.join(workspace, "src-tauri", "Cargo.toml"), "[package]\nname = \"fixture\"\n");
+    const file = path.join(
+      root,
+      "release",
+      ".fingerprint",
+      "secret-service-3104b2f7aff5d870",
+      "lib-secret_service.json",
+    );
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, "generated dependency artifact\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows dotenv documentation in nested Windows node_modules", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-dotenv-windows-paths-"),

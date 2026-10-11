@@ -1643,8 +1643,14 @@ const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 // `secret-service` or generated symbols such as `trust_token`. These are build
 // artifacts, not user credentials. Match Cargo's generated filename shapes as
 // well as its directories; users may choose any cache path.
-function isCargoGeneratedArtifactPath(normalizedRelative, file) {
+function isCargoGeneratedArtifactPath(normalizedRelative, file, root) {
   const basename = path.basename(file);
+  const targetRoot =
+    path.basename(root).toLowerCase() === "target" &&
+    fs.existsSync(path.join(path.dirname(root), "Cargo.toml"));
+  const cargoRelative = targetRoot
+    ? `target/${normalizedRelative}`
+    : normalizedRelative;
   const fingerprint =
     /(?:^|\/)target\/(?:debug|release)\/\.fingerprint\/(?:[^/]+-[0-9a-f]{16,}(?:\/|$)|[^/]+-[0-9a-f]{16,}\/(?:dep-|lib-|output-|run-|invoked|test-bin-))/i;
   const buildOutput =
@@ -1652,9 +1658,9 @@ function isCargoGeneratedArtifactPath(normalizedRelative, file) {
   const dependency =
     /(?:^|\/)target\/(?:debug|release)\/deps\/(?:lib-)?[a-z0-9_]+-[0-9a-f]{16,}\.(?:d|rlib|rmeta|so|a|lib)$/i;
   return (
-    fingerprint.test(normalizedRelative) ||
-    buildOutput.test(normalizedRelative) ||
-    dependency.test(normalizedRelative)
+    fingerprint.test(cargoRelative) ||
+    buildOutput.test(cargoRelative) ||
+    dependency.test(cargoRelative)
   );
 }
 const uvPackageArchivePath = /^archive-v\d+[^/]*\/[^/]+\/.+/i;
@@ -1805,7 +1811,7 @@ function securityScan(root, options = {}) {
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(normalizedRelative) &&
         !cargoBinPath.test(normalizedRelative) &&
-        !isCargoGeneratedArtifactPath(normalizedRelative, file) &&
+        !isCargoGeneratedArtifactPath(normalizedRelative, file, root) &&
         !(
           cargoRegistryCachePath.test(normalizedRelative) &&
           binaryFileName.test(path.basename(file))
