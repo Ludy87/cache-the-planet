@@ -956,6 +956,9 @@ test("security scan allows generated Cargo target dependency artifacts", () => {
     ["target", "release", ".fingerprint", "secret-service-3104b2f7aff5d870", "lib-secret_service.json"],
     ["target", "release", "build", "aws-lc-sys-4e9c2e12477b", "out", "4696e3d2cc941c84-trust_token.o"],
     ["target", "release", "deps", "libzbus_secret_service_keyring_store-a6d634d4e7e97b68.rlib"],
+    ["target", "release", "deps", "match_token-cd879aa71d689499.dll.exp"],
+    ["target", "release", "deps", "match_token-cd879aa71d689499.dll.lib"],
+    ["target", "release", "deps", "match_token-cd879aa71d689499.pdb"],
   ];
   try {
     for (const entry of files) {

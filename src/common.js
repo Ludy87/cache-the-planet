@@ -1670,7 +1670,7 @@ function isCargoGeneratedArtifactPath(normalizedRelative, file, root) {
   const buildOutput =
     /(?:^|\/)target\/(?:debug|release)\/build\/[^/]+\/out\/[0-9a-f]{16,}-[^/]+\.(?:o|obj|rlib|rmeta)$/i;
   const dependency =
-    /(?:^|\/)target\/(?:debug|release)\/deps\/(?:lib-)?[a-z0-9_]+-[0-9a-f]{16,}\.(?:d|rlib|rmeta|so|a|lib)$/i;
+    /(?:^|\/)target\/(?:debug|release)\/deps\/(?:lib-)?[a-z0-9_]+-[0-9a-f]{16,}\.(?:d|rlib|rmeta|so|a|lib|dll\.(?:exp|lib)|pdb)$/i;
   return (
     fingerprint.test(cargoRelative) ||
     buildOutput.test(cargoRelative) ||
