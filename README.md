@@ -359,6 +359,7 @@ Optional kann eine JSON-Datei verwendet werden. Das Beispiel befindet sich in
   "scope": "auto",
   "version": "1",
   "compression_level": 3,
+  "artifactDownloadConcurrency": 10,
   "security": {
     "max_compressed_bytes": 2147483648,
     "max_tar_bytes": 8589934592,
@@ -386,6 +387,10 @@ Inputs. Explizite Inputs haben Vorrang; ohne `scope` wird `auto`, ohne
 `compression_level` legt die zstd-Kompressionsstufe fest. Der Action-Input
 `compression-level` und `CACHE_COMPRESSION_LEVEL` überschreiben diesen Wert;
 der Default ist `3`.
+`artifactDownloadConcurrency` begrenzt die Anzahl paralleler Downloads von
+Artifact-Cache-Parts. Dieser Wert ist absichtlich ausschließlich in der
+Workspace-Konfiguration überschreibbar; Inputs und Umgebungsvariablen werden
+ignoriert. Ohne Angabe gilt `10`.
 
 `allowed_cache_names` ist eine optionale Allowlist. Fehlt sie oder ist sie
 leer, sind alle gültig formatierten Cache-Namen erlaubt. Der vertrauenswürdige

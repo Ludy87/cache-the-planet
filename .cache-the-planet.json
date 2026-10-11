@@ -1,5 +1,6 @@
 {
   "version": "1",
+  "artifactDownloadConcurrency": 50,
   "security": {
     "allowed_cache_names": [
       "npm",

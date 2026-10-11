@@ -13,7 +13,13 @@ let githubClientPromise;
 let sftpClientPromise;
 let artifactClientPromise;
 const artifactMetadataCache = new Map();
-const artifactDownloadConcurrency = 10;
+function artifactDownloadConcurrencyLimit() {
+  return parsePositiveSafeInteger(
+    configuration().artifactDownloadConcurrency,
+    "artifactDownloadConcurrency",
+    10,
+  );
+}
 let configurationCache;
 const releaseCache = new Map();
 const assetsCache = new Map();
@@ -2971,7 +2977,7 @@ async function downloadArtifactParts(reference) {
       Array.from(
         {
           length: Math.min(
-            artifactDownloadConcurrency,
+            artifactDownloadConcurrencyLimit(),
             reference.parts.length,
           ),
         },
@@ -3513,6 +3519,7 @@ module.exports = {
   probeObject,
   input,
   parsePositiveSafeInteger,
+  artifactDownloadConcurrencyLimit,
   hasInput,
   token,
   setOutput,
