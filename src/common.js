@@ -1644,7 +1644,6 @@ const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
 // artifacts, not user credentials. Match Cargo's generated filename shapes as
 // well as its directories; users may choose any cache path.
 function isCargoGeneratedArtifactPath(normalizedRelative, file, root) {
-  const basename = path.basename(file);
   const targetRoot =
     path.basename(root).toLowerCase() === "target" &&
     fs.existsSync(path.join(path.dirname(root), "Cargo.toml"));
