@@ -833,10 +833,19 @@ function logicalCacheKey(value, name, includeVersion = true) {
     throw new Error(`cache key must not exceed ${maxLength} characters`);
   }
   if (!includeVersion) return withIdentity;
+  const inputVersion = input(INPUTS.VERSION).trim();
+  const configuredVersion = String(configuration().version ?? "").trim();
+  if (
+    inputVersion &&
+    configuredVersion &&
+    inputVersion !== configuredVersion
+  ) {
+    log(
+      `cache version ${inputVersion} from the workflow overrides configured version ${configuredVersion}`,
+    );
+  }
   const version =
-    input(INPUTS.VERSION).trim() ||
-    String(configuration().version ?? "").trim() ||
-    "1";
+    inputVersion || configuredVersion || "1";
   if (!/^\d+$/.test(version))
     throw new Error("version must contain numbers only");
   const complete = /\/v[A-Za-z0-9._-]+$/.test(withIdentity)

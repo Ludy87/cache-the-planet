@@ -1426,12 +1426,13 @@ test("scope and version use JSON defaults without overriding explicit inputs", (
     runConfiguredDefaults({ scope: "shared", version: "7" }).stdout,
     /^shared\|shared\/owner\/repo\/npm\/linux-x64\/hash(?:-cache-[0-9a-f]{16})?\/v7$/,
   );
+  const overridden = runConfiguredDefaults(
+    { scope: "shared", version: "7" },
+    { INPUT_SCOPE: "trusted", INPUT_VERSION: "9" },
+  );
   assert.match(
-    runConfiguredDefaults(
-      { scope: "shared", version: "7" },
-      { INPUT_SCOPE: "trusted", INPUT_VERSION: "9" },
-    ).stdout,
-    /^trusted\|trusted\/owner\/repo\/main\/npm\/linux-x64\/hash(?:-cache-[0-9a-f]{16})?\/v9$/,
+    overridden.stdout,
+    /trusted\|trusted\/owner\/repo\/main\/npm\/linux-x64\/hash(?:-cache-[0-9a-f]{16})?\/v9$/,
   );
   assert.notEqual(
     runConfiguredDefaults({ scope: "invalid", version: "7" }).status,
@@ -1441,6 +1442,19 @@ test("scope and version use JSON defaults without overriding explicit inputs", (
     runConfiguredDefaults({ scope: "shared", version: "v7" }).status,
     0,
   );
+});
+
+test("version override logs when workflow and config versions differ", () => {
+  const result = runConfiguredDefaults(
+    { scope: "shared", version: "7" },
+    { "INPUT_VERSION": "8" },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(
+    result.stdout,
+    /::notice::cache version 8 from the workflow overrides configured version 7/,
+  );
+  assert.match(result.stdout, /\/v8$/);
 });
 
 test("all max_* JSON limits reject invalid values", () => {
