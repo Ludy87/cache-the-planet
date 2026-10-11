@@ -1160,6 +1160,33 @@ test("security scan allows credential-named Python source in the uv cache", () =
   }
 });
 
+test("security scan allows credential-named Python source in uv wheel caches", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-uv-wheel-")
+  );
+  const root = path.join(workspace, ".cache", "uv");
+  const source = path.join(
+    root,
+    "wheels-v7",
+    "pypi",
+    "openai",
+    "3.28.0-py3-none-any",
+    "openai",
+    "types",
+    "beta",
+    "agents",
+    "vaults",
+    "credential_auth.py"
+  );
+  try {
+    fs.mkdirSync(path.dirname(source), { recursive: true });
+    fs.writeFileSync(source, "class CredentialAuth: pass\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan recognizes uv package sources under a custom cache root", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-custom-uv-root-"),

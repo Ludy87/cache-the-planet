@@ -1671,7 +1671,11 @@ function isCargoGeneratedArtifactPath(normalizedRelative, file, root) {
     dependency.test(cargoRelative)
   );
 }
-const uvPackageArchivePath = /^archive-v\d+[^/]*\/[^/]+\/.+/i;
+// uv uses archive-vN for older caches and wheels-vN/pypi/<name>/<version>
+// for wheel caches. Both layouts contain dependency source modules whose
+// filenames may legitimately include credential-related words.
+const uvPackageArchivePath =
+  /^(?:archive-v\d+[^/]*\/[^/]+\/.+|wheels-v\d+[^/]*\/pypi\/[^/]+\/[^/]+\/.+)/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // Public package source trees commonly ship dummy keys for TLS examples and
 // integration tests. Keep this exception limited to dependency fixture
