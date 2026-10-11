@@ -14,6 +14,7 @@ jeweilige Action wird normal eingerichtet, ihr Cache-Verzeichnis wird jedoch
 | Task | `task` | `.cache/task` | Keine native Cache-Option vorhanden |
 | Docker/BuildKit | `docker` | `.cache/buildx` | `docker/setup-qemu-action`: `cache-image: false`; BuildKit-Cache separat konfigurieren |
 | Rust/Cargo | `cargo` | `.cache/cargo` | `dtolnay/rust-toolchain`: keine native Cache-Option; `CARGO_HOME` setzen |
+| Tauri | `tauri` | `node_modules`, `src-tauri/target`, Cargo-Registry und Cargo-Git | Native Cache-Optionen deaktivieren |
 
 Die genauen End-to-End-Beispiele liegen in `.github/workflows/`.
 
@@ -127,6 +128,32 @@ und `cargo/bin`; ihre Inhalte werden weiterhin auf sensible Dateien geprüft.
 Das Rust-`target`-Verzeichnis wird nicht automatisch enthalten und bleibt
 bewusst außerhalb der erlaubten Cargo-Ausnahmen, weil Build-Artefakte und
 Tool-Ausgaben Secrets enthalten können.
+
+### Tauri
+
+Für ein Tauri-Projekt kann der wiederverwendbare Workflow
+`.github/workflows/tauri-cache-asset-integration.yml` verwendet werden. Er
+installiert Node 24 und Rust stable, stellt `node_modules`, Cargo-Downloads
+und `src-tauri/target` wieder her und führt anschließend `npm run tauri build`
+aus. Das aufrufende Projekt übergibt optional `project-path`, wenn sich die
+Tauri-Anwendung nicht im Repository-Root befindet.
+
+```yaml
+jobs:
+  tauri:
+    uses: Ludy87/cache-the-planet/.github/workflows/tauri-cache-asset-integration.yml@v1
+    with:
+      project-path: examples/tauri-cache
+      save-cache: true
+    secrets: inherit
+```
+
+Das Repository enthält mit `examples/tauri-cache` ein minimales Tauri-v2-
+Projekt, das diese Integrationssuite verwendet. Der Workflow erwartet
+`package-lock.json`, `src-tauri/Cargo.lock` und ein `tauri`-Build-Script im
+`package.json`. Da `src-tauri/target` Build-Ausgaben enthalten kann, sollten
+Projekte keine Secrets oder produktiven Zugangsdaten in den Build-Kontext
+legen; der Cache ersetzt keine eigene Artefaktprüfung.
 
 ## Scope-Muster für Integrationen
 

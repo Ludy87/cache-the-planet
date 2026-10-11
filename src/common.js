@@ -833,10 +833,19 @@ function logicalCacheKey(value, name, includeVersion = true) {
     throw new Error(`cache key must not exceed ${maxLength} characters`);
   }
   if (!includeVersion) return withIdentity;
+  const inputVersion = input(INPUTS.VERSION).trim();
+  const configuredVersion = String(configuration().version ?? "").trim();
+  if (
+    inputVersion &&
+    configuredVersion &&
+    inputVersion !== configuredVersion
+  ) {
+    log(
+      `cache version ${inputVersion} from the workflow overrides configured version ${configuredVersion}`,
+    );
+  }
   const version =
-    input(INPUTS.VERSION).trim() ||
-    String(configuration().version ?? "").trim() ||
-    "1";
+    inputVersion || configuredVersion || "1";
   if (!/^\d+$/.test(version))
     throw new Error("version must contain numbers only");
   const complete = /\/v[A-Za-z0-9._-]+$/.test(withIdentity)
@@ -1639,7 +1648,34 @@ const npmRegistryMetadata = /^\s*\{\s*"name"\s*:\s*"[^"\r\n]+"\s*,\s*"dist-tags"
 const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
-const uvPackageArchivePath = /^archive-v\d+[^/]*\/[^/]+\/.+/i;
+// Cargo target metadata and dependency outputs can contain crate names such as
+// `secret-service` or generated symbols such as `trust_token`. These are build
+// artifacts, not user credentials. Match Cargo's generated filename shapes as
+// well as its directories; users may choose any cache path.
+function isCargoGeneratedArtifactPath(normalizedRelative, file, root) {
+  const targetRoot =
+    path.basename(root).toLowerCase() === "target" &&
+    fs.existsSync(path.join(path.dirname(root), "Cargo.toml"));
+  const cargoRelative = targetRoot
+    ? `target/${normalizedRelative}`
+    : normalizedRelative;
+  const fingerprint =
+    /(?:^|\/)target\/(?:debug|release)\/\.fingerprint\/(?:[^/]+-[0-9a-f]{16,}(?:\/|$)|[^/]+-[0-9a-f]{16,}\/(?:dep-|lib-|output-|run-|invoked|test-bin-))/i;
+  const buildOutput =
+    /(?:^|\/)target\/(?:debug|release)\/build\/[^/]+\/out\/[0-9a-f]{16,}-[^/]+\.(?:o|obj|rlib|rmeta)$/i;
+  const dependency =
+    /(?:^|\/)target\/(?:debug|release)\/deps\/(?:lib-)?[a-z0-9_]+-[0-9a-f]{16,}\.(?:d|rlib|rmeta|so|a|lib)$/i;
+  return (
+    fingerprint.test(cargoRelative) ||
+    buildOutput.test(cargoRelative) ||
+    dependency.test(cargoRelative)
+  );
+}
+// uv uses archive-vN for older caches and wheels-vN/pypi/<name>/<version>
+// for wheel caches. Both layouts contain dependency source modules whose
+// filenames may legitimately include credential-related words.
+const uvPackageArchivePath =
+  /^(?:archive-v\d+[^/]*\/[^/]+\/.+|wheels-v\d+[^/]*\/pypi\/[^/]+\/[^/]+\/.+)/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // Public package source trees commonly ship dummy keys for TLS examples and
 // integration tests. Keep this exception limited to dependency fixture
@@ -1787,6 +1823,7 @@ function securityScan(root, options = {}) {
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(normalizedRelative) &&
         !cargoBinPath.test(normalizedRelative) &&
+        !isCargoGeneratedArtifactPath(normalizedRelative, file, root) &&
         !(
           cargoRegistryCachePath.test(normalizedRelative) &&
           binaryFileName.test(path.basename(file))

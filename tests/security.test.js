@@ -948,6 +948,53 @@ test("security scan allows the reported npm and Cargo dependency paths", () => {
   }
 });
 
+test("security scan allows generated Cargo target dependency artifacts", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-target-artifacts-"),
+  );
+  const files = [
+    ["target", "release", ".fingerprint", "secret-service-3104b2f7aff5d870", "lib-secret_service.json"],
+    ["target", "release", "build", "aws-lc-sys-4e9c2e12477b", "out", "4696e3d2cc941c84-trust_token.o"],
+    ["target", "release", "deps", "libzbus_secret_service_keyring_store-a6d634d4e7e97b68.rlib"],
+  ];
+  try {
+    for (const entry of files) {
+      const file = path.join(root, ...entry);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, "generated dependency artifact\n");
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+    const userFile = path.join(root, "target", "release", "deps", "secret-token");
+    fs.writeFileSync(userFile, "user-controlled content\n");
+    assert.throws(() => common.securityScan(root), /sensitive-looking file/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("security scan recognizes a Cargo target when it is the cache root", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-target-root-"),
+  );
+  const root = path.join(workspace, "src-tauri", "target");
+  try {
+    fs.mkdirSync(path.join(workspace, "src-tauri"), { recursive: true });
+    fs.writeFileSync(path.join(workspace, "src-tauri", "Cargo.toml"), "[package]\nname = \"fixture\"\n");
+    const file = path.join(
+      root,
+      "release",
+      ".fingerprint",
+      "secret-service-3104b2f7aff5d870",
+      "lib-secret_service.json",
+    );
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, "generated dependency artifact\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows dotenv documentation in nested Windows node_modules", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-dotenv-windows-paths-"),
@@ -1107,6 +1154,33 @@ test("security scan allows credential-named Python source in the uv cache", () =
   try {
     fs.mkdirSync(path.dirname(source), { recursive: true });
     fs.writeFileSync(source, "class CredentialDeleted: pass\n");
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("security scan allows credential-named Python source in uv wheel caches", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-uv-wheel-")
+  );
+  const root = path.join(workspace, ".cache", "uv");
+  const source = path.join(
+    root,
+    "wheels-v7",
+    "pypi",
+    "openai",
+    "3.28.0-py3-none-any",
+    "openai",
+    "types",
+    "beta",
+    "agents",
+    "vaults",
+    "credential_auth.py"
+  );
+  try {
+    fs.mkdirSync(path.dirname(source), { recursive: true });
+    fs.writeFileSync(source, "class CredentialAuth: pass\n");
     assert.doesNotThrow(() => common.securityScan(root));
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
@@ -1379,12 +1453,13 @@ test("scope and version use JSON defaults without overriding explicit inputs", (
     runConfiguredDefaults({ scope: "shared", version: "7" }).stdout,
     /^shared\|shared\/owner\/repo\/npm\/linux-x64\/hash(?:-cache-[0-9a-f]{16})?\/v7$/,
   );
+  const overridden = runConfiguredDefaults(
+    { scope: "shared", version: "7" },
+    { INPUT_SCOPE: "trusted", INPUT_VERSION: "9" },
+  );
   assert.match(
-    runConfiguredDefaults(
-      { scope: "shared", version: "7" },
-      { INPUT_SCOPE: "trusted", INPUT_VERSION: "9" },
-    ).stdout,
-    /^trusted\|trusted\/owner\/repo\/main\/npm\/linux-x64\/hash(?:-cache-[0-9a-f]{16})?\/v9$/,
+    overridden.stdout,
+    /trusted\|trusted\/owner\/repo\/main\/npm\/linux-x64\/hash(?:-cache-[0-9a-f]{16})?\/v9$/,
   );
   assert.notEqual(
     runConfiguredDefaults({ scope: "invalid", version: "7" }).status,
@@ -1394,6 +1469,19 @@ test("scope and version use JSON defaults without overriding explicit inputs", (
     runConfiguredDefaults({ scope: "shared", version: "v7" }).status,
     0,
   );
+});
+
+test("version override logs when workflow and config versions differ", () => {
+  const result = runConfiguredDefaults(
+    { scope: "shared", version: "7" },
+    { "INPUT_VERSION": "8" },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(
+    result.stdout,
+    /::notice::cache version 8 from the workflow overrides configured version 7/,
+  );
+  assert.match(result.stdout, /\/v8$/);
 });
 
 test("all max_* JSON limits reject invalid values", () => {

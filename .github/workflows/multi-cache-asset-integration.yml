@@ -28,7 +28,7 @@ jobs:
   multi-cache:
     if: ${{ inputs.save-cache || inputs.restore-cache }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:

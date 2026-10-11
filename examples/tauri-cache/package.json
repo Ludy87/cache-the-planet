@@ -1,0 +1,13 @@
+{
+  "name": "tauri-cache-example",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Minimal Tauri application used by cache-the-planet integration tests",
+  "scripts": {
+    "build": "node -e \"console.log('static frontend ready')\"",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.0"
+  }
+}

@@ -17,7 +17,7 @@ jobs:
   save:
     name: Save multiple branch-backed caches
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: write
     outputs:
@@ -84,7 +84,7 @@ jobs:
     name: Restore multiple branch-backed caches
     needs: save
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:
@@ -125,7 +125,7 @@ jobs:
     needs: [save, restore]
     if: ${{ always() && needs.save.result != 'skipped' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
