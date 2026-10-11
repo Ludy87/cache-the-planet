@@ -1311,7 +1311,7 @@ function runConfiguredDefaults(config, extraEnv = {}) {
   return result;
 }
 
-function runCommonExpression(config, expression) {
+function runCommonExpression(config, expression, extraEnv = {}) {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-limits-test-"),
   );
@@ -1334,12 +1334,30 @@ function runCommonExpression(config, expression) {
   `;
   const result = childProcess.spawnSync(process.execPath, ["-e", script], {
     cwd: workspace,
-    env: { ...process.env },
+    env: { ...process.env, ...extraEnv },
     encoding: "utf8",
   });
   fs.rmSync(workspace, { recursive: true, force: true });
   return result;
 }
+
+test("artifact download concurrency is configurable only in project JSON", () => {
+  const configured = runCommonExpression(
+    { artifactDownloadConcurrency: 3 },
+    "process.stdout.write(String(common.artifactDownloadConcurrencyLimit()));",
+    { CACHE_ARTIFACT_DOWNLOAD_CONCURRENCY: "99" },
+  );
+  assert.equal(configured.status, 0);
+  assert.equal(configured.stdout, "3");
+
+  const defaulted = runCommonExpression(
+    {},
+    "process.stdout.write(String(common.artifactDownloadConcurrencyLimit()));",
+    { CACHE_ARTIFACT_DOWNLOAD_CONCURRENCY: "99" },
+  );
+  assert.equal(defaulted.status, 0);
+  assert.equal(defaulted.stdout, "10");
+});
 
 function runRestoreOutput(event, eventName = "pull_request") {
   const workspace = fs.mkdtempSync(

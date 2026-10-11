@@ -132,6 +132,9 @@ Datei unter `.github`; ein explizit angegebener Pfad hat Vorrang vor beiden.
 Für die allgemeinen Einstellungen gilt diese Reihenfolge (höchste Priorität
 zuerst): Action-Input, passende Umgebungsvariable, JSON-Konfiguration,
 Standardwert.
+`artifactDownloadConcurrency` ist eine Ausnahme: Der Wert ist ausschließlich
+über die JSON-Konfiguration überschreibbar; Inputs und Umgebungsvariablen
+werden nicht ausgewertet.
 
 | JSON-Feld                               | Umgebungsvariable                    | Zweck                                                          | Standard                   |
 | --------------------------------------- | ------------------------------------ | -------------------------------------------------------------- | -------------------------- |
@@ -141,6 +144,7 @@ Standardwert.
 | `scope`                                 | —                                    | Standard-Namespace für Restore und Save                        | `auto`                     |
 | `version`                               | —                                    | Cache-Formatversion                                            | `1`                        |
 | `compression_level`                     | `CACHE_COMPRESSION_LEVEL`            | zstd-Kompressionsstufe                                         | `3`                        |
+| `artifactDownloadConcurrency`           | —                                    | Maximale parallele Artifact-Downloads                          | `10`                       |
 | `security.max_compressed_bytes`         | `CACHE_MAX_COMPRESSED_BYTES`         | Maximale komprimierte Objektgröße                              | konfigurationsabhängig     |
 | `security.max_tar_bytes`                | `CACHE_MAX_TAR_BYTES`                | Maximale dekomprimierte Tar-Größe                              | konfigurationsabhängig     |
 | `security.max_entries`                  | `CACHE_MAX_ENTRIES`                  | Maximale Anzahl von Archiv-Einträgen                           | konfigurationsabhängig     |

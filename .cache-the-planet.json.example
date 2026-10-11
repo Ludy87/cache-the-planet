@@ -4,6 +4,7 @@
   "scope": "auto",
   "version": "1",
   "compression_level": 3,
+  "artifactDownloadConcurrency": 10,
   "monitoring": {
     "max_manifest_references": 100000,
     "max_manifest_writes_per_hour": 1000
