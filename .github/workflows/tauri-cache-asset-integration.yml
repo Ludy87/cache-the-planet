@@ -1,0 +1,93 @@
+name: Tauri cache asset integration
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        description: Path to the Tauri project
+        required: false
+        type: string
+        default: .
+      save-cache:
+        required: false
+        type: boolean
+        default: false
+      restore-cache:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      APP_ID:
+        required: false
+      APP_PRIVATE_KEY:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: ${{ inputs.save-cache || inputs.restore-cache }}
+    name: Build Tauri application
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Create trusted token
+        if: ${{ inputs.save-cache && github.event_name != 'pull_request' }}
+        id: bot-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Restore Tauri dependencies
+        id: cache
+        uses: $/
+        with:
+          cache-name: tauri
+          storage: github-artifact
+          token: ${{ steps.bot-token.outputs.token || github.token }}
+          key: ${{ hashFiles(format('{0}/package-lock.json', inputs.project-path), format('{0}/src-tauri/Cargo.lock', inputs.project-path)) }}
+          path: |
+            ${{ inputs.project-path }}/node_modules
+            ${{ inputs.project-path }}/src-tauri/target
+            ~/.cargo/registry
+            ~/.cargo/git
+          save-scope: auto
+          allow-shared-restore: true
+          restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
+          strict: true
+          version: 1
+          exclude: |
+            ${{ inputs.project-path }}/node_modules/**/.env
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: stable
+
+      - name: Install frontend dependencies
+        working-directory: ${{ inputs.project-path }}
+        run: npm ci --no-audit --no-fund
+
+      - name: Build Tauri application
+        working-directory: ${{ inputs.project-path }}
+        run: npm run tauri build
