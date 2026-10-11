@@ -364,6 +364,19 @@ jobs:
       APP_ID: ${{ secrets.APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
+  tauri-save-cache:
+    needs: [test]
+    if: ${{ !cancelled() && needs.test.result == 'success' }}
+    uses: $/.github/workflows/tauri-cache-asset-integration.yml
+    with:
+      save-cache: true
+    permissions:
+      contents: write
+      actions: read
+    secrets:
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
   all-save-checks-passed:
     name: All save checks passed
     if: ${{ !cancelled() }}
@@ -378,6 +391,7 @@ jobs:
       - gradle-save-cache
       - docker-save-cache
       - rust-save-cache
+      - tauri-save-cache
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -399,6 +413,7 @@ jobs:
             gradle-save-cache=${{ needs.gradle-save-cache.result }}
             docker-save-cache=${{ needs.docker-save-cache.result }}
             rust-save-cache=${{ needs.rust-save-cache.result }}
+            tauri-save-cache=${{ needs.tauri-save-cache.result }}
         run: |
           while IFS='=' read -r job_name job_result; do
             [[ -z "$job_name" ]] && continue
