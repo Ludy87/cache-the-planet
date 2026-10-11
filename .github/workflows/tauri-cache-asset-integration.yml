@@ -69,7 +69,7 @@ jobs:
           allow-shared-restore: true
           restore-only: ${{ inputs.restore-cache && !inputs.save-cache }}
           strict: true
-          version: 1
+          version: 2
           exclude: |
             ${{ inputs.project-path }}/node_modules/**/.env
 
