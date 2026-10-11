@@ -948,6 +948,27 @@ test("security scan allows the reported npm and Cargo dependency paths", () => {
   }
 });
 
+test("security scan allows generated Cargo target dependency artifacts", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-cargo-target-artifacts-"),
+  );
+  const files = [
+    ["target", "release", ".fingerprint", "secret-service-hash", "lib-secret_service.json"],
+    ["target", "release", "build", "aws-lc-sys-hash", "out", "trust_token.o"],
+    ["target", "release", "deps", "libzbus_secret_service_keyring_store.rlib"],
+  ];
+  try {
+    for (const entry of files) {
+      const file = path.join(root, ...entry);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, "generated dependency artifact\n");
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows dotenv documentation in nested Windows node_modules", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-dotenv-windows-paths-"),

@@ -1639,6 +1639,12 @@ const npmRegistryMetadata = /^\s*\{\s*"name"\s*:\s*"[^"\r\n]+"\s*,\s*"dist-tags"
 const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
+// Cargo target metadata and dependency outputs can contain crate names such as
+// `secret-service` or generated symbols such as `trust_token`. These are build
+// artifacts, not user credentials. Keep the exception limited to Cargo's
+// generated fingerprint, build-output, and dependency directories.
+const cargoGeneratedArtifactPath =
+  /(?:^|\/)target\/(?:debug|release)\/(?:\.fingerprint|build\/[^/]+\/out|deps)(?:\/|$)/i;
 const uvPackageArchivePath = /^archive-v\d+[^/]*\/[^/]+\/.+/i;
 const packageSourcePath = /(?:^|[\\/])registry[\\/]src[\\/]/i;
 // Public package source trees commonly ship dummy keys for TLS examples and
@@ -1787,6 +1793,7 @@ function securityScan(root, options = {}) {
       (sensitiveKeywordName.test(path.basename(file)) &&
         !cargoIndexPath.test(normalizedRelative) &&
         !cargoBinPath.test(normalizedRelative) &&
+        !cargoGeneratedArtifactPath.test(normalizedRelative) &&
         !(
           cargoRegistryCachePath.test(normalizedRelative) &&
           binaryFileName.test(path.basename(file))
