@@ -326,10 +326,39 @@
       "artifact_id": 11701881386,
       "artifact_name": "cache-untrusted-pr-296-npm-example-linux-x64-61a22a00fe48defc4152a01926f855cfc8a197f8853423d97a98bb86309ad774-v2--122910fa26ce437d14669e01d545464e4322ba28d8bf462c4d7c49-part-000000",
       "workflow_run_id": 38137307283
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-296/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:3b59f24e6e5d40170c9d83010379a5ec0e088b0df6f3cc563aa9189948ee8b09",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-11T11:58:54.968Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 33138194,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11702140980,
+          "artifact_name": "cache-untrusted-pr-296-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--3b59f24e6e5d40170c9d83010379a5ec0e088b0df6f3cc563aa9189948ee8b-part-000000",
+          "workflow_run_id": 38137307283
+        },
+        {
+          "index": 1,
+          "object": "sha256:5172df531fb2bbb822e69cb773564745cd033159c70f5e3ed50349873c66df9c",
+          "size": 7972370,
+          "artifact_id": 11702061160,
+          "artifact_name": "cache-untrusted-pr-296-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--3b59f24e6e5d40170c9d83010379a5ec0e088b0df6f3cc563aa9189948ee8b-part-000001",
+          "workflow_run_id": 38137307283
+        }
+      ],
+      "artifact_id": 11702140980,
+      "artifact_name": "cache-untrusted-pr-296-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--3b59f24e6e5d40170c9d83010379a5ec0e088b0df6f3cc563aa9189948ee8b-part-000000",
+      "workflow_run_id": 38137307283
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-11T11:54:26.199Z",
-    "writes": 6
+    "writes": 7
   }
 }
