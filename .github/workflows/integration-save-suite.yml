@@ -30,6 +30,7 @@ jobs:
   should-run:
     name: Determine whether integration suite should run
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
@@ -178,7 +179,7 @@ jobs:
     if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     name: Restore npm cache asset for trusted publisher
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     permissions:
       contents: write
     env:

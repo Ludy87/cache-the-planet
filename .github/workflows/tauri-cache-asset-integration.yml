@@ -30,7 +30,7 @@ jobs:
     if: ${{ inputs.save-cache || inputs.restore-cache }}
     name: Build Tauri application
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
     permissions:
       contents: write
       actions: read
