@@ -578,10 +578,31 @@
       "artifact_id": 11731541969,
       "artifact_name": "cache-untrusted-pr-298-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--b2b812ddaf784071b978fa88cec90c8fb377a4cdfa02daa4d97b6303f925-part-000000",
       "workflow_run_id": 38215010600
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-298/uv/linux-x64/0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611/v1": {
+      "object": "sha256:7e02483140a88a7799f49edc036a055e7481dad7c710c6dca94674565eb887c9",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-12T07:00:29.588Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 18387966,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:7e02483140a88a7799f49edc036a055e7481dad7c710c6dca94674565eb887c9",
+          "size": 18387966,
+          "artifact_id": 11732401440,
+          "artifact_name": "cache-untrusted-pr-298-uv-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--7e02483140a88a7799f49edc036a055e7481dad7c710c6dca94674565eb887c-part-000000",
+          "workflow_run_id": 38215010600
+        }
+      ],
+      "artifact_id": 11732401440,
+      "artifact_name": "cache-untrusted-pr-298-uv-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--7e02483140a88a7799f49edc036a055e7481dad7c710c6dca94674565eb887c-part-000000",
+      "workflow_run_id": 38215010600
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-12T06:56:07.352Z",
-    "writes": 10
+    "writes": 11
   }
 }
