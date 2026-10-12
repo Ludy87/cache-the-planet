@@ -322,7 +322,9 @@ function temporaryStorageDiagnostics(inputFile, outputFile, maxBytes) {
     details.push("partial-output=unavailable");
   }
   try {
-    details.push(`compressed=${formatTransferSize(fs.statSync(inputFile).size)}`);
+    details.push(
+      `compressed=${formatTransferSize(fs.statSync(inputFile).size)}`,
+    );
   } catch {}
   details.push(`output-limit=${formatTransferSize(maxBytes)}`);
   try {
@@ -841,17 +843,12 @@ function logicalCacheKey(value, name, includeVersion = true) {
   if (!includeVersion) return withIdentity;
   const inputVersion = input(INPUTS.VERSION).trim();
   const configuredVersion = String(configuration().version ?? "").trim();
-  if (
-    inputVersion &&
-    configuredVersion &&
-    inputVersion !== configuredVersion
-  ) {
+  if (inputVersion && configuredVersion && inputVersion !== configuredVersion) {
     log(
       `cache version ${inputVersion} from the workflow overrides configured version ${configuredVersion}`,
     );
   }
-  const version =
-    inputVersion || configuredVersion || "1";
+  const version = inputVersion || configuredVersion || "1";
   if (!/^\d+$/.test(version))
     throw new Error("version must contain numbers only");
   const complete = /\/v[A-Za-z0-9._-]+$/.test(withIdentity)
@@ -1274,7 +1271,8 @@ function githubApiError(status, message, headers) {
   }
   if (status >= 500 && status <= 599) {
     const requestId = headerValue(headers, "x-github-request-id");
-    const detail = String(message || "").trim() || "GitHub returned no diagnostic message";
+    const detail =
+      String(message || "").trim() || "GitHub returned no diagnostic message";
     return new Error(
       `GitHub API server error (${status}): ${detail}${
         requestId ? ` (request ID: ${requestId})` : ""
@@ -1417,9 +1415,7 @@ function entries() {
 }
 
 function cleanupCachePathsAfterSave() {
-  if (
-    String(input(INPUTS.CLEANUP_PATH_AFTER_SAVE)).toLowerCase() !== "true"
-  )
+  if (String(input(INPUTS.CLEANUP_PATH_AFTER_SAVE)).toLowerCase() !== "true")
     return;
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   for (const value of entries()) {
@@ -1631,9 +1627,7 @@ function isNodeModulesDocumentation(file, relative, root) {
   const basename = normalizedFile.slice(normalizedFile.lastIndexOf("/") + 1);
   return (
     isNodeModulesPath(relative, root) &&
-    (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(
-      basename,
-    ) ||
+    (/^(?:README|LICENSE|CHANGELOG)(?:[._-][^\\/]*)?$/i.test(basename) ||
       /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalized) ||
       /(?:^|\/)docs\/.*\.(?:md|mdx|txt)$/i.test(normalizedFile))
   );
@@ -1650,7 +1644,8 @@ function isNodeModulesFixture(relative, root) {
 }
 const npmIndexPath = /(?:^|[\\/])_cacache[\\/]index-v\d+(?:[\\/]|$)/i;
 const npmContentPath = /(?:^|[\\/])_cacache[\\/]content-v\d+[\\/]/i;
-const npmRegistryMetadata = /^\s*\{\s*"name"\s*:\s*"[^"\r\n]+"\s*,\s*"dist-tags"\s*:\s*\{/i;
+const npmRegistryMetadata =
+  /^\s*\{\s*"name"\s*:\s*"[^"\r\n]+"\s*,\s*"dist-tags"\s*:\s*\{/i;
 const cargoIndexPath = /(?:^|\/)(?:registry\/)?index\/[^/]+\/\.cache(?:\/|$)/i;
 const cargoRegistryCachePath = /(?:^|\/)registry\/cache(?:\/|$)/i;
 const cargoBinPath = /(?:^|\/)cargo\/bin(?:\/|$)/i;
@@ -1754,7 +1749,9 @@ function isUvPackageSourceFile(file, relative) {
 }
 
 function isNpmRegistryMetadata(normalizedRelative, text) {
-  return npmContentPath.test(normalizedRelative) && npmRegistryMetadata.test(text);
+  return (
+    npmContentPath.test(normalizedRelative) && npmRegistryMetadata.test(text)
+  );
 }
 
 function isExcludedPath(file, root, patterns, workspace) {
@@ -1931,9 +1928,7 @@ async function makeArchive() {
     const tarExcludes = [
       ...new Set(
         excludes.flatMap((pattern) =>
-          pattern.endsWith("/**")
-            ? [pattern.slice(0, -3), pattern]
-            : [pattern],
+          pattern.endsWith("/**") ? [pattern.slice(0, -3), pattern] : [pattern],
         ),
       ),
     ];
@@ -2077,9 +2072,7 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
   try {
     const code = await exit;
     if (code !== 0) {
-      throw new Error(
-        zstdStderr.trim() || `zstd exited with code ${code}`,
-      );
+      throw new Error(zstdStderr.trim() || `zstd exited with code ${code}`);
     }
     const outputSize = fs.statSync(outputFile).size;
     if (outputSize > maxBytes) {
@@ -2097,10 +2090,9 @@ async function decompressZstd(inputFile, outputFile, maxBytes) {
     console.log(`::notice title=Cache storage::${diagnostics}`);
     console.log("::endgroup::");
     removeTemporaryFile(outputFile);
-    throw new Error(
-      `zstd decompression failed: ${reason} (${diagnostics})`,
-      { cause: error },
-    );
+    throw new Error(`zstd decompression failed: ${reason} (${diagnostics})`, {
+      cause: error,
+    });
   }
 }
 
@@ -2259,7 +2251,7 @@ async function assets(repository) {
             ? new Date(entry.modifyTime).toISOString()
             : new Date(0).toISOString(),
           sftp: true,
-      })),
+        })),
     };
   }
   if (storageMode() === "github-artifact") {
@@ -3129,7 +3121,11 @@ async function uploadBranchBlob(repository, buffer) {
 }
 
 function assertObjectUploadStorage(storage) {
-  if (!["github-artifact", "github-branch", "github-release", "sftp"].includes(storage))
+  if (
+    !["github-artifact", "github-branch", "github-release", "sftp"].includes(
+      storage,
+    )
+  )
     throw new Error(
       `unsupported object storage for upload: ${storage}; refusing github-release fallback`,
     );
@@ -3147,6 +3143,9 @@ async function uploadObject(repository, file, name, contentType) {
     );
     const parts = [];
     try {
+      console.log(
+        ":::group::Uploading cache object as GitHub Actions artifact",
+      );
       for (let index = 0; index < totalParts; index += 1) {
         const offset = index * githubBranchPartBytes;
         const length = Math.min(githubBranchPartBytes, size - offset);
@@ -3155,7 +3154,10 @@ async function uploadObject(repository, file, name, contentType) {
           `part-${String(index).padStart(6, "0")}.bin`,
         );
         await pipeline(
-          fs.createReadStream(file, { start: offset, end: offset + length - 1 }),
+          fs.createReadStream(file, {
+            start: offset,
+            end: offset + length - 1,
+          }),
           fs.createWriteStream(partFile, { flags: "wx" }),
         );
         const partSuffix = `-part-${String(index).padStart(6, "0")}`;
@@ -3214,6 +3216,7 @@ async function uploadObject(repository, file, name, contentType) {
       };
     } finally {
       removeTemporaryFile(directory);
+      console.log(":::endgroup::");
     }
   }
   if (storage === "github-branch") {

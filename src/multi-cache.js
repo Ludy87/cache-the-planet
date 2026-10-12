@@ -41,7 +41,9 @@ function parseKeys(value) {
 }
 
 function run(entry, script) {
-  const outputDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "multi-cache-output-"));
+  const outputDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "multi-cache-output-"),
+  );
   const outputFile = path.join(outputDirectory, "output");
   const env = {
     ...process.env,
@@ -58,12 +60,14 @@ function run(entry, script) {
       stdio: "inherit",
     },
   );
-  if (result.status !== 0) throw new Error(`${script} failed for ${entry.name}`);
+  if (result.status !== 0)
+    throw new Error(`${script} failed for ${entry.name}`);
   const outputs = {};
   if (fs.existsSync(outputFile)) {
     for (const line of fs.readFileSync(outputFile, "utf8").split(/\r?\n/)) {
       const separator = line.indexOf("=");
-      if (separator > 0) outputs[line.slice(0, separator)] = line.slice(separator + 1);
+      if (separator > 0)
+        outputs[line.slice(0, separator)] = line.slice(separator + 1);
     }
   }
   return outputs;
@@ -79,7 +83,10 @@ function setListOutput(name, values) {
 
 function setJsonOutput(name, value) {
   if (!process.env.GITHUB_OUTPUT) return;
-  fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}<<MULTI_CACHE_JSON\n${JSON.stringify(value)}\nMULTI_CACHE_JSON\n`);
+  fs.appendFileSync(
+    process.env.GITHUB_OUTPUT,
+    `${name}<<MULTI_CACHE_JSON\n${JSON.stringify(value)}\nMULTI_CACHE_JSON\n`,
+  );
 }
 
 try {
@@ -130,7 +137,10 @@ try {
     }
   } else {
     if (script === "restore.js") {
-      c.setOutput("cache-hit", values.cacheHit.every((value) => value === "true"));
+      c.setOutput(
+        "cache-hit",
+        values.cacheHit.every((value) => value === "true"),
+      );
     }
     setListOutput("cache-hits", values.cacheHit);
     setListOutput("matched-keys", values.matchedKey);
@@ -144,3 +154,4 @@ try {
   console.error(error.message);
   if (c.input(INPUTS.STRICT).toLowerCase() === "true") process.exitCode = 1;
 }
+
