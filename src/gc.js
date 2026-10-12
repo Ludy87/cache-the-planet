@@ -55,7 +55,10 @@ const { INPUTS } = require("./constants");
           (current) => {
             let changed = false;
             for (const key of keys) {
-              if (current.references[key] && remove(key, current.references[key])) {
+              if (
+                current.references[key] &&
+                remove(key, current.references[key])
+              ) {
                 delete current.references[key];
                 removedReferences += 1;
                 changed = true;
@@ -88,7 +91,10 @@ const { INPUTS } = require("./constants");
       });
       return true;
     };
-    const deleteArtifactReferences = async (referencesToDelete, liveReferences) => {
+    const deleteArtifactReferences = async (
+      referencesToDelete,
+      liveReferences,
+    ) => {
       if (c.storageMode() !== "github-artifact" || dryRun) return 0;
       const artifactIds = (reference) =>
         Array.isArray(reference.parts)
@@ -144,8 +150,9 @@ const { INPUTS } = require("./constants");
           dryRun ? references : (await c.refsAll(repository)).json.references,
         ).map((reference) => reference.object),
       );
-      const liveReferencesAfterExpiry =
-        dryRun ? references : (await c.refsAll(repository)).json.references;
+      const liveReferencesAfterExpiry = dryRun
+        ? references
+        : (await c.refsAll(repository)).json.references;
       deletedAssets += await deleteArtifactReferences(
         expired.map(([, reference]) => reference),
         liveReferencesAfterExpiry,
@@ -228,7 +235,9 @@ const { INPUTS } = require("./constants");
         deletedAssets += await deleteArtifactReferences(
           matchingReferences,
           Object.fromEntries(
-            Object.entries(references).filter(([, reference]) => reference.object !== hash),
+            Object.entries(references).filter(
+              ([, reference]) => reference.object !== hash,
+            ),
           ),
         );
       }
@@ -267,3 +276,4 @@ const { INPUTS } = require("./constants");
     await c.closeSftp();
   }
 })();
+

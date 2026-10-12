@@ -193,8 +193,8 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
         "shared cache keys may only be saved from the repository default branch",
       );
     }
-    c.normalLog(
-      `post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
+    console.log(
+      `::debug::post-save STATE_STORAGE_MODE=${process.env.STATE_STORAGE_MODE || "<missing>"}`,
     );
     c.assertPostStorage(storage);
     const current = await c.refs(repository, { key });
@@ -591,3 +591,4 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
     c.fail(error, INPUTS.STRICT_SAVE);
   }
 })().finally(() => c.closeSftp());
+
