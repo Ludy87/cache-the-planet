@@ -2953,6 +2953,32 @@ async function downloadArtifactPart(part, directory) {
   return file;
 }
 
+async function writeStreamChunk(output, chunk) {
+  if (output.write(chunk)) return;
+  await new Promise((resolve, reject) => {
+    const cleanup = () => {
+      output.off("drain", onDrain);
+      output.off("error", onError);
+      output.off("close", onClose);
+    };
+    const onDrain = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = (error) => {
+      cleanup();
+      reject(error);
+    };
+    const onClose = () => {
+      cleanup();
+      reject(new Error("cache archive output stream closed before drain"));
+    };
+    output.once("drain", onDrain);
+    output.once("error", onError);
+    output.once("close", onClose);
+  });
+}
+
 async function downloadArtifactParts(reference) {
   validateManifestReference(reference);
   if (!Array.isArray(reference.parts))
@@ -2985,7 +3011,7 @@ async function downloadArtifactParts(reference) {
       ),
     );
     for (const partFile of partFiles) {
-      output.write(fs.readFileSync(partFile));
+      await writeStreamChunk(output, fs.readFileSync(partFile));
       removeTemporaryFile(path.dirname(partFile));
     }
     output.end();
@@ -3615,3 +3641,4 @@ module.exports = {
   assertSafeRestoreWorkspace,
   tarPath,
 };
+
