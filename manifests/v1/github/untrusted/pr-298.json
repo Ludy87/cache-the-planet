@@ -326,10 +326,39 @@
       "artifact_id": 11732006371,
       "artifact_name": "cache-untrusted-pr-298-npm-example-linux-x64-61a22a00fe48defc4152a01926f855cfc8a197f8853423d97a98bb86309ad774-v2--b3ce09b45dc1722ed375b990e9dea23926396c3ea3d442c3280d60-part-000000",
       "workflow_run_id": 38215010600
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-298/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:e2e96713f1503c61fb44d8f0d2e925fa2ef32977f1608f8e542c2abee6bd0e60",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-12T06:59:59.614Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33138086,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11731931575,
+          "artifact_name": "cache-untrusted-pr-298-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--e2e96713f1503c61fb44d8f0d2e925fa2ef32977f1608f8e542c2abee6bd0e-part-000000",
+          "workflow_run_id": 38215010600
+        },
+        {
+          "index": 1,
+          "object": "sha256:ebbe0a06150b53e0de05f7ef13d48bcd1addfb939b11194c0ae10ce1116e61cf",
+          "size": 7972262,
+          "artifact_id": 11731856585,
+          "artifact_name": "cache-untrusted-pr-298-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--e2e96713f1503c61fb44d8f0d2e925fa2ef32977f1608f8e542c2abee6bd0e-part-000001",
+          "workflow_run_id": 38215010600
+        }
+      ],
+      "artifact_id": 11731931575,
+      "artifact_name": "cache-untrusted-pr-298-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--e2e96713f1503c61fb44d8f0d2e925fa2ef32977f1608f8e542c2abee6bd0e-part-000000",
+      "workflow_run_id": 38215010600
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-12T06:56:07.352Z",
-    "writes": 6
+    "writes": 7
   }
 }
