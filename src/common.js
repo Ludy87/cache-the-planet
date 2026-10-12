@@ -3144,7 +3144,7 @@ async function uploadObject(repository, file, name, contentType) {
     const parts = [];
     try {
       console.log(
-        ":::group::Uploading cache object as GitHub Actions artifact",
+        "::group::Uploading cache object as GitHub Actions artifact",
       );
       for (let index = 0; index < totalParts; index += 1) {
         const offset = index * githubBranchPartBytes;
@@ -3216,7 +3216,7 @@ async function uploadObject(repository, file, name, contentType) {
       };
     } finally {
       removeTemporaryFile(directory);
-      console.log(":::endgroup::");
+      console.log("::endgroup::");
     }
   }
   if (storage === "github-branch") {
