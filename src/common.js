@@ -1594,7 +1594,7 @@ const sensitiveKeywordName =
 const sourceFileName =
   /\.(?:css|scss|sass|less|map|html|toml|py|js|mjs|cjs|ts|tsx|mts|cts|java|go|rs|c|cc|cpp|h|hpp|rb|php|cs|swift|kt|kts|scala|sh)$/i;
 const binaryFileName =
-  /\.(?:7z|aar|bin|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|png|pyc|so|tar|tgz|war|wasm|webp|zip|zst)$/i;
+  /\.(?:7z|aar|bin|br|class|crate|dll|dylib|exe|gz|iso|jar|jpeg|jpg|png|pyc|so|tar|tgz|war|wasm|webp|zip|zst)$/i;
 const packageMetadataPath =
   /(?:^|[\\/])[^\\/]+\.(?:dist-info|egg-info)(?:[\\/]|$)/i;
 const npmPackageLockPath = /(?:^|[\\/])node_modules[\\/]\.package-lock\.json$/i;
@@ -3002,10 +3002,12 @@ async function downloadArtifactParts(reference) {
         downloadWorker,
       ),
     );
+    console.log(`::group::Restoring artifact object ${reference.object} from ${reference.parts.length} parts`);
     for (const partFile of partFiles) {
       await writeStreamChunk(output, fs.readFileSync(partFile));
       removeTemporaryFile(path.dirname(partFile));
     }
+    console.log(`::endgroup::`);
     output.end();
     await new Promise((resolve, reject) => {
       output.once("finish", resolve);
@@ -3038,6 +3040,7 @@ async function downloadBranchObject(repository, reference) {
       reference.parts.length,
     );
     let downloadedBytes = 0;
+    console.log(`::group::Restoring branch object ${reference.object} from ${reference.parts.length} parts`);
     for (const part of reference.parts) {
       const result = await gh(
         `/repos/${repository}/contents/${branchReferencePath(reference, part.index)}?ref=${encodeURIComponent(manifestBranch())}`,
@@ -3077,6 +3080,7 @@ async function downloadBranchObject(repository, reference) {
         reference.parts.length,
       );
     }
+    console.log(`::endgroup::`);
     output.end();
     await new Promise((resolve, reject) => {
       output.once("finish", resolve);
@@ -3644,4 +3648,5 @@ module.exports = {
   assertSafeRestoreWorkspace,
   tarPath,
 };
+
 

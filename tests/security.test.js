@@ -124,6 +124,20 @@ test("security scan allows generated HTML, translation, and PNG assets", () => {
       "remove-password.png",
       Buffer.from([0, 1, 2, 3]),
     ],
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "add-password.html.br",
+      Buffer.from([0, 1, 2, 3]),
+    ],
+    [
+      "frontend",
+      "editor",
+      "dist",
+      "remove-password.html.br",
+      Buffer.from([3, 2, 1, 0]),
+    ],
   ];
   try {
     for (const [directory, ...parts] of files) {
@@ -2250,3 +2264,4 @@ test("post-save inherits storage from restore when no save storage is configured
     else process.env.STATE_STORAGE_MODE = previousState;
   }
 });
+
