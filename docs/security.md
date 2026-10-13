@@ -170,3 +170,4 @@ angeforderter Shared-Restore bleibt dagegen
 durch `allow-shared-restore: true` ausdrücklich freischaltbar. Shared-Caches
 müssen trotzdem frei von Geheimnissen bleiben, weil andere Workflows die
 gelesenen Daten verarbeiten können.
+
