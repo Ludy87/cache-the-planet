@@ -95,6 +95,10 @@ inputs:
     description: "Deprecated; save errors are controlled by strict-save"
     required: false
     default: "false"
+  summary:
+    description: "Write cache results to the GitHub step summary"
+    required: false
+    default: "false"
   strict-save:
     description: "Fail the save step on cache errors"
     required: false

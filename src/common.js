@@ -1205,7 +1205,11 @@ function progressLog(action, hash, current, total) {
 }
 
 function summary(title, fields) {
-  if (!process.env.GITHUB_STEP_SUMMARY) return;
+  if (
+    String(input(INPUTS.SUMMARY)).toLowerCase() !== "true" ||
+    !process.env.GITHUB_STEP_SUMMARY
+  )
+    return;
   const escape = (value) =>
     String(value ?? "—")
       .replace(/\\/g, "\\\\")
