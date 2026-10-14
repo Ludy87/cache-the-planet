@@ -2901,12 +2901,19 @@ async function downloadArtifactObject(reference) {
   await validateArtifactReference(reference);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cad-artifact-"));
   try {
-    await (
-      await artifactClient()
-    ).downloadArtifact(reference.artifact_id, {
-      path: directory,
-      findBy: artifactFindBy(reference.workflow_run_id),
-    });
+    console.log(
+      `::group::Downloading cache artifact ${reference.artifact_name} (${reference.artifact_id})`,
+    );
+    try {
+      await (
+        await artifactClient()
+      ).downloadArtifact(reference.artifact_id, {
+        path: directory,
+        findBy: artifactFindBy(reference.workflow_run_id),
+      });
+    } finally {
+      console.log("::endgroup::");
+    }
     const files = fs.readdirSync(directory);
     if (files.length !== 1)
       throw new Error("artifact must contain exactly one archive");
@@ -2932,12 +2939,19 @@ async function downloadArtifactPart(part, directory) {
   await validateArtifactReference(part);
   const partDirectory = path.join(directory, `part-${part.index}`);
   fs.mkdirSync(partDirectory);
-  await (
-    await artifactClient()
-  ).downloadArtifact(part.artifact_id, {
-    path: partDirectory,
-    findBy: artifactFindBy(part.workflow_run_id),
-  });
+  console.log(
+    `::group::Downloading cache artifact part ${part.artifact_name} (${part.artifact_id})`,
+  );
+  try {
+    await (
+      await artifactClient()
+    ).downloadArtifact(part.artifact_id, {
+      path: partDirectory,
+      findBy: artifactFindBy(part.workflow_run_id),
+    });
+  } finally {
+    console.log("::endgroup::");
+  }
   const files = fs.readdirSync(partDirectory);
   if (files.length !== 1)
     throw new Error("artifact part must contain exactly one file");
