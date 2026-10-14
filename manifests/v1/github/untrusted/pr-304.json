@@ -29,10 +29,31 @@
       "artifact_id": 11878801095,
       "artifact_name": "cache-untrusted-pr-304-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v1--d662134d499a9dbaddf04a30557b18cf21bd664214889fe9fd64dea66905c7-part-000000",
       "workflow_run_id": 38532901978
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-304/github-artifact-test/linux-x64/github-artifact-integration-v1/v2": {
+      "object": "sha256:a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-14T08:10:26.935Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 143,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d",
+          "size": 143,
+          "artifact_id": 11878164236,
+          "artifact_name": "cache-untrusted-pr-304-github-artifact-test-linux-x64-github-artifact-integration-v1-v2--a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d.tar.zst-part-000000",
+          "workflow_run_id": 38532979439
+        }
+      ],
+      "artifact_id": 11878164236,
+      "artifact_name": "cache-untrusted-pr-304-github-artifact-test-linux-x64-github-artifact-integration-v1-v2--a7c30908f41da1bcdd5084e1057c48ae68f233b3569f03a4f138e7ffb41b186d.tar.zst-part-000000",
+      "workflow_run_id": 38532979439
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-14T08:07:57.490Z",
-    "writes": 1
+    "writes": 2
   }
 }
