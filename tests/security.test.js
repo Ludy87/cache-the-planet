@@ -1152,6 +1152,42 @@ test("security scan allows credential-named Python source in the setup-uv cache"
   }
 });
 
+test("security scan allows credential-like uv dependency source contents", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-uv-contents-"),
+  );
+  const root = path.join(workspace, ".cache", "setup-uv-cache");
+  const files = [
+    [
+      "MPFElJn8lQ2UVAgw",
+      "cryptography",
+      "hazmat",
+      "primitives",
+      "serialization",
+      "ssh.py",
+      "# dependency key fixture\n-----BEGIN OPENSSH PRIVATE KEY-----\n",
+    ],
+    [
+      "TxAwcBeUG7g9O_tT",
+      "posthog",
+      "test",
+      "test_code_variables.py",
+      'api_key = "dependency-example-value"\n',
+    ],
+  ];
+  try {
+    for (const parts of files) {
+      const content = parts.pop();
+      const file = path.join(root, "archive-v0", ...parts);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows Python stub files in the setup-uv cache", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-uv-stubs-"),

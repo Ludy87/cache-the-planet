@@ -1875,7 +1875,8 @@ function securityScan(root, options = {}) {
       const dependencySourceFile =
         (isCargoRegistrySourcePath(normalizedRelative, root) &&
           sourceFileName.test(file)) ||
-        isNodeModulesSourceFile(file, relative, root);
+        isNodeModulesSourceFile(file, relative, root) ||
+        isUvPackageSourceFile(file, relative);
       const dependencyDocumentation = isNodeModulesDocumentation(
         file,
         relative,
