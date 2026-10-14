@@ -1319,6 +1319,15 @@ function runCacheNameWithConfig(config, cacheName = "npm", extraEnv = {}) {
   return result;
 }
 
+test("cache-name validation explains the length limit", () => {
+  const rejected = runCacheNameWithConfig({}, "a".repeat(33));
+  assert.notEqual(rejected.status, 0);
+  assert.match(
+    rejected.stderr,
+    /cache-name is required, must be 1-32 characters long, and may contain only letters, numbers, hyphens, and underscores/,
+  );
+});
+
 function runManifestBranchWithConfig(config, extraEnv = {}) {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-branch-test-"),

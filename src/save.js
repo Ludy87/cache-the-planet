@@ -354,7 +354,12 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
             Object.values(updated.references || {}).some(
               (reference) => reference.object === oldHash,
             );
-          if (oldHash && oldHash !== hash && !stillReferenced) {
+          if (
+            storage !== "github-artifact" &&
+            oldHash &&
+            oldHash !== hash &&
+            !stillReferenced
+          ) {
             try {
               c.log(
                 `deleting replaced pull request cache asset: hash=${oldHash}`,
