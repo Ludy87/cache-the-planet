@@ -347,10 +347,39 @@
       "artifact_id": 11873461483,
       "artifact_name": "cache-untrusted-pr-302-docker-qemu-linux-x64-174ff59f090d1d00db63acb192200ab801542e3ff71e39d70b2651e89cca3e62-v1--39fe0c2597276999b927d8773b504d69fc506f2bedeba37866c5c6-part-000000",
       "workflow_run_id": 38519562877
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-302/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
+      "object": "sha256:5333d1223ef51abde61ca00b11f639f411aba9dff754f308295687072c229080",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-14T06:02:27.128Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "astragermany-bot[bot]",
+      "size": 33138240,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
+          "size": 25165824,
+          "artifact_id": 11873014310,
+          "artifact_name": "cache-untrusted-pr-302-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--5333d1223ef51abde61ca00b11f639f411aba9dff754f308295687072c2290-part-000000",
+          "workflow_run_id": 38519562877
+        },
+        {
+          "index": 1,
+          "object": "sha256:b54611717d1099f4967a589504ed6657adea0238c86ad69c85c62be7e1ddab61",
+          "size": 7972416,
+          "artifact_id": 11872714783,
+          "artifact_name": "cache-untrusted-pr-302-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--5333d1223ef51abde61ca00b11f639f411aba9dff754f308295687072c2290-part-000001",
+          "workflow_run_id": 38519562877
+        }
+      ],
+      "artifact_id": 11873014310,
+      "artifact_name": "cache-untrusted-pr-302-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--5333d1223ef51abde61ca00b11f639f411aba9dff754f308295687072c2290-part-000000",
+      "workflow_run_id": 38519562877
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-14T05:52:05.040Z",
-    "writes": 7
+    "writes": 8
   }
 }
