@@ -155,6 +155,11 @@ try {
   console.log('encryption test passed');
   const summaryFile = path.join(root, 'step-summary.md');
   process.env.GITHUB_STEP_SUMMARY = summaryFile;
+  summary('Cache Restore', { Status: 'DISABLED' });
+  if (fs.existsSync(summaryFile)) {
+    throw new Error('cache step summary must be disabled by default');
+  }
+  process.env.INPUT_SUMMARY = 'true';
   summary('Cache Restore', { Status: 'HIT', 'Matched key': 'shared/example/project/npm/v1' });
   if (!fs.readFileSync(summaryFile, 'utf8').includes('| Status | HIT |')) {
     throw new Error('cache step summary was not generated correctly');
@@ -163,6 +168,7 @@ try {
     throw new Error('encryption status should be enabled when encryption-key is set');
   }
   delete process.env.GITHUB_STEP_SUMMARY;
+  delete process.env.INPUT_SUMMARY;
   delete process.env['INPUT_ENCRYPTION-KEY'];
   if (encryptionEnabled()) {
     throw new Error('encryption status should be disabled without encryption-key');

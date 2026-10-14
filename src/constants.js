@@ -33,6 +33,7 @@ const INPUTS = Object.freeze({
   SFTP_PRIVATE_KEY: "sftp-private-key",
   SFTP_PASSWORD: "sftp-password",
   SFTP_BASE_PATH: "sftp-base-path",
+  SUMMARY: "summary",
   REPOSITORY: "repository",
   SAVE_SCOPE: "save-scope",
   SCOPE: "scope",
