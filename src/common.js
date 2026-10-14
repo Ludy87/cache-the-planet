@@ -724,7 +724,7 @@ function cacheName() {
   const value = input(INPUTS.CACHE_NAME).trim();
   if (!/^[A-Za-z0-9_-]{1,32}$/.test(value)) {
     throw new Error(
-      "cache-name is required and may contain only letters, numbers, hyphens, and underscores",
+      "cache-name is required, must be 1-32 characters long, and may contain only letters, numbers, hyphens, and underscores",
     );
   }
   const allowed = configuredCacheNames();
