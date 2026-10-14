@@ -1152,6 +1152,36 @@ test("security scan allows credential-named Python source in the setup-uv cache"
   }
 });
 
+test("security scan allows Python stub files in the setup-uv cache", () => {
+  const workspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cache-security-uv-stubs-"),
+  );
+  const root = path.join(workspace, ".cache", "setup-uv-cache");
+  const files = [
+    ["stdlib", "secrets.pyi"],
+    ["stdlib", "token.pyi"],
+    ["stubs", "Authlib", "tokens_mixins.pyi"],
+  ];
+  try {
+    for (const parts of files) {
+      const file = path.join(
+        root,
+        "archive-v0",
+        "cache-hash",
+        "pyright",
+        "dist",
+        "typeshed-fallback",
+        ...parts,
+      );
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, "class Stub: ...\n");
+    }
+    assert.doesNotThrow(() => common.securityScan(root));
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("security scan allows credential-named Python source in the uv cache", () => {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), "cache-security-uv-short-name-"),
