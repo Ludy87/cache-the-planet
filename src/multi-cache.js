@@ -50,6 +50,7 @@ function run(entry, script) {
     "INPUT_CACHE-NAME": entry.name,
     INPUT_PATH: entry.path,
     INPUT_KEY: entry.key,
+    INPUT_SUMMARY: process.env.INPUT_SUMMARY || "",
     GITHUB_OUTPUT: outputFile,
   };
   const result = cp.spawnSync(
