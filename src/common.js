@@ -1289,45 +1289,66 @@ function githubApiError(status, message, headers) {
 async function gh(url, options = {}) {
   const client = await githubClient();
   if (client) {
-    try {
-      const requestOptions = {
-        ...options,
-        request: { ...(options.request || {}), timeout: githubApiTimeoutMs },
-        headers: {
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": apiVersion,
-          ...(options.headers || {}),
-        },
-      };
-      if (typeof requestOptions.body === "string") {
-        try {
-          requestOptions.body = JSON.parse(requestOptions.body);
-        } catch {
-          /* non-JSON body */
+    const method = String(options.method || "GET").toUpperCase();
+    const retryableMethod = method === "GET" || method === "HEAD";
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        const requestOptions = {
+          ...options,
+          request: { ...(options.request || {}), timeout: githubApiTimeoutMs },
+          headers: {
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": apiVersion,
+            ...(options.headers || {}),
+          },
+        };
+        if (typeof requestOptions.body === "string") {
+          try {
+            requestOptions.body = JSON.parse(requestOptions.body);
+          } catch {
+            /* non-JSON body */
+          }
         }
+        if (
+          requestOptions.body &&
+          typeof requestOptions.body === "object" &&
+          !Buffer.isBuffer(requestOptions.body)
+        ) {
+          Object.assign(requestOptions, requestOptions.body);
+          delete requestOptions.body;
+        }
+        const response = await client.request(url, {
+          ...requestOptions,
+        });
+        return { body: response.data, headers: response.headers };
+      } catch (error) {
+        const status = error.status || error.response?.status;
+        const code = error.code || error.cause?.code;
+        const transient =
+          status === 408 ||
+          status === 429 ||
+          (status >= 500 && status <= 599) ||
+          ["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EAI_AGAIN"].includes(
+            code,
+          );
+        if (retryableMethod && transient && attempt < githubApiMaxRetries) {
+          const delay = 250 * 2 ** attempt;
+          log(
+            `GitHub API: transient ${code || `HTTP ${status}`}; retry ${attempt + 1}/${githubApiMaxRetries} in ${delay}ms`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+        const message = error.response?.data?.message || error.message;
+        const apiError = githubApiError(
+          status || 500,
+          message,
+          error.response?.headers,
+        );
+        apiError.status = status;
+        apiError.headers = error.response?.headers;
+        throw apiError;
       }
-      if (
-        requestOptions.body &&
-        typeof requestOptions.body === "object" &&
-        !Buffer.isBuffer(requestOptions.body)
-      ) {
-        Object.assign(requestOptions, requestOptions.body);
-        delete requestOptions.body;
-      }
-      const response = await client.request(url, {
-        ...requestOptions,
-      });
-      return { body: response.data, headers: response.headers };
-    } catch (error) {
-      const message = error.response?.data?.message || error.message;
-      const apiError = githubApiError(
-        error.status || 500,
-        message,
-        error.response?.headers,
-      );
-      apiError.status = error.status;
-      apiError.headers = error.response?.headers;
-      throw apiError;
     }
   }
   const method = String(options.method || "GET").toUpperCase();
