@@ -704,10 +704,18 @@
           "workflow_run_id": 38136214740
         }
       ]
+    },
+    "shared/Ludy87/cache-the-planet/maven-java17/linux-x64/bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33/v2": {
+      "object": "sha256:e6d564b0a4f4743cb7a534e183c2d77bfe21d04cd6182f564599a7471af897fc",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-15T05:51:15.125Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 16937880
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-15T05:50:03.521Z",
-    "writes": 2
+    "writes": 3
   }
 }
