@@ -50,10 +50,39 @@
       "artifact_id": 12041483702,
       "artifact_name": "cache-untrusted-pr-314-npm-cache-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--4b35f2b2e67c383b789dcbe2d5dbc710bb1a10a35146de055e8e435f-part-000000",
       "workflow_run_id": 38891650601
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-314/frontend-node-modules/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-cache-64565b669ae2c797/v2": {
+      "object": "sha256:6e2c9de38d8512737e861fb95182d70e1ff0f35c7e29e21191263cf5736ba429",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-16T11:10:36.255Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 39361889,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:8e6624bf9f054beb335c66bdc73ef51ef67797c8375f7ef5e81016de947420fd",
+          "size": 25165824,
+          "artifact_id": 12042177255,
+          "artifact_name": "cache-untrusted-pr-314-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--6e2c9de38d8512737e861fb95182d70e1ff0f35c7e29-part-000000",
+          "workflow_run_id": 38891650601
+        },
+        {
+          "index": 1,
+          "object": "sha256:dd6131f3409505e130434eca492effcdd8fa5198b4ef28840b4a74c30feaaa59",
+          "size": 14196065,
+          "artifact_id": 12041648171,
+          "artifact_name": "cache-untrusted-pr-314-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--6e2c9de38d8512737e861fb95182d70e1ff0f35c7e29-part-000001",
+          "workflow_run_id": 38891650601
+        }
+      ],
+      "artifact_id": 12042177255,
+      "artifact_name": "cache-untrusted-pr-314-frontend-node-modules-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--6e2c9de38d8512737e861fb95182d70e1ff0f35c7e29-part-000000",
+      "workflow_run_id": 38891650601
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-16T11:09:38.554Z",
-    "writes": 2
+    "writes": 3
   }
 }
