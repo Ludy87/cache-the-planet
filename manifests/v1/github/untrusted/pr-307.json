@@ -833,10 +833,31 @@
       "artifact_id": 12042328657,
       "artifact_name": "cache-untrusted-pr-307-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v1--25ed70238aa8392573713fb221df7ead3561fdbaa272d29fae906-part-000000",
       "workflow_run_id": 38891521058
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-307/gradle-java17/linux-x64/35c4d0d6d52b874a8a9a750e11e3d937f3f0d79bfb21c4c7456412984bcc9d24/v1": {
+      "object": "sha256:8e3f79a94ef864a4920a4f3cd70e53c94095edf24bad53d0c08bcfd66d8cf107",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-16T11:16:11.226Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 2269908,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:8e3f79a94ef864a4920a4f3cd70e53c94095edf24bad53d0c08bcfd66d8cf107",
+          "size": 2269908,
+          "artifact_id": 12041574706,
+          "artifact_name": "cache-untrusted-pr-307-gradle-java17-linux-x64-35c4d0d6d52b874a8a9a750e11e3d937f3f0d79bfb21c4c7456412984bcc9d24-v1--8e3f79a94ef864a4920a4f3cd70e53c94095edf24bad53d0c08b-part-000000",
+          "workflow_run_id": 38891521058
+        }
+      ],
+      "artifact_id": 12041574706,
+      "artifact_name": "cache-untrusted-pr-307-gradle-java17-linux-x64-35c4d0d6d52b874a8a9a750e11e3d937f3f0d79bfb21c4c7456412984bcc9d24-v1--8e3f79a94ef864a4920a4f3cd70e53c94095edf24bad53d0c08b-part-000000",
+      "workflow_run_id": 38891521058
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-16T11:08:07.892Z",
-    "writes": 13
+    "writes": 14
   }
 }
