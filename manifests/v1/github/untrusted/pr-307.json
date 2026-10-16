@@ -706,10 +706,95 @@
       "artifact_id": 12042347676,
       "artifact_name": "cache-untrusted-pr-307-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3666bac19fb140e3a8ba064b8f50c5677da93f461e2a8900e97c35b8cf96-part-000000",
       "workflow_run_id": 38891521058
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-307/uv-python-3-13/linux-x64/0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611/v1": {
+      "object": "sha256:688685eb948a4229cb730e46f76cfebde701f07bee5325246139e4b451d6868e",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-16T11:13:33.464Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 226105549,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:8a60a86d09709e451800d8b332b87babe5038a91559513993dcbb565c91b6036",
+          "size": 25165824,
+          "artifact_id": 12042511445,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000000",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 1,
+          "object": "sha256:b11edc9a405e761ba97adcade3ea184557ec920910732ab13facbc1740107c83",
+          "size": 25165824,
+          "artifact_id": 12042173562,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000001",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 2,
+          "object": "sha256:aaa252bafffc6f408fc1e5c03810a0d3e4fb944980e2018920bd9c004858539d",
+          "size": 25165824,
+          "artifact_id": 12041734285,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000002",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 3,
+          "object": "sha256:a855b7396b55a140107d1fafc59bd074026b998f42b55f6bd43d1dd71d52c24a",
+          "size": 25165824,
+          "artifact_id": 12041819236,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000003",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 4,
+          "object": "sha256:1767d2cf53dd066dcfea9b5c1509dfaa43b8188efa6bdb10b95a9e60bbee3137",
+          "size": 25165824,
+          "artifact_id": 12042223544,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000004",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 5,
+          "object": "sha256:113629bc2d589586bd0688e04c86cd0e58357c64014b2b61a50e57d9aabbc6ee",
+          "size": 25165824,
+          "artifact_id": 12042675517,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000005",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 6,
+          "object": "sha256:42a267cc1b3b690ec0cc105ec172f40300fbc25e831b416f7260c87f8fafecab",
+          "size": 25165824,
+          "artifact_id": 12042760369,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000006",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 7,
+          "object": "sha256:813562c25f6ab27ec1aafa0ce6e7a2aa627abe5ef8d26848b7db600784cce793",
+          "size": 25165824,
+          "artifact_id": 12042805117,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000007",
+          "workflow_run_id": 38891521058
+        },
+        {
+          "index": 8,
+          "object": "sha256:7265ffcd0ffbc5212d5763ae958c7d7927c330ae2038ec2962a81037d81b8fdf",
+          "size": 24778957,
+          "artifact_id": 12041589869,
+          "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000008",
+          "workflow_run_id": 38891521058
+        }
+      ],
+      "artifact_id": 12042511445,
+      "artifact_name": "cache-untrusted-pr-307-uv-python-3-13-linux-x64-0a987de1eb0f3fc00d0750ab6f2bc8900690b7ab2726b8dbbf50aa4a00b6f611-v1--688685eb948a4229cb730e46f76cfebde701f07bee532524613-part-000000",
+      "workflow_run_id": 38891521058
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-16T11:08:07.892Z",
-    "writes": 10
+    "writes": 11
   }
 }
