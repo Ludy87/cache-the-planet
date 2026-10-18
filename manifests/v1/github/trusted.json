@@ -22,35 +22,6 @@
       "artifact_name": "cache-trusted-main-maven-java17-linux-x64-bebe0d6eac024116aec3e8995a6d24974063faa8fb30d39da9ffa8c80ca78c33-v2--e6d564b0a4f4743cb7a534e183c2d77bfe21d04cd6182f564599a7471-part-000000",
       "workflow_run_id": 38072341191
     },
-    "trusted/Ludy87/cache-the-planet/main/npm/linux-x64/287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285/v2": {
-      "object": "sha256:da4c0a6989195dcb9d5dcac0656760629158be0269493b4e36e8dff84bbc974e",
-      "storage": "github-artifact",
-      "updated_at": "2026-10-10T09:35:52.496Z",
-      "source": "Ludy87/cache-the-planet",
-      "created_by": "Ludy87",
-      "size": 33135928,
-      "parts": [
-        {
-          "index": 0,
-          "object": "sha256:dbcb813aa63aeb3ae3ad141f9a90b61899e9048f8d1002ed1d593460a0717c0d",
-          "size": 25165824,
-          "artifact_id": 11665788285,
-          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--da4c0a6989195dcb9d5dcac0656760629158be0269493b4e36e8dff84bbc974e.t-part-000000",
-          "workflow_run_id": 38041687485
-        },
-        {
-          "index": 1,
-          "object": "sha256:d59c6d6dd2cbc61245d5467e4844916a762628101b9e2fe6579ce54c89f4af28",
-          "size": 7970104,
-          "artifact_id": 11665543625,
-          "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--da4c0a6989195dcb9d5dcac0656760629158be0269493b4e36e8dff84bbc974e.t-part-000001",
-          "workflow_run_id": 38041687485
-        }
-      ],
-      "artifact_id": 11665788285,
-      "artifact_name": "cache-trusted-main-npm-linux-x64-287ee271542440e24021399eeec1aaa6c29245a10b515a053b4c6a82043e2285-v2--da4c0a6989195dcb9d5dcac0656760629158be0269493b4e36e8dff84bbc974e.t-part-000000",
-      "workflow_run_id": 38041687485
-    },
     "trusted/Ludy87/cache-the-planet/main/tauri/linux-x64/8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-cache-8312b9e83295b5b3/v2": {
       "object": "sha256:b2b812ddaf784071b978fa88cec90c8fb377a4cdfa02daa4d97b6303f9255a37",
       "storage": "github-artifact",
