@@ -31,7 +31,7 @@
     "@embedpdf/plugin-viewport": "^2.15.1",
     "@embedpdf/plugin-zoom": "^2.15.1",
     "@mantine/core": "^8.3.1",
-    "@mantine/dates": "^8.3.1",
+    "@mantine/dates": "^9.7.2",
     "@mantine/dropzone": "^8.3.1",
     "@mantine/hooks": "^8.3.1",
     "@posthog/react": "^1.8.2",
