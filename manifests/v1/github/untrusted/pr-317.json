@@ -148,10 +148,327 @@
       "artifact_id": 12497347120,
       "artifact_name": "cache-untrusted-pr-317-cargo-linux-x64-7df62907bae2c1e26ad9cb0f49b5ecd84877f698c76cf95ec5e4a02eb05db239-v1--e63a0232cb1e6a9fcb13c1f5dc9ac63e4a6f2de052dcd7dff1138c572e39-part-000000",
       "workflow_run_id": 39943679286
+    },
+    "untrusted/Ludy87/cache-the-planet/pr-317/tauri/linux-x64/8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-cache-8312b9e83295b5b3/v2": {
+      "object": "sha256:3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4cf3a",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-23T11:13:37.678Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 934517179,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:57f64252cf2d50261297af2eeef6dccf9777ec012de1989e1e1e676b2bbc668e",
+          "size": 25165824,
+          "artifact_id": 12497013882,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000000",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 1,
+          "object": "sha256:922d96a1fd62941ce948ff03a1367217a87c2f8d8aea23bff64d3966874e77d0",
+          "size": 25165824,
+          "artifact_id": 12498115179,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000001",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 2,
+          "object": "sha256:201e97f6e86322913ce33fe73e3d4fef631063245be5d40cba8b852940952633",
+          "size": 25165824,
+          "artifact_id": 12496988792,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000002",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 3,
+          "object": "sha256:e28c16d9a5663f76bd758fb88877ab8a0af2b6593f638d9cb64f14cb98ddf426",
+          "size": 25165824,
+          "artifact_id": 12496879091,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000003",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 4,
+          "object": "sha256:4cfabc7de3ee81e8c3a3d48c3e80d15eb831a526ff5e24e49fce68166be5b085",
+          "size": 25165824,
+          "artifact_id": 12497203483,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000004",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 5,
+          "object": "sha256:803b12ba5cfbe203a8c9deb7d43319a7d35badfff8b3b27e1d2cdc1ddab12d57",
+          "size": 25165824,
+          "artifact_id": 12496774400,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000005",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 6,
+          "object": "sha256:d17ec05b2604f0953ba6cda01e73f1010221da011b92f36db756553ec9034a96",
+          "size": 25165824,
+          "artifact_id": 12496859278,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000006",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 7,
+          "object": "sha256:31f75c87c81e1c73b5ca38c08b1868c4fe2d3977dd8bbd94e9900bea96ecc992",
+          "size": 25165824,
+          "artifact_id": 12497881029,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000007",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 8,
+          "object": "sha256:79a892db45722d23fb0576623cb7d247d7c62efb79c36124adb5b99dc6e13a59",
+          "size": 25165824,
+          "artifact_id": 12497940740,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000008",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 9,
+          "object": "sha256:273400b3a6a2179a1130654e3ded3fbdffeb3d47deb625fa1fe010756832936e",
+          "size": 25165824,
+          "artifact_id": 12497153405,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000009",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 10,
+          "object": "sha256:8472cf4c384887c4d2de36d2d23bda5052f28663d3583ad2c634d389de900303",
+          "size": 25165824,
+          "artifact_id": 12497088555,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000010",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 11,
+          "object": "sha256:3aabee043061a4a83c9ef286d8bfd43fe3a8bbc67296a4ff4c482e4958e2b46d",
+          "size": 25165824,
+          "artifact_id": 12497910796,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000011",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 12,
+          "object": "sha256:d7590a754af982f5dd71abbd3bc2d71ebb9c4ba7f5356a7962c78407929b9fb1",
+          "size": 25165824,
+          "artifact_id": 12497318183,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000012",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 13,
+          "object": "sha256:a835a0406b3743ded3b998e4eb0e242e768d4731341a07136fd0dc143fd7b328",
+          "size": 25165824,
+          "artifact_id": 12496859302,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000013",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 14,
+          "object": "sha256:2bb83564c3da6ef0d9b76a39eb162bde4b312425b36f11230be08e01ca6191c0",
+          "size": 25165824,
+          "artifact_id": 12496834287,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000014",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 15,
+          "object": "sha256:af8f018ad0a1238ee3e0f71e770848d812c9e93d4d7e23c5cf95b02cac8212a4",
+          "size": 25165824,
+          "artifact_id": 12497616747,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000015",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 16,
+          "object": "sha256:c474cf8b6ea8f7cddd4c062395bdb1497343a843c2141cb6ba380dbee3c536b1",
+          "size": 25165824,
+          "artifact_id": 12497806245,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000016",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 17,
+          "object": "sha256:5693f3423385a25c9e0a5e8e29580b3b26f83ab412457c807f4c7a7108a5abd1",
+          "size": 25165824,
+          "artifact_id": 12498150137,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000017",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 18,
+          "object": "sha256:a356a57282ef0f3cf1fe6c05ea2b4b40bd983465fc2c350327c2f1694861be10",
+          "size": 25165824,
+          "artifact_id": 12496933951,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000018",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 19,
+          "object": "sha256:15f866831db1d80925cc32677b9e43cd9716e198a6b2171bfe1114bef5fa451d",
+          "size": 25165824,
+          "artifact_id": 12497078737,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000019",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 20,
+          "object": "sha256:7cfb361d28987e093bb6f0161b88cf4631bba64dbc031cf5dea7da9d97c1b2ac",
+          "size": 25165824,
+          "artifact_id": 12496973759,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000020",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 21,
+          "object": "sha256:45aa713ebacd9d1ec1f05cd9ca7523eef02113a96a4249001a2e108942913d7f",
+          "size": 25165824,
+          "artifact_id": 12497532140,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000021",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 22,
+          "object": "sha256:d43eb094aac601ff495af806e2a650613031c27d7271be155fe546a4b323f060",
+          "size": 25165824,
+          "artifact_id": 12497402962,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000022",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 23,
+          "object": "sha256:8d456be0ed65a1fac60562e31f191ba2b4783a389a5518ce210356aa95bd6bd8",
+          "size": 25165824,
+          "artifact_id": 12497133554,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000023",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 24,
+          "object": "sha256:e1dd9a16daca7afa6f9091eca4ec03df803bf3d13a971232160c3c5731bbe7a4",
+          "size": 25165824,
+          "artifact_id": 12496959001,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000024",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 25,
+          "object": "sha256:281cab621dcd9f494644583b7783886a65731cebc06dfaa9c3e42a4dc31e231c",
+          "size": 25165824,
+          "artifact_id": 12497930856,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000025",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 26,
+          "object": "sha256:04574c4f70f527442d258ebb355f4e14a8610efb53c2829ddfdb3b5a936bbc0d",
+          "size": 25165824,
+          "artifact_id": 12497168451,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000026",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 27,
+          "object": "sha256:61d95d2d9ba009c0f35eec5b8842b0e5a30a73dab80aa4d28e1b6cf2b6d17856",
+          "size": 25165824,
+          "artifact_id": 12496849366,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000027",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 28,
+          "object": "sha256:3899a9852ce07e1fd8f314944ba19ad580a9d5c23d7fdfc6b8debe34ef7c353a",
+          "size": 25165824,
+          "artifact_id": 12497093620,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000028",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 29,
+          "object": "sha256:ed21c728df409b239125fbdf5d7a497d095f1b1be15bb6373927c271b1fa46f2",
+          "size": 25165824,
+          "artifact_id": 12496679899,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000029",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 30,
+          "object": "sha256:094eb446df44cf8f41ce09bfa9b957560b1b6ff37a0461446d02ea6d8a3c845e",
+          "size": 25165824,
+          "artifact_id": 12497945776,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000030",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 31,
+          "object": "sha256:d5b6739eae4f64a253377b3bd36c10ffddf7b9ef635a7b36d6dc8eaac396077c",
+          "size": 25165824,
+          "artifact_id": 12496634984,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000031",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 32,
+          "object": "sha256:3bff8482142e6d99e0701fd4376ce8784129a306f92b64eb1fe9bb101cb84ce2",
+          "size": 25165824,
+          "artifact_id": 12498105196,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000032",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 33,
+          "object": "sha256:0279963e04d84b566cf36026d9182257f4e5d335be37e81bee0da89ca94fc76a",
+          "size": 25165824,
+          "artifact_id": 12497293575,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000033",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 34,
+          "object": "sha256:b4367968c7c0d9dd8dfe360c36a938234e8028da5a54311ab627211521b6640b",
+          "size": 25165824,
+          "artifact_id": 12497103868,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000034",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 35,
+          "object": "sha256:399193d80cfb75d3f2169b4afd3805258e49392a16a3a2aace78866dfe692acc",
+          "size": 25165824,
+          "artifact_id": 12497368296,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000035",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 36,
+          "object": "sha256:a691841e42bbf876e1ecf77b38486f0dec191cc3fa9831ab3b5ef55288018990",
+          "size": 25165824,
+          "artifact_id": 12498045593,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000036",
+          "workflow_run_id": 39943679286
+        },
+        {
+          "index": 37,
+          "object": "sha256:cd25591a7fda605148166d81ba187fd723bc106043ae7dd700d5c68b7ab44463",
+          "size": 3381691,
+          "artifact_id": 12497442733,
+          "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000037",
+          "workflow_run_id": 39943679286
+        }
+      ],
+      "artifact_id": 12497013882,
+      "artifact_name": "cache-untrusted-pr-317-tauri-linux-x64-8b48f4f9d1bdccaf784a8e3f59fe66692ef2526a48b7a714f96b915d16142941-v2--3711d6e958a77086ce515d7ce3dc77d0d9ad53167752464693896a53c3a4-part-000000",
+      "workflow_run_id": 39943679286
     }
   },
   "monitoring": {
     "window_started_at": "2026-10-23T11:07:05.844Z",
-    "writes": 4
+    "writes": 5
   }
 }
