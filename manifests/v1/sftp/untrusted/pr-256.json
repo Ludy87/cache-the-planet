@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "references": {
-    "untrusted/Ludy87/cache-the-planet/pr-256/npm/linux-x64/a0a041d923b0d3a4d559dd62d5789304d922e562b0a96a46c3254511335ecd59-cache-ee039838b25c950a/v1": {
-      "object": "sha256:ce655ed8bcd9e50e2501832628e0069f7c5c6c39f9b0df3dec6b00a7bf2dd542",
+    "untrusted/Ludy87/cache-the-planet/pr-256/npm/linux-x64/5f4bfc8a2f4d102bc5e31dda9352e9c7570069e5a8458155bc4fbe1b22eab0b8-cache-ee039838b25c950a/v1": {
+      "object": "sha256:865108d54719b2d6d50290ccc8e3ee09c8937691da49007512de2a9e88e1c442",
       "storage": "sftp",
-      "updated_at": "2026-10-06T20:16:38.398Z",
+      "updated_at": "2026-10-24T11:24:50.222Z",
       "source": "Ludy87/cache-the-planet",
       "created_by": "astragermany-bot[bot]",
-      "size": 33127791
+      "size": 17114670
     }
   },
   "monitoring": {
-    "window_started_at": "2026-10-06T20:16:38.398Z",
+    "window_started_at": "2026-10-24T11:24:50.222Z",
     "writes": 1
   }
 }
