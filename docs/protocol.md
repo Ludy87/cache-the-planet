@@ -40,6 +40,11 @@ manifests/v1/sftp/shared.json
 manifests/v1/sftp/untrusted/pr-<number>.json
 ```
 
+Beim Lesen verwendet die Action zunächst die GitHub Contents API. Liefert diese
+bei einer größeren Manifestdatei keinen vollständigen `content`-Wert, lädt sie
+die Datei über die von GitHub angegebene authentifizierte `download_url` und
+validiert anschließend weiterhin das vollständige JSON und das Manifest-Schema.
+
 `storage: github-release` verwendet den Storage-Namen `github`, `storage: sftp`
 verwendet `sftp`. Restore liest ausschließlich den storage-spezifischen
 Manifest-Pfad; ein Fehler oder fehlendes Objekt aktiviert keinen Fallback auf
