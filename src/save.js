@@ -591,9 +591,9 @@ async function deleteUnreferencedObjects(repository, hashes, manifest) {
       c.log(
         `pull request cache save skipped: repository access denied (${error.status})`,
       );
+      c.normalLog(`Error: ${error.message}`);
       return;
     }
     c.fail(error, INPUTS.STRICT_SAVE);
   }
 })().finally(() => c.closeSftp());
-
