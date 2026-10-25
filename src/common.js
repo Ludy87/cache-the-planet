@@ -2496,9 +2496,39 @@ async function manifest(repository, filePath) {
   const result = await gh(
     `/repos/${repository}/contents/${filePath}?ref=${encodeURIComponent(branch)}`,
   );
-  const json = JSON.parse(
-    Buffer.from(result.body.content, "base64").toString(),
-  );
+  let json;
+  const content = result.body?.content;
+  if (typeof content === "string" && content.trim()) {
+    try {
+      json = JSON.parse(Buffer.from(content, "base64").toString());
+    } catch (error) {
+      if (!result.body.download_url) throw error;
+    }
+  }
+  // GitHub's Contents API omits or truncates `content` for larger files.
+  // Use its authenticated download URL so large manifests are still read
+  // completely instead of passing an incomplete string to JSON.parse().
+  if (!json) {
+    const downloadUrl = result.body?.download_url;
+    if (!downloadUrl) {
+      throw new Error(`manifest content is unavailable for ${filePath}`);
+    }
+    const response = await fetch(downloadUrl, {
+      headers: {
+        Accept: "application/vnd.github.raw+json",
+        ...authorizationHeaders(),
+      },
+      signal: AbortSignal.timeout(githubApiTimeoutMs),
+    });
+    if (!response.ok) {
+      throw githubApiError(
+        response.status,
+        `manifest download failed for ${filePath}`,
+        response.headers,
+      );
+    }
+    json = JSON.parse(await response.text());
+  }
   validateManifest(json);
   return {
     json,

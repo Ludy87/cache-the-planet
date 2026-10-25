@@ -1835,6 +1835,47 @@ test("manifest reads are deduplicated but fresh reads bypass the cache", async (
   }
 });
 
+test("large manifest reads use the authenticated download URL", async () => {
+  const originalFetch = global.fetch;
+  const previousToken = process.env.GITHUB_TOKEN;
+  const previousInputToken = process.env.INPUT_TOKEN;
+  let calls = 0;
+  try {
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.INPUT_TOKEN;
+    global.fetch = async (url) => {
+      calls += 1;
+      if (calls === 1) {
+        return new Response(
+          JSON.stringify({
+            sha: "sha-large",
+            content: "",
+            download_url: "https://raw.example/manifest.json",
+          }),
+          { status: 200 },
+        );
+      }
+      assert.equal(url, "https://raw.example/manifest.json");
+      return new Response(
+        JSON.stringify({ schema_version: 1, references: {} }),
+        { status: 200 },
+      );
+    };
+    const result = await common.refs("owner/large-manifest-cache-test", {
+      fresh: true,
+      filePath: "manifests/v1/trusted.json",
+    });
+    assert.deepEqual(result.json.references, {});
+    assert.equal(calls, 2);
+  } finally {
+    global.fetch = originalFetch;
+    if (previousToken === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = previousToken;
+    if (previousInputToken === undefined) delete process.env.INPUT_TOKEN;
+    else process.env.INPUT_TOKEN = previousInputToken;
+  }
+});
+
 test("artifact publisher correlates workflow, repository, PR and head SHA", () => {
   const event = {
     workflow_run: {
