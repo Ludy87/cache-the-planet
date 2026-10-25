@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "references": {
+    "untrusted/Ludy87/cache-the-planet/pr-328/npm/linux-x64/0f292db7b4f499eaa4b3a447ec63de2a5b930dfaf7fb7cd7f654f01e086eb3d1/v1": {
+      "object": "sha256:72b813af4a76f0e916c539d5a6202e685c4987855d83ea50c43d5d478818da45",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-25T11:01:11.387Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "Ludy87",
+      "size": 17131961,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:72b813af4a76f0e916c539d5a6202e685c4987855d83ea50c43d5d478818da45",
+          "size": 17131961,
+          "artifact_id": 12596234442,
+          "artifact_name": "cache-untrusted-pr-328-npm-linux-x64-0f292db7b4f499eaa4b3a447ec63de2a5b930dfaf7fb7cd7f654f01e086eb3d1-v1--72b813af4a76f0e916c539d5a6202e685c4987855d83ea50c43d5d478818da-part-000000",
+          "workflow_run_id": 40187073159
+        }
+      ],
+      "artifact_id": 12596234442,
+      "artifact_name": "cache-untrusted-pr-328-npm-linux-x64-0f292db7b4f499eaa4b3a447ec63de2a5b930dfaf7fb7cd7f654f01e086eb3d1-v1--72b813af4a76f0e916c539d5a6202e685c4987855d83ea50c43d5d478818da-part-000000",
+      "workflow_run_id": 40187073159
+    }
+  },
+  "monitoring": {
+    "window_started_at": "2026-10-25T11:01:11.387Z",
+    "writes": 1
+  }
+}
