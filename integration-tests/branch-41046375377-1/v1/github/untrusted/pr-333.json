@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "references": {
+    "untrusted/Ludy87/cache-the-planet/pr-333/npm/linux-x64/branch-test-41046375377-1-npm/v1": {
+      "object": "sha256:3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b",
+      "storage": "github-artifact",
+      "updated_at": "2026-10-30T11:14:33.229Z",
+      "source": "Ludy87/cache-the-planet",
+      "created_by": "dependabot[bot]",
+      "size": 524301157,
+      "parts": [
+        {
+          "index": 0,
+          "object": "sha256:54a3539470879bb897374dd3e0983f0e61cedf51b3a1e78d1d91016f31f77e77",
+          "size": 25165824,
+          "artifact_id": 12972811844,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000000",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 1,
+          "object": "sha256:df59d61ce6848c8344692f0b5c23fa1fb2b8e835961bb8468d8339367c01219f",
+          "size": 25165824,
+          "artifact_id": 12973420075,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000001",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 2,
+          "object": "sha256:26c5e5b00bbf8195b0dd9ed7a8dac343d1bdb9684824d68b5bed958795881c37",
+          "size": 25165824,
+          "artifact_id": 12972771754,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000002",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 3,
+          "object": "sha256:af16ce64b59d0a0169ef2ebe543569765e03631163a97fd7041e63ad71aa63d3",
+          "size": 25165824,
+          "artifact_id": 12973145827,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000003",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 4,
+          "object": "sha256:e394f905980cdfd28497b703b1df533a090718dcf217e24fa6176fc22a7e0121",
+          "size": 25165824,
+          "artifact_id": 12973195660,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000004",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 5,
+          "object": "sha256:4b6646a2bd127648049a29c53268acb9a47a35550d654bcc0a6ae4afe662fa10",
+          "size": 25165824,
+          "artifact_id": 12971764007,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000005",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 6,
+          "object": "sha256:bf29c98e4ad666d7fd7efef7200d1166a8bb09e6177a06416b96bda9e8ef9c05",
+          "size": 25165824,
+          "artifact_id": 12972751523,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000006",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 7,
+          "object": "sha256:ee287b16612cea5c6cf866590557c1d310826fdb8218b89263c454fea6e4f07f",
+          "size": 25165824,
+          "artifact_id": 12973035764,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000007",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 8,
+          "object": "sha256:e6dec2691e9d723149b58967c10c2bb25d0a47c6ddc0e379c9c48c548d3801ab",
+          "size": 25165824,
+          "artifact_id": 12971474739,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000008",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 9,
+          "object": "sha256:f39730c86188b43a9583c1a8e825ea5dc219336125750878e7f927a3b9025c9b",
+          "size": 25165824,
+          "artifact_id": 12972088538,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000009",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 10,
+          "object": "sha256:31debfcf0a7a9026e9bf6682c9deb32446666aa563f756782c6c1d549e69faf8",
+          "size": 25165824,
+          "artifact_id": 12972925958,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000010",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 11,
+          "object": "sha256:7bb1ab8dfaca5ca3992ed89fd0f2a1cdf366b95da01854f6fcc2eca68ec3253a",
+          "size": 25165824,
+          "artifact_id": 12971958963,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000011",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 12,
+          "object": "sha256:8a62be865eea65984264791cb14f618d037356f38baf839bbb97f06122d6ac1f",
+          "size": 25165824,
+          "artifact_id": 12971594482,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000012",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 13,
+          "object": "sha256:2620f6fbc39002f6efeb43b884fa8f12d5197ffc431dcc2f68e4eb608e9f9490",
+          "size": 25165824,
+          "artifact_id": 12971634494,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000013",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 14,
+          "object": "sha256:2efc5b53fe32acbed98ad96c7bb620d536964524f75626fc2ba773d5244c2193",
+          "size": 25165824,
+          "artifact_id": 12972925972,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000014",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 15,
+          "object": "sha256:38d58dcacff7d15fed98e87d61937b38714ff367bcb44a1093700cdf4ab3ebd3",
+          "size": 25165824,
+          "artifact_id": 12971899013,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000015",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 16,
+          "object": "sha256:778f0d15b87536dd478b5439864971c41176dbdcc9434e150927c55c81ff2f1d",
+          "size": 25165824,
+          "artifact_id": 12971779228,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000016",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 17,
+          "object": "sha256:8893d6b43011c2ece2ded677ac499e51e3135006bc73928d286b69c22b0c2303",
+          "size": 25165824,
+          "artifact_id": 12972896163,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000017",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 18,
+          "object": "sha256:e381e1bcf5c66c20d183e80c663aa416c1f9dd91911c350617d33b03d127e19e",
+          "size": 25165824,
+          "artifact_id": 12971334979,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000018",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 19,
+          "object": "sha256:f2ae178197e47cf62038bb3988ffe04421f69788287210a8f64d032cf5727363",
+          "size": 25165824,
+          "artifact_id": 12973310126,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000019",
+          "workflow_run_id": 41046375377
+        },
+        {
+          "index": 20,
+          "object": "sha256:3a29308cb1436599ac79344fb30e69a4d4fd4a17abec440630c07bc9412fa6e4",
+          "size": 20984677,
+          "artifact_id": 12971444771,
+          "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000020",
+          "workflow_run_id": 41046375377
+        }
+      ],
+      "artifact_id": 12972811844,
+      "artifact_name": "cache-untrusted-pr-333-npm-linux-x64-branch-test-41046375377-1-npm-v1--3125ac5d3e07739c86bde7c1a59e64b537a8e8356d92c6a7a4767b68c24da64b.tar.zst-part-000000",
+      "workflow_run_id": 41046375377
+    }
+  },
+  "monitoring": {
+    "window_started_at": "2026-10-30T11:14:33.227Z",
+    "writes": 1
+  }
+}
